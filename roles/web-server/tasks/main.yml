@@ -1,0 +1,83 @@
+---
+
+- name: Install Apache
+  sudo: yes
+  apt: name={{ item }} state=present
+  with_items:
+   - apache2
+   - libapache2-mod-fcgid
+   - apachetop
+  notify: Restart webserver
+
+- name: Enable apache modules
+  action: command a2enmod {{ item }}
+  with_items:
+   - actions
+   - rewrite
+   - proxy
+   - proxy_fcgi
+   - env
+   - deflate
+   - ssl
+   - mpm_event
+  notify: Restart webserver
+
+#- name: Install Apache PHP FPM config
+#  sudo: yes
+#  copy: src=php5-fpm.conf dest=/etc/apache2/conf-available/
+#  notify: Restart webserver
+
+#- name: Enable apache PHP FPM config
+#  action: command a2enconf php5-fpm.conf
+#  notify: Restart webserver
+
+
+#
+#- name: Enable Apache2 modules
+#  apache2_module: name={{ item }} state=present
+#  with_items:
+#   - rewrite
+#   - env
+#   - deflate
+#   - ssl
+
+
+- name: Install PHP
+  sudo: yes
+  apt: name={{ item }} state=present
+  with_items:
+   - php5
+   - php5-cli
+   - php5-curl
+   - php5-gd
+   - php5-mcrypt
+   - php5-memcache
+   - php5-memcached
+   - php5-pgsql
+
+- name: Install PHP FPM
+  sudo: yes
+  apt: name={{ item }} state=present
+  with_items:
+   - php5-fpm
+  notify: Restart FPM
+
+- name: Install Memcached
+  sudo: yes
+  apt: name={{ item }} state=present
+  with_items:
+   - memcached
+  notify: Restart memcache
+
+
+- name: Install Git
+  sudo: yes
+  apt: name={{ item }} state=present
+  with_items:
+   - git
+
+
+
+- name: Apache servie state
+  sudo: yes
+  service: name=apache2 state=started enabled=yes

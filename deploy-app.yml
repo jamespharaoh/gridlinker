@@ -1,0 +1,10 @@
+---
+
+
+# Configure and deploy web-application
+- hosts: webservers
+  user: jimmyff
+  sudo: yes
+  roles:
+   - web-application
+

@@ -1,0 +1,8 @@
+---
+
+- name: Install core stuff
+  sudo: yes
+  apt: name={{ item }} state=present
+  with_items:
+   - bash-completion
+   - rysnc

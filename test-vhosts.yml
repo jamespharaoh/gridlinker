@@ -1,0 +1,63 @@
+---
+- hosts: webservers
+  user: jimmyff
+  sudo: yes
+  sudo_user: root
+  tasks:
+
+
+  - name: Make sure log directory exists
+    action: file path={{ platform_log_dir }} state=directory
+
+
+
+  - name: Setup the service virtualhosts (main domains)
+    template:
+      src=roles/web-application/templates/apache2.4-service-vhost-main.j2
+      dest=/etc/apache2/sites-available/dp_service__{{ item.main_domain }}__main.conf
+    with_items: services
+    notify: Restart webserver
+
+
+
+  - name: Enable active virtualhosts (main domains)
+    action: command a2ensite dp_service__{{ item.main_domain }}__main.conf
+    with_items: services
+    when: item.enabled == true
+    notify: Reload webserver
+
+
+  - name: Disable inactive virtualhosts (main domains)
+    action: command a2dissite dp_service__{{ item.main_domain }}__main.conf
+    with_items: services
+    when: item.enabled == false
+    notify: Reload webserver
+
+
+
+  - name: Setup the service virtualhosts (static domains)
+    template:
+      src=roles/web-application/templates/apache2.4-service-vhost-static.j2
+      dest=/etc/apache2/sites-available/dp_service__{{ item.main_domain }}__static.conf
+    with_items: services
+    notify: Restart webserver
+
+  - name: Enable active virtualhosts (static domains)
+    action: command a2ensite dp_service__{{ item.main_domain }}__static.conf
+    with_items: services
+    when: item.enabled == true
+    notify: Reload webserver
+
+  - name: Disable inactive virtualhosts (static domains)
+    action: command a2dissite dp_service__{{ item.main_domain }}__static.conf
+    with_items: services
+    when: item.enabled == false
+    notify: Reload webserver
+
+  handlers:
+
+    - name: Restart webserver
+      action: service name=apache2 state=restarted
+
+    - name: Reload webserver
+      action: service name=apache2 state=reloaded

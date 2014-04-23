@@ -1,0 +1,24 @@
+---
+
+# Apply common convifiguration to all hosts
+- hosts: all
+  user: jimmyff
+  roles:
+  - common
+
+
+# Configure and deploy database servers
+- hosts: dbservers
+  user: jimmyff
+  roles:
+   - db
+
+
+# Configure and deploy web-application servers
+- hosts: webservers
+  user: jimmyff
+  sudo: yes
+  roles:
+   - web-server
+   - web-application
+

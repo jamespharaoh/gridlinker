@@ -1,0 +1,13 @@
+---
+
+- name: Restart webserver
+  action: service name=apache2 state=restarted
+
+- name: Reload webserver
+  action: service name=apache2 state=reloaded
+
+- name: Restart FPM
+  action: service name=apache2 state=restarted
+
+- name: Restart memcache
+  action: service name=memcached state=restarted

@@ -1,0 +1,10 @@
+---
+
+
+# Configure and deploy web-application
+- hosts: dbservers
+  user: jimmyff
+  sudo: yes
+  roles:
+   - db
+
