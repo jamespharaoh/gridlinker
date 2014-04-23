@@ -14,12 +14,9 @@
   with_items:
    - actions
    - rewrite
-   - proxy
-   - proxy_fcgi
    - env
    - deflate
    - ssl
-   - mpm_event
   notify: Restart webserver
 
 #- name: Install Apache PHP FPM config

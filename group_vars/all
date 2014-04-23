@@ -5,7 +5,8 @@ platform_super_dir: '/var/www/datingnode-super/'
 platform_log_dir: '/var/log/datingnode/'
 platform_assets_dir: '/var/www/datingnode-assets/'
 
-apache_version: '2.2'
+apache_version: '2.4'
+deployment_user: 'ubuntu'
 
 test_domain_extension: 'dev'
 

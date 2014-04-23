@@ -1,5 +1,9 @@
 ---
 
+
+  - name: Make sure platform log directory exists
+    action: file path=/var/www/datingnode-super/ state=directory owner={{ deployment_user }} group={{ deployment_user }} mode=0777
+
   - name: Checkout the super project
     sudo: no
     git: repo=ssh://git@bitbucket.org/jimmyff/datingnode-super.git
@@ -8,25 +12,25 @@
 
   - name: Set super project permissions
     sudo: yes
-    action: file owner=jimmyff group=www-data path=/var/www/datingnode-super/ recurse=yes state=directory
+    action: file owner={{ deployment_user }} group=www-data path=/var/www/datingnode-super/ recurse=yes state=directory
 
   - name: Make sure platform log directory exists
-    action: file path={{ platform_log_dir }} state=directory
+    action: file path={{ platform_log_dir }} state=directory owner=www-data group=www-data mode=0644
 
   - name: Make sure platform log directory exists
-    action: file path={{ platform_assets_dir }} state=directory
+    action: file path={{ platform_assets_dir }} state=directory owner=www-data group=www-data mode=0644
 
   - name: Make sure platform assets directory exists
-    action: file path={{ platform_assets_dir }} state=directory
+    action: file path={{ platform_assets_dir }} state=directory owner=www-data group=www-data mode=0644
 
   - name: Make sure platform image cache directory exists
-    action: file path={{ platform_assets_dir }}image-cache/ state=directory
+    action: file path={{ platform_assets_dir }}image-cache/ state=directory owner=www-data group=www-data mode=0644
 
   - name: Make sure platform image cache directory exists
-    action: file path={{ platform_assets_dir }}sitemaps/ state=directory
+    action: file path={{ platform_assets_dir }}sitemaps/ state=directory owner=www-data group=www-data mode=0644
 
   - name: Make sure platform image cache directory exists
-    action: file path={{ platform_assets_dir }}user-data/ state=directory
+    action: file path={{ platform_assets_dir }}user-data/ state=directory owner=www-data group=www-data mode=0644
 
 
   - name: Setup the service virtualhosts (main domains)

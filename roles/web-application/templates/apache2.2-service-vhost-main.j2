@@ -9,6 +9,11 @@
 {% for alias in item.main_alias %} {{ alias }}.{{ test_domain_extension }}{% endfor %}
 {% endif %}
 {% endif %}
+{% if test_domain_extension is defined %}
+ {{ item.main_domain }}.staging.datingnode.com{% if item.main_alias|length > 0 %}
+{% for alias in item.main_alias %} {{ alias }}.staging.datingnode.com{% endfor %}
+{% endif %}
+{% endif %}
 
 	ServerAdmin staging@rocketware.co.uk
 

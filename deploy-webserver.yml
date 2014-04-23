@@ -3,7 +3,7 @@
 
 # Configure and deploy web-application
 - hosts: webservers
-  user: jimmyff
+  user: "{{ deployment_user }}"
   sudo: yes
   roles:
    - web-server
