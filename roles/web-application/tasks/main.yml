@@ -1,6 +1,7 @@
 ---
 
 
+
   - name: Make sure platform log directory exists
     action: file path=/var/www/datingnode-super/ state=directory owner={{ deployment_user }} group={{ deployment_user }} mode=0777
 
@@ -41,7 +42,6 @@
     notify: Restart webserver
 
 
-
   - name: Enable active virtualhosts (main domains)
     action: command a2ensite dp_service__{{ item.main_domain }}__main.conf
     with_items: services
@@ -54,6 +54,27 @@
     with_items: services
     when: item.enabled == false
     notify: Reload webserver
+
+
+  - name: Setup the service virtualhosts (API domains)
+    template:
+      src=apache{{ apache_version }}-service-vhost-api.j2
+      dest=/etc/apache2/sites-available/dp_service__{{ item.main_domain }}__api.conf
+    with_items: services
+    notify: Restart webserver
+
+  - name: Enable active virtualhosts (API domains)
+    action: command a2ensite dp_service__{{ item.main_domain }}__api.conf
+    with_items: services
+    when: item.enabled == true
+    notify: Reload webserver
+
+  - name: Disable inactive virtualhosts (API domains)
+    action: command a2dissite dp_service__{{ item.main_domain }}__api.conf
+    with_items: services
+    when: item.enabled == false
+    notify: Reload webserver
+
 
 
 

@@ -1,21 +1,48 @@
 # {{ ansible_managed }}
 <VirtualHost {{ interfaces|default('*') }}:{{ port|default('80') }}>
 	ServerName {{ item.static_domain }}
-	ServerAlias {{ item.img_domain }}
+	ServerAlias {{ item.img_domain }}{% if test_domain_extension is defined %}
+     {{ item.img_domain }}.staging.datingnode.com {{ item.static_domain }}.staging.datingnode.com
+    {% endif %}
+
 	ServerAdmin staging@rocketware.co.uk
 
 	SetEnvIf Remote_Addr ^ SERVICE_DOMAIN={{ item.main_domain }}
 
-	DocumentRoot {{platform_super_dir}}services/{{ item.main_domain }}
-	<Directory {{platform_super_dir}}services/{{ item.main_domain }}>
+	DocumentRoot {{platform_super_dir}}
+	<Directory {{platform_super_dir}}>
 		Options FollowSymLinks
 		AllowOverride none
 		Require all granted
 
-		Include {{ platform_super_dir }}config/vhost-rules-static.conf
+		<FilesMatch "\.(ttf|otf|eot|woff)$">
+			<IfModule mod_headers.c>
+				Header set Access-Control-Allow-Origin "*"
+			</IfModule>
+		</FilesMatch>
+
+		RewriteEngine on
+
+		RewriteRule ^v[^/]*/d/css/(.*)$ 	/var/www/datingnode-super/datingnode/www/css/$1 [L,END]
+		RewriteRule ^v[^/]*/d/img/(.*)$ 	/var/www/datingnode-super/datingnode/www/img/$1 [L,END]
+		RewriteRule ^v[^/]*/d/js/(.*)$ 		/var/www/datingnode-super/datingnode/www/js/$1 [L,END]
+		RewriteRule ^v[^/]*/d/font/(.*)$ 	/var/www/datingnode-super/datingnode/www/font/$1 [L,END]
+
+
+		RewriteRule ^v[^/]*/css/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/css/$1 [L,END]
+		RewriteRule ^v[^/]*/img/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/img/$1 [L,END]
+		RewriteRule ^v[^/]*/js/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/js/$1 [L,END]
+		RewriteRule ^v[^/]*/font/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/font/$1 [L,END]
+
+
+		RewriteCond %{REQUEST_URI} !php$
+		RewriteCond %{REQUEST_URI} !services/
+		RewriteCond %{REQUEST_URI} !datingnode/www/
+		RewriteRule ^(.*)$ fcgi://127.0.0.1:9000/var/www/datingnode-super/datingnode/static.php [P]
+
 	</Directory>
 
-#	ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000{{platform_super_dir}}$1
+	ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000{{platform_super_dir}}$1
 
  	<Location />
 		<IfModule mod_filter.c>

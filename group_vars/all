@@ -1,6 +1,6 @@
 ---
 
-platform_super_branch: 'xy-servers'
+platform_super_branch: 'apache2.4'
 platform_super_dir: '/var/www/datingnode-super/'
 platform_log_dir: '/var/log/datingnode/'
 platform_assets_dir: '/var/www/datingnode-assets/'
@@ -14,6 +14,7 @@ services:
  - {
  'main_domain': 'www.onlylads.com',
  'main_alias': [ onlylads.com ],
+ 'api_domain': 'api.onlylads.com',
  'static_domain': 'static.onlylads.com',
  'img_domain': 'img.onlylads.com',
  'enabled': true
@@ -21,6 +22,7 @@ services:
  - {
  'main_domain': 'www.onlywomen.com',
  'main_alias': [ onlywomen.com ],
+ 'api_domain': 'api.onlywomen.com',
  'img_domain': 'img.onlywomen.com',
  'static_domain': 'static.onlywomen.com',
  'enabled': false
@@ -28,6 +30,7 @@ services:
  - {
  'main_domain': 'www.onescene.com',
  'main_alias': [ onescene.com ],
+ 'api_domain': 'api.onescene.com',
  'img_domain': 'img.onescene.com',
  'static_domain': 'static.onescene.com',
  'enabled': true
@@ -35,6 +38,7 @@ services:
  - {
  'main_domain': 'www.introducingyou.com',
  'main_alias': [ introducingyou.com ],
+ 'api_domain': 'api.introducingyou.com',
  'img_domain': 'img.introducingyou.com',
  'static_domain': 'static.introducingyou.com',
  'enabled': true
@@ -42,6 +46,7 @@ services:
  - {
  'main_domain': 'www.letsdate.co.uk',
  'main_alias': [ letsdate.co.uk ],
+ 'api_domain': 'api.letsdate.co.uk',
  'img_domain': 'img.letsdate.co.uk',
  'static_domain': 'static.letsdate.co.uk',
  'enabled': true
@@ -49,6 +54,7 @@ services:
  - {
  'main_domain': 'www.pinkdar.com',
  'main_alias': [ pinkdar.com ],
+ 'api_domain': 'api.pinkdar.com',
  'img_domain': 'img.pinkdar.com',
  'static_domain': 'static.pinkdar.com',
  'enabled': true
@@ -56,6 +62,7 @@ services:
  - {
  'main_domain': 'www.gtdate.co.uk',
  'main_alias': [ ],
+ 'api_domain': 'api.gtdate.co.uk',
  'img_domain': 'img.gtdate.co.uk',
  'static_domain': 'static.gtdate.co.uk',
  'enabled': true
@@ -63,6 +70,7 @@ services:
  - {
  'main_domain': 'www.divadate.co.uk',
  'main_alias': [ ] ,
+ 'api_domain': 'api.divadate.co.uk',
  'img_domain': 'img.divadate.co.uk',
  'static_domain': 'static.divadate.co.uk',
  'enabled': true
@@ -70,6 +78,7 @@ services:
  - {
  'main_domain': 'dating.pinkpaper.com',
  'main_alias': [ ] ,
+ 'api_domain': 'api.dating.pinkpaper.com',
  'img_domain': 'img.pinkpaper.com',
  'static_domain': 'static.pinkpaper.com',
  'enabled': true
@@ -77,6 +86,7 @@ services:
  - {
  'main_domain': 'www.gayxchange.com',
  'main_alias': [ gayxchange.com ],
+ 'api_domain': 'api.gayxchange.com',
  'img_domain': 'img.gayxchange.com',
  'static_domain': 'static.gayxchange.com',
  'enabled': true

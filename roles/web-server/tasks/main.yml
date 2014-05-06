@@ -19,6 +19,15 @@
    - ssl
   notify: Restart webserver
 
+- name: Enable apache 2.4 modules
+  action: command a2enmod {{ item }}
+  with_items:
+   - proxy
+   - proxy_fcgi
+#   - mpm_event
+  notify: Restart webserver
+  when: apache_version == "2.4"
+
 #- name: Install Apache PHP FPM config
 #  sudo: yes
 #  copy: src=php5-fpm.conf dest=/etc/apache2/conf-available/

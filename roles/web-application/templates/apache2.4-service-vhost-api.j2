@@ -1,20 +1,25 @@
 # {{ ansible_managed }}
 <VirtualHost {{ interfaces|default('*') }}:{{ port|default('80') }}>
-	ServerName {{ item.static_domain }}
-	ServerAlias {{ item.img_domain }}
+	ServerName {{ item.api_domain }}
+	ServerAlias {{ item.api_domain }}.staging.datingnode.com
+
 	ServerAdmin staging@rocketware.co.uk
 
 	SetEnvIf Remote_Addr ^ SERVICE_DOMAIN={{ item.main_domain }}
 
-	DocumentRoot {{platform_super_dir}}services/{{ item.main_domain }}
-	<Directory {{platform_super_dir}}services/{{ item.main_domain }}>
+	DocumentRoot {{platform_super_dir}}
+	<Directory {{platform_super_dir}}>
 		Options FollowSymLinks
 		AllowOverride none
-		Order allow,deny
-		allow from all
+		Require all granted
 
-		Include {{ platform_super_dir }}config/apache2.2-vhost-rules-static.conf
+		RewriteEngine on
+        RewriteCond %{REQUEST_URI} !php$
+        RewriteRule ^(.*)$ fcgi://127.0.0.1:9000/var/www/datingnode-super/api/pipe.php [P]
+
 	</Directory>
+
+	ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000{{platform_super_dir}}$1
 
  	<Location />
 		<IfModule mod_filter.c>
@@ -39,8 +44,8 @@
 		</IfModule>
 	</Location>
 
-	CustomLog {{ platform_log_dir }}service-static-apache-access.log combined
-	ErrorLog {{ platform_log_dir }}service-static-apache-error.log
+	CustomLog {{ platform_log_dir }}service-api-apache-access.log combined
+	ErrorLog {{ platform_log_dir }}service-api-apache-error.log
 	LogLevel warn
 
 </VirtualHost>
