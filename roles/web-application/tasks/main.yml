@@ -2,6 +2,8 @@
 
 
 
+
+
   - name: Make sure platform log directory exists
     action: file path=/var/www/datingnode-super/ state=directory owner={{ deployment_user }} group={{ deployment_user }} mode=0777
 
@@ -32,6 +34,18 @@
 
   - name: Make sure platform image cache directory exists
     action: file path={{ platform_assets_dir }}user-data/ state=directory owner=www-data group=www-data mode=0644
+
+
+  - name: CONTROL - Setup the service virtualhost (main domains)
+    template:
+      src=apache{{ apache_version }}-control-vhost-main.j2
+      dest=/etc/apache2/sites-available/dp_control__main.conf
+    notify: Restart webserver
+
+
+  - name: CONTROL - Enable active virtualhost (main domains)
+    action: command a2ensite dp_control__main.conf
+    notify: Reload webserver
 
 
   - name: Setup the service virtualhosts (main domains)
