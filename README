@@ -1,0 +1,10 @@
+# Datingnode Ansible
+
+Setup the Datingnode environment.
+
+// example:
+ansible-playbook deploy-app.yml -i inventory-jimmy-dev --extra-vars="vars_file=vars-jimmy-dev.yml"
+
+
+// setup search path:
+ALTER ROLE jimmy SET search_path TO "$user",public,gis;

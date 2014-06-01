@@ -1,9 +1,9 @@
 # {{ ansible_managed }}
 <VirtualHost {{ interfaces|default('*') }}:{{ port|default('80') }}>
 	ServerName {{ item.api_domain }}
-	ServerAlias {{ item.api_domain }}.staging.datingnode.com
+	ServerAlias {% if test_domain_extension is defined %}{{ item.api_domain }}.datingnode.com.{{test_domain_extension}}{% endif %} {{ item.api_domain }}.staging.datingnode.com
 
-	ServerAdmin staging@rocketware.co.uk
+	ServerAdmin {{server_admin_email}}
 
 	SetEnvIf Remote_Addr ^ SERVICE_DOMAIN={{ item.main_domain }}
 

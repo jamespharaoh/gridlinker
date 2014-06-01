@@ -91,6 +91,48 @@
 
 
 
+  - name: Setup the service virtualhosts (beta domains)
+    template:
+      src=apache{{ apache_version }}-service-vhost-beta-main.j2
+      dest=/etc/apache2/sites-available/dp_service__{{ item.main_domain }}__beta.conf
+    with_items: services
+    notify: Restart webserver
+
+  - name: Enable active virtualhosts (beta domains)
+    action: command a2ensite dp_service__{{ item.main_domain }}__beta.conf
+    with_items: services
+    when: item.enabled == true
+    notify: Reload webserver
+
+  - name: Disable inactive virtualhosts (beta domains)
+    action: command a2dissite dp_service__{{ item.main_domain }}__beta.conf
+    with_items: services
+    when: item.enabled == false
+    notify: Reload webserver
+
+
+
+  - name: Setup the service virtualhosts (static beta domains)
+    template:
+      src=apache{{ apache_version }}-service-vhost-beta-static.j2
+      dest=/etc/apache2/sites-available/dp_service__{{ item.main_domain }}__beta_static.conf
+    with_items: services
+    notify: Restart webserver
+
+  - name: Enable active virtualhosts (beta domains)
+    action: command a2ensite dp_service__{{ item.main_domain }}__beta_static.conf
+    with_items: services
+    when: item.enabled == true
+    notify: Reload webserver
+
+  - name: Disable inactive virtualhosts (beta domains)
+    action: command a2dissite dp_service__{{ item.main_domain }}__beta_static.conf
+    with_items: services
+    when: item.enabled == false
+    notify: Reload webserver
+
+
+
 
   - name: Setup the service virtualhosts (static domains)
     template:

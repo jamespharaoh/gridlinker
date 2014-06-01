@@ -5,6 +5,8 @@
 - hosts: webservers
   user: "{{ deployment_user }}"
   sudo: yes
+  vars_files:
+   - [ "{{ vars_file }}" ]
   roles:
    - web-application
 

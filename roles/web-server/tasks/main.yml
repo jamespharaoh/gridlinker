@@ -60,6 +60,7 @@
    - php5-memcache
    - php5-memcached
    - php5-pgsql
+   - php-gettext
 
 - name: Install PHP FPM
   sudo: yes

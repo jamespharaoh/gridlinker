@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 <VirtualHost {{ interfaces|default('*') }}:{{ port|default('80') }}>
-	ServerName {{ item.static_domain }}
-	ServerAlias {{ item.img_domain }}{% if test_domain_extension is defined %}
+	ServerName {{ item.static_domain }}.beta.datingnode.com
+	ServerAlias {% if test_domain_extension is defined %}{{ item.static_domain }}.beta.datingnode.com.{{test_domain_extension}}{% endif %} {{ item.img_domain }}.beta.datingnode.com {% if test_domain_extension is defined %}{{ item.img_domain }}.beta.datingnode.com.{{test_domain_extension}}{% endif %}{% if test_domain_extension is defined %}
      {{ item.img_domain }}.staging.datingnode.com {{ item.static_domain }}.staging.datingnode.com
     {% endif %}
 
