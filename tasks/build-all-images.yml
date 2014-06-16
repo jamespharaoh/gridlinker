@@ -1,0 +1,3 @@
+---
+- include: "build-base-image.yml"
+- include: "build-database-image.yml"

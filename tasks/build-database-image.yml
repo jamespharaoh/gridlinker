@@ -1,0 +1,30 @@
+---
+- hosts: "localhost"
+  gather_facts: "no"
+
+  tasks:
+
+  - name: "remove database container"
+    local_action: command
+      docker
+      rm
+      --force
+      datingnode-database
+    ignore_errors: true
+
+  - name: "build database image"
+    local_action: command
+      docker
+      run
+      --name datingnode-database
+      --volume {{ inventory_dir }}:/datingnode-ansible
+      localhost:5000/datingnode-base
+      /datingnode-ansible/misc/docker-ansible-script
+      db
+
+  - name: "commit database image"
+    local_action: command
+      docker
+      commit
+      datingnode-database
+      localhost:5000/datingnode-database

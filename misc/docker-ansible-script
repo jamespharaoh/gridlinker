@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -e
+
+heading () {
+	echo ""
+	echo "########## $1 ##########"
+	echo ""
+}
+
+cd /datingnode-ansible
+
+heading "Updating system packages"
+
+cat <<EOF >/etc/apt/apt.conf.d/01proxy
+Acquire::http::Proxy "http://172.17.42.1:3142";
+EOF
+
+heading "Installing required packages"
+
+apt-get update
+apt-get dist-upgrade --yes
+
+apt-get install --yes python-dev python-pip
+pip install paramiko PyYAML jinja2 httplib2
+
+source ansible/hacking/env-setup
+
+for role in "$@"; do
+
+	heading "Applying role $role"
+
+	ansible-playbook \
+		-c local \
+		-i localhost \
+		apply-role.yml \
+		-e "role=$role"
+
+done
