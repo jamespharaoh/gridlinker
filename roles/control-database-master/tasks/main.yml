@@ -1,0 +1,30 @@
+---
+
+- name: "control database master"
+  action:
+    module: "docker"
+    name: "{{ cluster_name }}-database-master"
+    state: "{{ state }}"
+    image: "{{ docker.registry }}/{{ docker.images.database_master }}"
+    command: "/start-master.sh"
+    dns:
+      - "{{ docker.dns.primary }}"
+      - "{{ docker.dns.secondary }}"
+    expose:
+      - "5432"
+    ports:
+      - "{{ database.master.port }}:5432"
+    tty: "True"
+    stdin_open: "True"
+    volumes:
+      "{{ data_dir }}/{{ cluster_name }}-database-master:/data"
+
+- name: "wait for connection"
+  action:
+    module: "wait_for"
+    host: "localhost"
+    port: "{{ database.master.port }}"
+    state: "started"
+    timeout: "60"
+
+  when: "state == 'running'"

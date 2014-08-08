@@ -12,91 +12,80 @@ deployment_user: 'ubuntu'
 test_domain_extension: 'dev'
 
 services:
- - {
- 'main_domain': 'www.onlylads.com',
- 'main_alias': [ onlylads.com ],
- 'api_domain': 'api.onlylads.com',
- 'static_domain': 'static.onlylads.com',
- 'img_domain': 'img-cloud.onlylads.com',
- 'enabled': true
- }
- - {
- 'main_domain': 'www.onlywomen.com',
- 'main_alias': [ onlywomen.com ],
- 'api_domain': 'api.onlywomen.com',
- 'img_domain': 'img.onlywomen.com',
- 'static_domain': 'static.onlywomen.com',
- 'enabled': true
- }
- - {
- 'main_domain': 'www.onescene.com',
- 'main_alias': [ onescene.com ],
- 'api_domain': 'api.onescene.com',
- 'img_domain': 'img-cloud.onescene.com',
- 'static_domain': 'static-cloud.onescene.com',
- 'enabled': true
- }
- - {
- 'main_domain': 'www.introducingyou.com',
- 'main_alias': [ introducingyou.com ],
- 'api_domain': 'api.introducingyou.com',
- 'img_domain': 'img-cloud.introducingyou.com',
- 'static_domain': 'static.introducingyou.com',
- 'enabled': true
- }
- - {
- 'main_domain': 'www.letsdate.co.uk',
- 'main_alias': [ letsdate.co.uk ],
- 'api_domain': 'api.letsdate.co.uk',
- 'img_domain': 'img-cloud.letsdate.co.uk',
- 'static_domain': 'static-cloud.letsdate.co.uk',
- 'enabled': true
- }
- - {
- 'main_domain': 'www.pinkdar.com',
- 'main_alias': [ pinkdar.com ],
- 'api_domain': 'api.pinkdar.com',
- 'img_domain': 'img-cloud.pinkdar.com',
- 'static_domain': 'static.pinkdar.com',
- 'enabled': true
- }
- - {
- 'main_domain': 'www.gtdate.co.uk',
- 'main_alias': [ ],
- 'api_domain': 'api.gtdate.co.uk',
- 'img_domain': 'img-cloud.gtdate.co.uk',
- 'static_domain': 'static.gtdate.co.uk',
- 'enabled': true
- }
- - {
- 'main_domain': 'www.divadate.co.uk',
- 'main_alias': [ ] ,
- 'api_domain': 'api.divadate.co.uk',
- 'img_domain': 'img-cloud.divadate.co.uk',
- 'static_domain': 'static.divadate.co.uk',
- 'enabled': true
- }
- - {
- 'main_domain': 'dating.pinkpaper.com',
- 'main_alias': [ ] ,
- 'api_domain': 'api.dating.pinkpaper.com',
- 'img_domain': 'img.dating.pinkpaper.com',
- 'static_domain': 'static.dating.pinkpaper.com',
- 'enabled': true
- }
- - {
- 'main_domain': 'dating.fashiontv.com',
- 'main_alias': [ ] ,
- 'api_domain': 'api.dating.fashiontv.com',
- 'img_domain': 'img.dating.fashiontv.com',
- 'static_domain': 'static.dating.fashiontv.com',
- 'enabled': true
- }
- - {
- 'main_domain': 'www.gayxchange.com',
- 'main_alias': [ gayxchange.com ],
- 'api_domain': 'api.gayxchange.com',
- 'img_domain': 'img-cloud.gayxchange.com',
- 'static_domain': 'static.gayxchange.com',
- 'enabled': true
- }
+
+  - main_domain: 'www.onlylads.com'
+    main_alias: [ 'onlylads.com' ]
+    api_domain: 'api.onlylads.com'
+    static_domain: 'static.onlylads.com'
+    img_domain: 'img-cloud.onlylads.com'
+    enabled: true
+
+  - main_domain: 'www.onlywomen.com'
+    main_alias: [ 'onlywomen.com' ]
+    api_domain: 'api.onlywomen.com'
+    img_domain: 'img.onlywomen.com'
+    static_domain: 'static.onlywomen.com'
+    enabled: true
+
+  - main_domain: 'www.onescene.com'
+    main_alias: [ 'onescene.com' ]
+    api_domain: 'api.onescene.com'
+    img_domain: 'img-cloud.onescene.com'
+    static_domain: 'static-cloud.onescene.com'
+    enabled: true
+
+  - main_domain: 'www.introducingyou.com'
+    main_alias: [ 'introducingyou.com' ]
+    api_domain: 'api.introducingyou.com'
+    img_domain: 'img-cloud.introducingyou.com'
+    static_domain: 'static.introducingyou.com'
+    enabled: true
+
+  - main_domain: 'www.letsdate.co.uk'
+    main_alias: [ 'letsdate.co.uk' ]
+    api_domain: 'api.letsdate.co.uk'
+    img_domain: 'img-cloud.letsdate.co.uk'
+    static_domain: 'static-cloud.letsdate.co.uk'
+    enabled: true
+
+  - main_domain: 'www.pinkdar.com'
+    main_alias: [ 'pinkdar.com' ]
+    api_domain: 'api.pinkdar.com'
+    img_domain: 'img-cloud.pinkdar.com'
+    static_domain: 'static.pinkdar.com'
+    enabled: true
+
+  - main_domain: 'www.gtdate.co.uk'
+    main_alias: [ ]
+    api_domain: 'api.gtdate.co.uk'
+    img_domain: 'img-cloud.gtdate.co.uk'
+    static_domain: 'static.gtdate.co.uk'
+    enabled: true
+
+  - main_domain: 'www.divadate.co.uk'
+    main_alias: [ ]
+    api_domain: 'api.divadate.co.uk'
+    img_domain: 'img-cloud.divadate.co.uk'
+    static_domain: 'static.divadate.co.uk'
+    enabled: true
+
+  - main_domain: 'dating.pinkpaper.com'
+    main_alias: [ ]
+    api_domain: 'api.dating.pinkpaper.com'
+    img_domain: 'img.dating.pinkpaper.com'
+    static_domain: 'static.dating.pinkpaper.com'
+    enabled: true
+
+  - main_domain: 'dating.fashiontv.com'
+    main_alias: [ ]
+    api_domain: 'api.dating.fashiontv.com'
+    img_domain: 'img.dating.fashiontv.com'
+    static_domain: 'static.dating.fashiontv.com'
+    enabled: true
+
+  - main_domain: 'www.gayxchange.com'
+    main_alias: [ 'gayxchange.com' ]
+    api_domain: 'api.gayxchange.com'
+    img_domain: 'img-cloud.gayxchange.com'
+    static_domain: 'static.gayxchange.com'
+    enabled: true

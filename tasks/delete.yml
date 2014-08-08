@@ -1,0 +1,13 @@
+---
+- include: "destroy.yml"
+
+- name: "delete all data"
+  hosts: "all"
+  tasks:
+
+    - name: "delete data dir"
+      action:
+        module: "file"
+        path: "{{ data_dir }}"
+        state: "absent"
+      sudo: "yes"

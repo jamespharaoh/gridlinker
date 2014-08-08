@@ -10,30 +10,52 @@ heading () {
 
 cd /datingnode-ansible
 
-heading "Updating system packages"
+for arg in "$@"; do
 
-cat <<EOF >/etc/apt/apt.conf.d/01proxy
-Acquire::http::Proxy "http://172.17.42.1:3142";
-EOF
+	case "$arg" in
 
-heading "Installing required packages"
+	(init-system)
 
-apt-get update
-apt-get dist-upgrade --yes
+		heading "Updating system packages"
 
-apt-get install --yes python-dev python-pip
-pip install paramiko PyYAML jinja2 httplib2
+		cat <<-EOF >/etc/apt/apt.conf.d/01proxy
+			Acquire::http::Proxy "http://172.17.42.1:3142";
+		EOF
 
-source ansible/hacking/env-setup
+		apt-get update
+		apt-get dist-upgrade --yes
 
-for role in "$@"; do
+		;;
 
-	heading "Applying role $role"
+	(init-ansible)
 
-	ansible-playbook \
-		-c local \
-		-i localhost \
-		apply-role.yml \
-		-e "role=$role"
+		heading "Installing required packages for ansible"
+
+		apt-get install --yes python-dev python-pip
+		pip install paramiko PyYAML jinja2 httplib2
+
+		;;
+
+	(*)
+
+		if ! test "$ANSIBLE_HOME"; then
+
+			heading "Initialising ansible environment"
+
+			source ansible/hacking/env-setup
+
+		fi
+
+		heading "Applying ansible role $arg"
+
+		ansible-playbook \
+			-c local \
+			-i local \
+			misc/apply-role.yml \
+			-e "role=$arg"
+
+		;;
+
+	esac
 
 done

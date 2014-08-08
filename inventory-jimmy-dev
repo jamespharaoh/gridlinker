@@ -1,5 +1,0 @@
-[webservers]
-10.0.3.109 ansible_sudo_pass='tink'
-
-[dbservers]
-10.0.3.67 ansible_sudo_pass='tink'

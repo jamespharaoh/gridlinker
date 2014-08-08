@@ -1,0 +1,13 @@
+---
+
+- name: "start database master"
+  hosts: "database_master"
+  roles:
+    - role: "control-database-master"
+      state: "running"
+
+- name: "start database slave"
+  hosts: "database_slave"
+  roles:
+    - role: "control-database-slave"
+      state: "running"

@@ -21,3 +21,19 @@
    - postgresql-client
   when: ansible_distribution == "Debian"
   notify: Restart postgresql
+
+- name: "Docker start script (master)"
+  action:
+    module: "template"
+    src: "start-master.sh"
+    dest: "/start-master.sh"
+    mode: "0755"
+  sudo: "yes"
+
+- name: "Docker start script (slave)"
+  action:
+    module: "template"
+    src: "start-slave.sh"
+    dest: "/start-slave.sh"
+    mode: "0755"
+  sudo: "yes"

@@ -1,0 +1,22 @@
+---
+
+docker:
+  registry: "localhost:5000"
+  images:
+    base: "ubuntu:14.04"
+    database_master: "datingnode-database"
+    database_slave: "datingnode-database"
+  dns:
+    primary: "8.8.8.8"
+    secondary: "8.8.4.4"
+
+cluster_name: "datingnode-local"
+
+database:
+  master:
+    hostname: "localhost"
+    port: 5001
+  slave:
+    port: 5002
+
+data_dir: "{{ inventory_dir }}/data"

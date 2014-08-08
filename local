@@ -1,0 +1,12 @@
+[database:children]
+database_master
+database_slave
+
+[database_master:children]
+local
+
+[database_slave:children]
+local
+
+[local]
+localhost

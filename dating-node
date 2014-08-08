@@ -1,0 +1,260 @@
+#!/bin/bash
+
+set -e
+
+DNS_PRIMARY="8.8.8.8"
+DNS_SECONDARY="8.8.4.4"
+
+REGISTRY="localhost:5000"
+
+CONTAINER_PREFIX="datingnode-build"
+CONTAINER_BASE="$CONTAINER_PREFIX-base"
+CONTAINER_DATABASE="$CONTAINER_PREFIX-database"
+
+IMAGE_UBUNTU="ubuntu:14.04"
+
+IMAGE_PREFIX="datingnode"
+IMAGE_BASE="$REGISTRY/$IMAGE_PREFIX-base"
+IMAGE_DATABASE="$REGISTRY/$IMAGE_PREFIX-database"
+
+if ! test -d ansible; then
+	git clone git@github.com:ansible/ansible.git
+fi
+
+source ansible/hacking/env-setup &>/dev/null
+
+function build_image () {
+
+	base_image="$1"
+	image_name="$2"
+	container_name="$3"
+
+	shift 3
+
+	# kill and remove existing container
+
+	docker kill "$container_name" 2>/dev/null || true
+
+	docker rm "$container_name" 2>/dev/null || true
+
+	# use existing image as base, if it exists
+
+	if docker inspect "$image_name" &>/dev/null; then
+		echo "updating existing image"
+		base_image="$image_name"
+	else
+		echo "creating new image"
+	fi
+
+	# run the ansible scripts in a container
+
+	docker run \
+		--name "$container_name" \
+		--volume "$(pwd):/datingnode-ansible" \
+		--dns "$DNS_PRIMARY" \
+		--dns "$DNS_SECONDARY" \
+		--interactive \
+		--tty \
+		"$base_image" \
+		/datingnode-ansible/misc/docker-ansible-script \
+		"$@"
+
+	# remove existing image
+
+	docker rmi "$image_name" &>/dev/null || true
+
+	# commit and tag new image
+
+	image_id=$(
+		docker commit "$container_name"
+	)
+
+	docker tag "$image_id" "$image_name"
+
+	# push to server
+
+	docker push "$image_name"
+
+	# remove container
+
+	docker rm "$container_name"
+
+}
+
+function do_image_clean () {
+
+	for container in \
+			"$CONTAINER_BASE" \
+			"$CONTAINER_DATABASE"; do
+
+		echo "Removing container $container"
+
+		docker kill "$container" &>/dev/null || true
+
+		docker rm "$container" &>/dev/null || true
+
+	done
+
+	for image in \
+			"$IMAGE_BASE" \
+			"$IMAGE_DATABASE"; do
+
+		docker rmi "$REPOSITORY:$container" &>/dev/null || true
+
+	done
+
+}
+
+function do_image_build_base () {
+
+	build_image \
+		"$IMAGE_UBUNTU" \
+		"$IMAGE_BASE" \
+		"$CONTAINER_BASE" \
+		init-system \
+		init-ansible \
+		build-common
+
+}
+
+function do_image_build_database () {
+
+	build_image \
+		"$IMAGE_BASE" \
+		"$IMAGE_DATABASE" \
+		"$CONTAINER_DATABASE" \
+		build-common \
+		build-database
+
+}
+
+function do_image_build_all () {
+
+	do_image_build_base
+
+	do_image_build_database
+
+}
+
+function do_local_create () {
+
+	ansible-playbook \
+		-c local \
+		-i local \
+		tasks/create.yml
+
+}
+
+function do_local_start () {
+
+	ansible-playbook \
+		-c local \
+		-i local \
+		tasks/start.yml
+
+}
+
+function do_local_stop () {
+
+	ansible-playbook \
+		-c local \
+		-i local \
+		tasks/stop.yml
+
+}
+
+function do_local_destroy () {
+
+	ansible-playbook \
+		-c local \
+		-i local \
+		tasks/destroy.yml
+
+}
+
+function do_local_delete () {
+
+	ansible-playbook \
+		-c local \
+		-i local \
+		tasks/delete.yml
+
+}
+
+for arg in "$@"; do
+
+	case "$arg" in
+
+	(image-clean)
+		do_image_clean
+		;;
+
+	(image-build-all)
+		do_image_build_all
+		;;
+
+	(image-build-base)
+		do_image_build_base
+		;;
+
+	(image-build-database)
+		do_image_build_database
+		;;
+
+	(local-create)
+		do_local_create
+		;;
+
+	(local-start)
+		do_local_start
+		;;
+
+	(local-stop)
+		do_local_stop
+		;;
+
+	(local-destroy)
+		do_local_destroy
+		;;
+
+	(local-delete)
+		do_local_delete
+		;;
+
+	(*)
+		echo "Error"
+		exit 1
+		;;
+
+	esac
+
+done
+
+if test "$#" = 0; then
+
+	cat >&2 <<-EOF
+
+		Dating Node devops script
+
+		Usage:
+
+		   $0 COMMAND...
+
+		Available commands:
+
+		   Manage docker images:
+		      image-clean          Delete all images
+		      image-build-all      Build all images
+		      image-build-base     Build base image
+		      image-build-database Build databsse image
+
+		   Manage local cluster:
+		      local-create         Create and start
+		      local-start          Start existing
+		      local-stop           Stop existing
+		      local-destroy        Stop and destroy
+		      local-delete         Destroy and delete all data
+
+	EOF
+
+fi

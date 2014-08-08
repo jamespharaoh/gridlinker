@@ -1,9 +1,0 @@
----
-- hosts: db
-  user: jimmyff
-  sudo: no
-  tasks:
-
-
-  - name: Download a database backup
-    synchronize: src=. dest=yveltal.rocketware.co.uk:/tink/db_backup/2014-04-16 mode=pull

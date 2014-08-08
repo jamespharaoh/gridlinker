@@ -1,0 +1,13 @@
+---
+
+- name: "destroy database master"
+  hosts: "database_master"
+  roles:
+    - role: "control-database-master"
+      state: "absent"
+
+- name: "destroy database slave"
+  hosts: "database_slave"
+  roles:
+    - role: "control-database-slave"
+      state: "absent"

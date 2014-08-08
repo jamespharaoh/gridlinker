@@ -1,0 +1,23 @@
+---
+
+- name: "start database slave"
+  action:
+    module: "docker"
+    name: "{{ cluster_name }}-database-slave"
+    state: "{{ state }}"
+    image: "{{ docker.registry }}/{{ docker.images.database_slave }}"
+    command: "/start-slave.sh"
+    dns:
+      - "{{ docker.dns.primary }}"
+      - "{{ docker.dns.secondary }}"
+    expose:
+      - "5432"
+    ports:
+      - "{{ database.slave.port }}:5432"
+    tty: "True"
+    stdin_open: "True"
+    volumes:
+      "{{ data_dir }}/{{ cluster_name }}-database-slave:/data"
+    env:
+      - "DATABASE_MASTER_HOSTNAME=172.17.42.1"
+      - "DATABASE_MASTER_PORT={{ database.master.port }}"
