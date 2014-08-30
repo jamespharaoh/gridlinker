@@ -1,0 +1,32 @@
+---
+
+- name: "update system packages"
+  action:
+    module: "apt"
+    upgrade: "yes"
+    update_cache: "yes"
+  tags: "update"
+
+- name: "install default packages"
+  action:
+    module: "apt"
+    package: "{{ item }}"
+    state: "present"
+  sudo: "yes"
+  with_items: "default_packages"
+  tags: "update"
+
+- name: "configure network"
+  action:
+    module: "template"
+    src: "network-interfaces"
+    dest: "/etc/network/interfaces"
+  sudo: "yes"
+  tags: "network"
+
+- name: "create config dir"
+  action:
+    module: "file"
+    path: "/etc/rocket"
+    state: "directory"
+  sudo: "yes"

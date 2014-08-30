@@ -1,0 +1,73 @@
+#!/bin/bash
+
+set -e
+
+# disable packet forwarding
+
+echo 0 >/proc/sys/net/ipv4/ip_forward
+
+# initialise regular tables
+
+	iptables --flush
+	iptables --delete-chain
+
+	iptables --policy INPUT ACCEPT
+	iptables --policy FORWARD ACCEPT
+	iptables --policy OUTPUT ACCEPT
+
+# input rules
+
+	iptables \
+		--append INPUT \
+		--match conntrack \
+		--ctstate RELATED,ESTABLISHED \
+		--jump ACCEPT
+
+	{% if firewall.enable == 'yes' %}
+	{% for rule in firewall.allow %}
+	{% for source in rule.sources %}
+	{% if rule.proto == 'icmp' %}
+
+		iptables \
+			--append INPUT \
+			--protocol icmp \
+			--in-interface eth0 \
+			--source "{{ source }}" \
+			--jump ACCEPT
+
+	{% elif rule.proto == 'tcp' %}
+
+		iptables \
+			--append INPUT \
+			--protocol tcp \
+			--in-interface eth0 \
+			--source "{{ source }}" \
+			--destination-port "{{ rule.port }}" \
+			--jump ACCEPT
+
+	{% else %}
+
+		{{ 1/0 }}
+
+	{% endif %}
+	{% endfor %}
+	{% endfor %}
+	{% endif %}
+
+	iptables \
+		--append INPUT \
+		--jump REJECT
+
+# initialise nat tables
+
+	iptables --table nat --flush
+	iptables --table nat --delete-chain
+
+	iptables --table nat --policy INPUT ACCEPT
+	iptables --table nat --policy PREROUTING ACCEPT
+	iptables --table nat --policy POSTROUTING ACCEPT
+	iptables --table nat --policy OUTPUT ACCEPT
+
+# enable packet forwarding
+
+echo 1 >/proc/sys/net/ipv4/ip_forward

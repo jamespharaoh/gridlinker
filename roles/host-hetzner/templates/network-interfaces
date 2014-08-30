@@ -1,0 +1,41 @@
+# loopback
+
+auto lo
+iface lo inet loopback
+
+	up ! test -x /etc/network/firewall-rules || /etc/network/firewall-rules
+
+# public bridge
+
+auto brpub0
+iface brpub0 inet static
+
+	address {{ public_address }}
+	netmask {{ public_netmask }}
+	broadcast {{ public_broadcast }}
+	gateway {{ public_gateway }}
+
+	bridge_ports eth0
+	bridge_stp off
+	bridge_maxwait 0
+	bridge_fd 0
+
+	up ! test -x /etc/network/firewall-rules || /etc/network/firewall-rules
+
+	up route add -net {{ public_network }} netmask {{ public_netmask }} gw {{ public_gateway }} brpub0
+
+# private bridge
+
+auto brprv0
+iface brprv0 inet static
+
+	address {{ private_address }}
+	netmask {{ private_netmask }}
+	broadcast {{ private_broadcast }}
+
+	bridge_ports none
+	bridge_stp off
+	bridge_maxwait 0
+	bridge_fd 0
+
+	up ! test -x /etc/network/firewall-rules || /etc/network/firewall-rules

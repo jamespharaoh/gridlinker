@@ -1,0 +1,15 @@
+---
+
+- name: "create /etc/network/firewall-rules"
+  action:
+    module: "template"
+    src: "firewall-rules"
+    dest: "/etc/network/firewall-rules"
+    mode: "0755"
+  sudo: "yes"
+
+- name: "reload firewall rules"
+  command: >
+    /etc/network/firewall-rules
+  sudo: "yes"
+  changed_when: False

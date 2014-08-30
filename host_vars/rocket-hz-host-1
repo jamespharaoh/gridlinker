@@ -1,0 +1,15 @@
+---
+
+ansible_ssh_host: "148.251.241.186"
+ansible_ssh_user: "root"
+
+public_address: "148.251.241.186"
+public_netmask: "255.255.255.248"
+public_network: "148.251.241.184"
+public_broadcast: "148.251.241.191"
+public_gateway: "148.251.241.185"
+
+private_address: "10.69.128.1"
+private_netmask: "255.255.192.0"
+private_network: "10.69.128.0"
+private_broadcast: "10.69.131.255"

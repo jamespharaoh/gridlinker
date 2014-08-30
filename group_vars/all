@@ -89,3 +89,21 @@ services:
     img_domain: 'img-cloud.gayxchange.com'
     static_domain: 'static.gayxchange.com'
     enabled: true
+
+default_packages:
+  - "aptitude"
+  - "btrfs-tools"
+  - "colordiff"
+  - "command-not-found"
+  - "curl"
+  - "dnsutils"
+  - "git"
+  - "iotop"
+  - "man-db"
+  - "nano"
+  - "ngrep"
+  - "tcpdump"
+  - "telnet"
+  - "unzip"
+  - "wget"
+  - "whois"
