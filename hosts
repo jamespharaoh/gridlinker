@@ -1,4 +1,8 @@
 [hetzner]
 rocket-hz-host-1
+
+[vm]
+rocket-hz-vm-1
+
 [beta]
 beta

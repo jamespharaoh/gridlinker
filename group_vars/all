@@ -92,6 +92,7 @@ services:
 
 default_packages:
   - "aptitude"
+  - "bridge-utils"
   - "btrfs-tools"
   - "colordiff"
   - "command-not-found"
@@ -107,3 +108,6 @@ default_packages:
   - "unzip"
   - "wget"
   - "whois"
+
+remove_packages:
+  - "resolvconf"
