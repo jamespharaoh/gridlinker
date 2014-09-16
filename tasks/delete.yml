@@ -1,0 +1,15 @@
+---
+- include: "destroy.yml"
+
+- name: "delete all data"
+  gather_facts: "no"
+  hosts: [ "database-master", "database-slave" ]
+  tasks:
+
+    - name: "delete data dir"
+      delegate_to: "{{ parent }}"
+      action:
+        module: "file"
+        path: "{{ data_dir }}/{{ cluster_name }}-{{ inventory_hostname }}"
+        state: "absent"
+      sudo: "yes"

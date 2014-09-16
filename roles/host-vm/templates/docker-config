@@ -1,0 +1,6 @@
+{
+ "https://quay.io/v1/": {
+  "auth": "{{ docker_quay_auth }}",
+  "email": ""
+ }
+}

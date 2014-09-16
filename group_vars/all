@@ -1,5 +1,16 @@
 ---
 
+docker_registry: "quay.io/rocketware"
+
+docker_images:
+  base: "ubuntu:14.04"
+  database_master: "datingnode-database"
+  database_slave: "datingnode-database"
+
+dns_servers:
+  primary: "8.8.8.8"
+  secondary: "8.8.4.4"
+
 platform_super_branch: 'apache2.4'
 platform_super_dir: '/var/www/datingnode-super/'
 platform_log_dir: '/var/log/datingnode/'
@@ -90,8 +101,9 @@ services:
     static_domain: 'static.gayxchange.com'
     enabled: true
 
-default_packages:
+global_install_packages:
   - "aptitude"
+  - "bash-completion"
   - "bridge-utils"
   - "btrfs-tools"
   - "colordiff"
@@ -103,11 +115,19 @@ default_packages:
   - "man-db"
   - "nano"
   - "ngrep"
+  - "python-dev"
+  - "python-pip"
+  - "rsync"
+  - "super"
   - "tcpdump"
   - "telnet"
   - "unzip"
   - "wget"
   - "whois"
 
-remove_packages:
+install_packages: "{{ global_install_packages }}"
+
+global_remove_packages:
   - "resolvconf"
+
+remove_packages: "{{ global_remove_packages }}"

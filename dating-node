@@ -91,9 +91,9 @@ function do_image_clean () {
 			"$IMAGE_BASE" \
 			"$IMAGE_DATABASE"; do
 
-		echo "Removing image $image:$BUILD"
+		echo "Removing image $image"
 
-		docker rmi "$image:$BUILD" &>/dev/null || true
+		docker rmi "$image" &>/dev/null || true
 
 	done
 
@@ -130,99 +130,68 @@ function do_image_build_all () {
 
 }
 
-function do_local_create () {
+function do_cluster_start () {
+
+	cluster="$1"
+	shift
 
 	ansible-playbook \
-		-c local \
-		-i local \
-		tasks/create.yml
+		--extra-vars @settings \
+		--inventory hosts \
+		--inventory "$cluster" \
+		tasks/start.yml \
+		"$@"
 
 }
 
-function do_local_start () {
+function do_hosts () {
 
 	ansible-playbook \
-		-c local \
-		-i local \
-		tasks/start.yml
+		--extra-vars @settings \
+		--inventory hosts \
+		tasks/hosts.yml \
+		"$@"
 
 }
 
 function do_local_stop () {
 
+	cluster="$1"
+
 	ansible-playbook \
-		-c local \
-		-i local \
-		tasks/stop.yml
+		--extra-vars @settings \
+		--inventory hosts \
+		--inventory "$cluster" \
+		tasks/stop.yml \
+		"$@"
 
 }
 
-function do_local_destroy () {
+function do_cluster_destroy () {
+
+	cluster="$1"
 
 	ansible-playbook \
-		-c local \
-		-i local \
-		tasks/destroy.yml
+		--extra-vars @settings \
+		--inventory hosts \
+		--inventory "$cluster" \
+		tasks/destroy.yml \
+		"$@"
 
 }
 
-function do_local_delete () {
+function do_cluster_delete () {
+
+	cluster="$1"
 
 	ansible-playbook \
-		-c local \
-		-i local \
-		tasks/delete.yml
+		--extra-vars @settings \
+		--inventory hosts \
+		--inventory "$cluster" \
+		tasks/delete.yml \
+		"$@"
 
 }
-
-for arg in "$@"; do
-
-	case "$arg" in
-
-	(image-clean)
-		do_image_clean
-		;;
-
-	(image-build-all)
-		do_image_build_all
-		;;
-
-	(image-build-base)
-		do_image_build_base
-		;;
-
-	(image-build-database)
-		do_image_build_database
-		;;
-
-	(local-create)
-		do_local_create
-		;;
-
-	(local-start)
-		do_local_start
-		;;
-
-	(local-stop)
-		do_local_stop
-		;;
-
-	(local-destroy)
-		do_local_destroy
-		;;
-
-	(local-delete)
-		do_local_delete
-		;;
-
-	(*)
-		echo "Error"
-		exit 1
-		;;
-
-	esac
-
-done
 
 if test "$#" = 0; then
 
@@ -236,18 +205,71 @@ if test "$#" = 0; then
 
 		Available commands:
 
+		   Manager server infrastructure:
+		      hosts                Configure servers
+
 		   Manage docker images:
 		      image-clean          Delete all images
 		      image-build-all      Build all images
 		      image-build-base     Build base image
 		      image-build-database Build databsse image
 
-		   Manage local cluster:
-		      local-start          Start existing
-		      local-stop           Stop existing
-		      local-destroy        Stop and destroy
-		      local-delete         Destroy and delete all data
+		   Manage xyz cluster:
+		      xyz-start            Start existing
+		      xyz-stop             Stop existing
+		      xyz-destroy          Stop and destroy
+		      xyz-delete           Destroy and delete all data
 
 	EOF
 
+	exit
+
 fi
+
+command="$1"
+shift
+
+case "$command" in
+
+(image-clean)
+	do_image_clean
+	;;
+
+(image-build-all)
+	do_image_build_all
+	;;
+
+(image-build-base)
+	do_image_build_base
+	;;
+
+(image-build-database)
+	do_image_build_database
+	;;
+
+(hosts)
+	do_hosts "$@"
+	;;
+
+(*-start)
+	do_cluster_start "${command%%-*}" "$@"
+	;;
+
+(*-stop)
+	do_cluster_stop "${command%%-*}" "$@"
+	;;
+
+(*-destroy)
+	do_cluster_destroy "${command%%-*}" "$@"
+	;;
+
+(*-delete)
+	do_cluster_delete "${command%%-*}" "$@"
+	;;
+
+(*)
+	echo "Error"
+	exit 1
+	;;
+
+esac

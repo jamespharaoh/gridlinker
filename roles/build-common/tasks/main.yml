@@ -1,9 +1,25 @@
 ---
 
-- name: Install core stuff
+- name: "update system packages"
+  action:
+    module: "apt"
+    update_cache: "yes"
+    upgrade: "yes"
+  sudo: "yes"
+  tags: "update"
+
+- name: "install system packages"
+  action:
+    module: "apt"
+    package: "{{ item }}"
+    state: "present"
   sudo: yes
-  apt: name={{ item }} state=present
-  with_items:
-   - "bash-completion"
-   - "rsync"
-   - "super"
+  with_items: "install_packages"
+
+- name: "remove system packages"
+  action:
+    module: "apt"
+    package: "{{ item }}"
+    state: "absent"
+  sudo: yes
+  with_items: "remove_packages"

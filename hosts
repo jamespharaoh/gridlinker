@@ -1,8 +1,12 @@
-[hetzner]
+[rocket-hz:children]
+rocket-hz-host
+rocket-hz-vm
+
+[rocket-hz-host]
 rocket-hz-host-1
 
-[vm]
+[rocket-hz-vm]
 rocket-hz-vm-1
 
-[beta]
+[rocket-hz-beta]
 beta

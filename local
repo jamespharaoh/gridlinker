@@ -14,7 +14,7 @@ database-master
 database-slave
 
 [database-master]
-database-master-0  parent=local
+database-master-0  parent=localhost
 
 [database-slave]
-database-slave-0   parent=local
+database-slave-0   parent=localhost

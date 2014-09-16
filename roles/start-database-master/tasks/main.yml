@@ -1,20 +1,20 @@
 ---
 
-- name: "control database master"
+- name: "start database master"
   delegate_to: "{{ parent }}"
   action:
     module: "docker"
     name: "{{ cluster_name }}-{{ inventory_hostname }}"
     state: "running"
-    image: "{{ docker.registry }}/{{ docker.images.database_master }}:{{ docker.build }}"
+    image: "{{ docker_registry }}/{{ docker_images.database_master }}:{{ build }}"
     command: "/start-master.sh"
     dns:
-      - "{{ docker.dns.primary }}"
-      - "{{ docker.dns.secondary }}"
+      - "{{ dns_servers.primary }}"
+      - "{{ dns_servers.secondary }}"
     expose:
       - "5432"
     ports:
-      - "{{ database.master.port }}:5432"
+      - "{{ database_master.port }}:5432"
     tty: "True"
     stdin_open: "True"
     volumes:
@@ -25,6 +25,6 @@
   action:
     module: "wait_for"
     host: "localhost"
-    port: "{{ database.master.port }}"
+    port: "{{ database_master.port }}"
     state: "started"
     timeout: "60"

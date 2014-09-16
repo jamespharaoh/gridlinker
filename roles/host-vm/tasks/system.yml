@@ -8,20 +8,20 @@
   sudo: "yes"
   tags: "update"
 
-- name: "install default packages"
+- name: "install system packages"
   action:
     module: "apt"
     package: "{{ item }}"
     state: "present"
   sudo: "yes"
-  with_items: "default_packages"
+  with_items: "install_packages"
   tags: "update"
 
-- name: "remove unwanted packages"
+- name: "remove system packages"
   action:
     module: "apt"
     package: "{{ item }}"
-    state: "absent"
+    state: "present"
   sudo: "yes"
   with_items: "remove_packages"
   tags: "update"

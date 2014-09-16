@@ -16,23 +16,35 @@ for arg in "$@"; do
 
 	(init-system)
 
-		heading "Updating system packages"
+		if ! test -f /etc/dnode-update-flag; then
 
-		cat <<-EOF >/etc/apt/apt.conf.d/01proxy
-			Acquire::http::Proxy "http://172.17.42.1:3142";
-		EOF
+			heading "Updating system packages"
 
-		apt-get update
-		apt-get dist-upgrade --yes
+			cat <<-EOF >/etc/apt/apt.conf.d/01proxy
+				Acquire::http::Proxy "http://172.17.42.1:3142";
+			EOF
+
+			apt-get update
+			apt-get dist-upgrade --yes
+
+			touch /etc/dnode-update-flag
+
+		fi
 
 		;;
 
 	(init-ansible)
 
-		heading "Installing required packages for ansible"
+		if ! test -f /etc/dnode-ansible-flag; then
 
-		apt-get install --yes python-dev python-pip
-		pip install paramiko PyYAML jinja2 httplib2
+			heading "Installing required packages for ansible"
+
+			apt-get install --yes aptitude python-dev python-pip
+			pip install paramiko PyYAML jinja2 httplib2
+
+			touch /etc/dnode-ansible-flag
+
+		fi
 
 		;;
 

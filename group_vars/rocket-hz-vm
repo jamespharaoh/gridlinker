@@ -1,0 +1,12 @@
+---
+
+ansible_ssh_host: "{{ public_address }}"
+ansible_ssh_user: "ubuntu"
+
+rocket_hz_vm_install_packages:
+  - "postgresql-client-9.3"
+
+install_packages: "{{
+	global_install_packages
+	| union (rocket_hz_vm_install_packages)
+}}"

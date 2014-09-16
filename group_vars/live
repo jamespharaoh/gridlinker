@@ -1,22 +1,14 @@
 ---
 
-docker:
-  registry: "quay.io/rocketware/datingnode"
-  images:
-    base: "ubuntu:14.04"
-    database_master: "datingnode-database"
-    database_slave: "datingnode-database"
-  dns:
-    primary: "8.8.8.8"
-    secondary: "8.8.4.4"
+build: "live"
 
-cluster_name: "datingnode-local"
+cluster_name: "datingnode-live"
 
-database:
-  master:
-    hostname: "localhost"
-    port: 5001
-  slave:
-    port: 5002
+database_master:
+  hostname: "localhost"
+  port: 5001
 
-data_dir: "{{ inventory_dir }}/data"
+database_slave:
+  port: 5002
+
+data_dir: "/{{ cluster_name }}"
