@@ -2,20 +2,12 @@
 
 set -e
 
-DNS_PRIMARY="8.8.8.8"
-DNS_SECONDARY="8.8.4.4"
+if ! test -f config; then
+	echo "Please create config file, using config.template as a guide" >&2
+	exit 1
+fi
 
-REGISTRY="localhost:5000"
-
-CONTAINER_PREFIX="datingnode-build"
-CONTAINER_BASE="$CONTAINER_PREFIX-base"
-CONTAINER_DATABASE="$CONTAINER_PREFIX-database"
-
-IMAGE_UBUNTU="ubuntu:14.04"
-
-IMAGE_PREFIX="datingnode"
-IMAGE_BASE="$REGISTRY/$IMAGE_PREFIX-base"
-IMAGE_DATABASE="$REGISTRY/$IMAGE_PREFIX-database"
+source "config"
 
 if ! test -d ansible; then
 	git clone git@github.com:ansible/ansible.git
@@ -99,7 +91,9 @@ function do_image_clean () {
 			"$IMAGE_BASE" \
 			"$IMAGE_DATABASE"; do
 
-		docker rmi "$REPOSITORY:$container" &>/dev/null || true
+		echo "Removing image $image:$BUILD"
+
+		docker rmi "$image:$BUILD" &>/dev/null || true
 
 	done
 
@@ -249,7 +243,6 @@ if test "$#" = 0; then
 		      image-build-database Build databsse image
 
 		   Manage local cluster:
-		      local-create         Create and start
 		      local-start          Start existing
 		      local-stop           Stop existing
 		      local-destroy        Stop and destroy

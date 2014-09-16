@@ -1,12 +1,20 @@
-[database:children]
-database_master
-database_slave
+# local is applied to all hosts in this inventory
 
-[database_master:children]
-local
-
-[database_slave:children]
-local
+[local:children]
+database-master
+database-slave
 
 [local]
 localhost
+
+# database
+
+[database:children]
+database-master
+database-slave
+
+[database-master]
+database-master-0  parent=local
+
+[database-slave]
+database-slave-0   parent=local

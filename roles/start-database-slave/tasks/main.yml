@@ -3,9 +3,9 @@
 - name: "start database slave"
   action:
     module: "docker"
-    name: "{{ cluster_name }}-database-slave"
-    state: "{{ state }}"
-    image: "{{ docker.registry }}/{{ docker.images.database_slave }}"
+    name: "{{ cluster_name }}-{{ inventory_hostname }}"
+    state: "running"
+    image: "{{ docker.registry }}/{{ docker.images.database_slave }}:{{ docker.build }}"
     command: "/start-slave.sh"
     dns:
       - "{{ docker.dns.primary }}"
@@ -17,7 +17,7 @@
     tty: "True"
     stdin_open: "True"
     volumes:
-      "{{ data_dir }}/{{ cluster_name }}-database-slave:/data"
+      "{{ data_dir }}/{{ cluster_name }}-{{ inventory_hostname }}:/data"
     env:
       - "DATABASE_MASTER_HOSTNAME=172.17.42.1"
       - "DATABASE_MASTER_PORT={{ database.master.port }}"

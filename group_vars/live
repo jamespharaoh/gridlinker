@@ -1,8 +1,7 @@
 ---
 
 docker:
-  registry: "quay.io/rocketware"
-  build: "james"
+  registry: "quay.io/rocketware/datingnode"
   images:
     base: "ubuntu:14.04"
     database_master: "datingnode-database"

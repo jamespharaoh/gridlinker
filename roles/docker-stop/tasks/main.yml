@@ -1,0 +1,8 @@
+---
+
+- name: "stop docker container"
+  delegate_to: "{{ parent }}"
+  action:
+    module: "docker"
+    name: "{{ cluster_name }}-{{ inventory_hostname }}"
+    state: "stopped"

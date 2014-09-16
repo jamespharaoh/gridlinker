@@ -1,0 +1,9 @@
+---
+
+- name: "destroy docker container"
+  delegate_to: "{{ parent }}"
+  action:
+    module: "docker"
+    name: "{{ cluster_name }}-{{ inventory_hostname }}"
+    image: "whatever"
+    state: "absent"
