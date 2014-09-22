@@ -1,11 +1,20 @@
-# local is applied to all hosts in this inventory
+# live
 
-[local:children]
+[live:children]
+hosts
+containers
+
+# hosts
+
+[hosts]
+rocket-hz-vm-1
+
+# containers
+
+[containers:children]
 database-master
 database-slave
-
-[local]
-localhost
+web-application
 
 # database
 
@@ -17,4 +26,9 @@ database-slave
 database-master-0  parent=rocket-hz-vm-1
 
 [database-slave]
-#database-slave-0   parent=rocket-hz-vm-1
+database-slave-0   parent=rocket-hz-vm-1
+
+# web application
+
+[web-application]
+web-application-0  parent=rocket-hz-vm-1

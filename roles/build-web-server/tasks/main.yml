@@ -1,90 +1,51 @@
 ---
 
-- name: Install Apache
-  sudo: yes
-  apt: name={{ item }} state=present
+- name: "install web server packages"
+  action:
+    module: "apt"
+    name: "{{ item }}"
   with_items:
-   - apache2
-   - libapache2-mod-fcgid
-   - apachetop
-  notify: Restart webserver
+   - "apache2"
+   - "apachetop"
+   - "libapache2-mod-fcgid"
+   - "memcached"
+   - "php5"
+   - "php5-cli"
+   - "php5-curl"
+   - "php5-fpm"
+   - "php5-gd"
+   - "php5-mcrypt"
+   - "php5-memcache"
+   - "php5-memcached"
+   - "php5-pgsql"
+   - "php-gettext"
 
-- name: Enable apache modules
-  action: command a2enmod {{ item }}
+- name: "enable apache modules"
+  action:
+    module: "apache2_module"
+    name: "{{ item }}"
   with_items:
-   - actions
-   - rewrite
-   - env
-   - deflate
-   - ssl
-  notify: Restart webserver
+   - "actions"
+   - "deflate"
+   - "env"
+   - "proxy"
+   - "proxy_fcgi"
+   - "rewrite"
+   - "ssl"
 
-- name: Enable apache 2.4 modules
-  action: command a2enmod {{ item }}
-  with_items:
-   - proxy
-   - proxy_fcgi
-#   - mpm_event
-  notify: Restart webserver
-  when: apache_version == "2.4"
+- name: "create apache service dir"
+  action:
+    module: "file"
+    path: "/etc/service/apache"
+    state: "directory"
+  sudo: "yes"
 
-#- name: Install Apache PHP FPM config
-#  sudo: yes
-#  copy: src=php5-fpm.conf dest=/etc/apache2/conf-available/
-#  notify: Restart webserver
+- name: "create apache service script"
+  action:
+    module: "template"
+    src: "apache-service"
+    dest: "/etc/service/apache/run"
+    mode: "0755"
+  sudo: "yes"
 
-#- name: Enable apache PHP FPM config
-#  action: command a2enconf php5-fpm.conf
-#  notify: Restart webserver
-
-
-#
-#- name: Enable Apache2 modules
-#  apache2_module: name={{ item }} state=present
-#  with_items:
-#   - rewrite
-#   - env
-#   - deflate
-#   - ssl
-
-
-- name: Install PHP
-  sudo: yes
-  apt: name={{ item }} state=present
-  with_items:
-   - php5
-   - php5-cli
-   - php5-curl
-   - php5-gd
-   - php5-mcrypt
-   - php5-memcache
-   - php5-memcached
-   - php5-pgsql
-   - php-gettext
-
-- name: Install PHP FPM
-  sudo: yes
-  apt: name={{ item }} state=present
-  with_items:
-   - php5-fpm
-  notify: Restart FPM
-
-- name: Install Memcached
-  sudo: yes
-  apt: name={{ item }} state=present
-  with_items:
-   - memcached
-  notify: Restart memcache
-
-
-- name: Install Git
-  sudo: yes
-  apt: name={{ item }} state=present
-  with_items:
-   - git
-
-
-
-- name: Apache servie state
-  sudo: yes
-  service: name=apache2 state=started enabled=yes
+# ex: et ts=2 filetype=yaml

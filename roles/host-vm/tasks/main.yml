@@ -1,3 +1,4 @@
 ---
 - include: "system.yml"
 - include: "docker.yml"
+- include: "vhost-proxy.yml"

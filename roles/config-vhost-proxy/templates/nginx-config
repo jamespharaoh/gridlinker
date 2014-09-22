@@ -1,0 +1,54 @@
+user www-data;
+worker_processes 4;
+pid /run/nginx.pid;
+
+events {
+	worker_connections 768;
+}
+
+http {
+
+	# basic settings
+
+	sendfile on;
+	tcp_nopush on;
+	tcp_nodelay on;
+	keepalive_timeout 65;
+	types_hash_max_size 2048;
+
+	include /etc/nginx/mime.types;
+	default_type application/octet-stream;
+
+	# logging
+
+	access_log /var/log/nginx/access.log;
+	error_log /var/log/nginx/error.log;
+
+	# compression
+
+	gzip on;
+	gzip_disable "msie6";
+
+	# load balancer
+
+{% for cluster_name, cluster in clusters.iteritems () %}
+
+	upstream {{ cluster_name }} {
+		server {{ private_address }}:{{ cluster.ports.web_application }};
+	}
+
+	server {
+
+		listen 80;
+
+		server_name ~\.{{ cluster.domain_suffix | replace ('.', '\.') }}$;
+
+		location / {
+			proxy_pass http://{{ cluster_name }};
+		}
+
+	}
+
+{% endfor %}
+
+}

@@ -1,0 +1,34 @@
+---
+
+- name: "install vhost proxy packages"
+  action:
+    module: "apt"
+    package: "{{ item }}"
+  with_items:
+    - "nginx"
+  sudo: "yes"
+
+- name: "create ansible init script"
+  action:
+    module: "template"
+    src: "ansible-init-script"
+    dest: "/etc/my_init.d/ansible"
+    mode: "0755"
+  sudo: "yes"
+
+- name: "create nginx service directory"
+  action:
+    module: "file"
+    path: "/etc/service/nginx"
+    state: "directory"
+  sudo: "yes"
+
+- name: "create nginx service script"
+  action:
+    module: "template"
+    src: "nginx-service"
+    dest: "/etc/service/nginx/run"
+    mode: "0755"
+  sudo: "yes"
+
+# ex: et ts=2 filetype=yaml# ex: et ts=2 filetype=yaml

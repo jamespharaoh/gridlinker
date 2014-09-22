@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cd /etc/apache2
+
+source envvars
+
+apache2 -D FOREGROUND

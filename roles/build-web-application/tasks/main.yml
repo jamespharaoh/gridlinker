@@ -1,154 +1,31 @@
 ---
 
+- name: "copy the super project"
+  command:
+    rsync
+    --archive
+    --times
+    --delete
+    --chown "www-data:www-data"
+    --exclude .git
+    /datingnode-super/
+    /var/www/datingnode-super/
+  sudo: "yes"
 
+- name: "create plaform directories"
+  action:
+    module: "file"
+    path: "{{ platform_assets_dir }}"
+    state: "directory"
+    owner: "www-data"
+    group: "www-data"
+    mode: "0644"
+  sudo: "yes"
+  with_items:
+    - "{{ platform_log_dir }}"
+    - "{{ platform_assets_dir }}"
+    - "{{ platform_assets_dir }}/image-cache"
+    - "{{ platform_assets_dir }}/sitemaps"
+    - "{{ platform_assets_dir }}/user-data"
 
-
-
-  - name: Make sure platform log directory exists
-    action: file path=/var/www/datingnode-super/ state=directory owner={{ deployment_user }} group={{ deployment_user }} mode=0777
-
-  - name: Checkout the super project
-    sudo: no
-    git: repo=ssh://git@bitbucket.org/jimmyff/datingnode-super.git
-         dest=/var/www/datingnode-super/
-         version={{ platform_super_branch }}
-
-  - name: Set super project permissions
-    sudo: yes
-    action: file owner={{ deployment_user }} group=www-data path=/var/www/datingnode-super/ recurse=yes state=directory
-
-  - name: Make sure platform log directory exists
-    action: file path={{ platform_log_dir }} state=directory owner=www-data group=www-data mode=0644
-
-  - name: Make sure platform log directory exists
-    action: file path={{ platform_assets_dir }} state=directory owner=www-data group=www-data mode=0644
-
-  - name: Make sure platform assets directory exists
-    action: file path={{ platform_assets_dir }} state=directory owner=www-data group=www-data mode=0644
-
-  - name: Make sure platform image cache directory exists
-    action: file path={{ platform_assets_dir }}image-cache/ state=directory owner=www-data group=www-data mode=0644
-
-  - name: Make sure platform image cache directory exists
-    action: file path={{ platform_assets_dir }}sitemaps/ state=directory owner=www-data group=www-data mode=0644
-
-  - name: Make sure platform image cache directory exists
-    action: file path={{ platform_assets_dir }}user-data/ state=directory owner=www-data group=www-data mode=0644
-
-
-  - name: CONTROL - Setup the service virtualhost (main domains)
-    template:
-      src=apache{{ apache_version }}-control-vhost-main.j2
-      dest=/etc/apache2/sites-available/dp_control__main.conf
-    notify: Restart webserver
-
-
-  - name: CONTROL - Enable active virtualhost (main domains)
-    action: command a2ensite dp_control__main.conf
-    notify: Reload webserver
-
-
-  - name: Setup the service virtualhosts (main domains)
-    template:
-      src=apache{{ apache_version }}-service-vhost-main.j2
-      dest=/etc/apache2/sites-available/dp_service__{{ item.main_domain }}__main.conf
-    with_items: services
-    notify: Restart webserver
-
-
-  - name: Enable active virtualhosts (main domains)
-    action: command a2ensite dp_service__{{ item.main_domain }}__main.conf
-    with_items: services
-    when: item.enabled == true
-    notify: Reload webserver
-
-
-  - name: Disable inactive virtualhosts (main domains)
-    action: command a2dissite dp_service__{{ item.main_domain }}__main.conf
-    with_items: services
-    when: item.enabled == false
-    notify: Reload webserver
-
-
-  - name: Setup the service virtualhosts (API domains)
-    template:
-      src=apache{{ apache_version }}-service-vhost-api.j2
-      dest=/etc/apache2/sites-available/dp_service__{{ item.main_domain }}__api.conf
-    with_items: services
-    notify: Restart webserver
-
-  - name: Enable active virtualhosts (API domains)
-    action: command a2ensite dp_service__{{ item.main_domain }}__api.conf
-    with_items: services
-    when: item.enabled == true
-    notify: Reload webserver
-
-  - name: Disable inactive virtualhosts (API domains)
-    action: command a2dissite dp_service__{{ item.main_domain }}__api.conf
-    with_items: services
-    when: item.enabled == false
-    notify: Reload webserver
-
-
-
-  - name: Setup the service virtualhosts (beta domains)
-    template:
-      src=apache{{ apache_version }}-service-vhost-beta-main.j2
-      dest=/etc/apache2/sites-available/dp_service__{{ item.main_domain }}__beta.conf
-    with_items: services
-    notify: Restart webserver
-
-  - name: Enable active virtualhosts (beta domains)
-    action: command a2ensite dp_service__{{ item.main_domain }}__beta.conf
-    with_items: services
-    when: item.enabled == true
-    notify: Reload webserver
-
-  - name: Disable inactive virtualhosts (beta domains)
-    action: command a2dissite dp_service__{{ item.main_domain }}__beta.conf
-    with_items: services
-    when: item.enabled == false
-    notify: Reload webserver
-
-
-
-  - name: Setup the service virtualhosts (static beta domains)
-    template:
-      src=apache{{ apache_version }}-service-vhost-beta-static.j2
-      dest=/etc/apache2/sites-available/dp_service__{{ item.main_domain }}__beta_static.conf
-    with_items: services
-    notify: Restart webserver
-
-  - name: Enable active virtualhosts (beta domains)
-    action: command a2ensite dp_service__{{ item.main_domain }}__beta_static.conf
-    with_items: services
-    when: item.enabled == true
-    notify: Reload webserver
-
-  - name: Disable inactive virtualhosts (beta domains)
-    action: command a2dissite dp_service__{{ item.main_domain }}__beta_static.conf
-    with_items: services
-    when: item.enabled == false
-    notify: Reload webserver
-
-
-
-
-  - name: Setup the service virtualhosts (static domains)
-    template:
-      src=apache{{ apache_version }}-service-vhost-static.j2
-      dest=/etc/apache2/sites-available/dp_service__{{ item.main_domain }}__static.conf
-    with_items: services
-    notify: Restart webserver
-
-  - name: Enable active virtualhosts (static domains)
-    action: command a2ensite dp_service__{{ item.main_domain }}__static.conf
-    with_items: services
-    when: item.enabled == true
-    notify: Reload webserver
-
-  - name: Disable inactive virtualhosts (static domains)
-    action: command a2dissite dp_service__{{ item.main_domain }}__static.conf
-    with_items: services
-    when: item.enabled == false
-    notify: Reload webserver
+# ex: et ts=2 filetype=yaml

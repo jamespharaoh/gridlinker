@@ -11,13 +11,13 @@
   action:
     module: "apt_repository"
     repo: "deb https://get.docker.io/ubuntu docker main"
+    update_cache: "yes"
   sudo: "yes"
 
 - name: "install docker"
   action:
     module: "apt"
     package: "lxc-docker"
-    update_cache: "yes"
   sudo: "yes"
 
 - name: "install docker python packages"

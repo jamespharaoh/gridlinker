@@ -6,19 +6,22 @@
     module: "docker"
     name: "{{ cluster_name }}-{{ inventory_hostname }}"
     state: "running"
-    image: "{{ docker_registry }}/{{ docker_images.database_slave }}:{{ build }}"
-    command: "/start-slave.sh"
+    image: "{{ docker_registry }}/{{ docker_images.database }}:{{ cluster.build }}"
+    command: "/sbin/my_init"
     dns:
       - "{{ dns_servers.primary }}"
       - "{{ dns_servers.secondary }}"
     expose:
       - "5432"
     ports:
-      - "{{ database_slave.port }}:5432"
+      - "{{ hostvars [parent].private_address }}:{{ cluster.ports.database_slave }}:5432"
     tty: "True"
     stdin_open: "True"
     volumes:
-      "{{ data_dir }}/{{ cluster_name }}-{{ inventory_hostname }}:/data"
+      "{{ data_dir }}/{{ inventory_hostname }}:/data"
     env:
+      - "DATABASE_MODE=slave"
       - "DATABASE_MASTER_HOSTNAME=172.17.42.1"
-      - "DATABASE_MASTER_PORT={{ database_master.port }}"
+      - "DATABASE_MASTER_PORT={{ cluster.ports.database_master }}"
+
+# ex: et ts=2 filetype=yaml

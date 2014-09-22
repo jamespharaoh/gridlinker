@@ -1,0 +1,11 @@
+---
+
+- name: "destroy vhost proxy"
+  action:
+    module: "docker"
+    name: "vhost-proxy"
+    state: "absent"
+    image: "whatever"
+  sudo: "yes"
+
+# ex: et ts=2 filetype=yaml

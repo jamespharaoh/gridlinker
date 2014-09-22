@@ -1,0 +1,21 @@
+---
+
+- name: "configure apache site {{ label }}"
+  action:
+    module: "template"
+    src: "{{ config }}"
+    dest: "/etc/apache2/sites-available/{{ site }}"
+  sudo: "yes"
+
+- name: "enable apache site {{ label }}"
+  command:
+    a2ensite {{ site }}
+  sudo: "yes"
+  when: "enabled == true"
+
+- name: "disable apache site {{ label }}"
+  command:
+    a2dissite {{ site }}
+  when: "enabled == false"
+
+# ex: et ts=2 filetype=yaml

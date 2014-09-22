@@ -11,7 +11,6 @@
   when: ansible_distribution == "Ubuntu"
   notify: Restart postgresql
 
-
 - name: "Debian: Install Postgresql & Postgis"
   sudo: yes
   apt: name={{ item }} state=present
@@ -22,18 +21,19 @@
   when: ansible_distribution == "Debian"
   notify: Restart postgresql
 
-- name: "Docker start script (master)"
+- name: "create postgresql service directory"
+  action:
+    module: "file"
+    path: "/etc/service/postgresql"
+    state: "directory"
+  sudo: "yes"
+
+- name: "create postgresql service script"
   action:
     module: "template"
-    src: "start-master.sh"
-    dest: "/start-master.sh"
+    src: "postgresql-service"
+    dest: "/etc/service/postgresql/run"
     mode: "0755"
   sudo: "yes"
 
-- name: "Docker start script (slave)"
-  action:
-    module: "template"
-    src: "start-slave.sh"
-    dest: "/start-slave.sh"
-    mode: "0755"
-  sudo: "yes"
+# ex: et ts=4 filetype=yaml

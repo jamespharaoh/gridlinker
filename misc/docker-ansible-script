@@ -2,13 +2,13 @@
 
 set -e
 
-heading () {
-	echo ""
-	echo "########## $1 ##########"
-	echo ""
-}
+cd /
 
-cd /datingnode-ansible
+heading () {
+	echo "" >&2
+	echo "########## $1 ##########" >&2
+	echo "" >&2
+}
 
 for arg in "$@"; do
 
@@ -20,8 +20,19 @@ for arg in "$@"; do
 
 			heading "Updating system packages"
 
-			cat <<-EOF >/etc/apt/apt.conf.d/01proxy
-				Acquire::http::Proxy "http://172.17.42.1:3142";
+			source /datingnode-ansible/datingnode-config
+
+			cat <<-EOF >/etc/apt/sources.list
+
+				deb $UBUNTU_MAIN/ trusty main restricted universe
+				deb-src $UBUNTU_MAIN/ trusty main restricted universe
+
+				deb $UBUNTU_MAIN/ trusty-updates main restricted universe
+				deb-src $UBUNTU_MAIN/ trusty-updates main restricted universe
+
+				deb $UBUNTU_SECURITY/ trusty-security main restricted universe
+				deb-src $UBUNTU_SECURITY/ trusty-security main restricted universe
+
 			EOF
 
 			apt-get update
@@ -39,7 +50,7 @@ for arg in "$@"; do
 
 			heading "Installing required packages for ansible"
 
-			apt-get install --yes aptitude python-dev python-pip
+			apt-get install --yes aptitude python-dev python-pip rsync
 			pip install paramiko PyYAML jinja2 httplib2
 
 			touch /etc/dnode-ansible-flag
@@ -48,7 +59,32 @@ for arg in "$@"; do
 
 		;;
 
+	(copy-ansible)
+
+		heading "Copying datingnode-ansible into container"
+
+		rsync \
+			--archive \
+			--times \
+			--verbose \
+			--delete \
+			--exclude ".git" \
+			--include "/ansible" \
+			--include "/ansible.cfg" \
+			--include "/group_vars" \
+			--include "/host_vars" \
+			--include "/local" \
+			--include "/misc" \
+			--include "/roles" \
+			--exclude "/*" \
+			"/datingnode-ansible/" \
+			"$HOME/datingnode-ansible/"
+
+		;;
+
 	(*)
+
+		cd "$HOME/datingnode-ansible"
 
 		if ! test "$ANSIBLE_HOME"; then
 
@@ -58,13 +94,21 @@ for arg in "$@"; do
 
 		fi
 
-		heading "Applying ansible role $arg"
+		if test "$arg" != "build-updates" -o ! -f /etc/updates-flag; then
 
-		ansible-playbook \
-			-c local \
-			-i local \
-			misc/apply-role.yml \
-			-e "role=$arg"
+			heading "Applying ansible role $arg"
+
+			ansible-playbook \
+				-c local \
+				-i local \
+				misc/apply-role.yml \
+				-e "role=$arg"
+
+			if test "$arg" = "build-updates"; then
+				touch /etc/updates-flag
+			fi
+
+		fi
 
 		;;
 

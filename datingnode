@@ -1,0 +1,345 @@
+#!/bin/bash
+
+set -e
+
+if ! test -f datingnode-config; then
+	echo "Please create datingnode-config file" >&2
+	echo "There is an example in datingnode-config.template" >&2
+	exit 1
+fi
+
+source "datingnode-config"
+
+if ! test -d ansible; then
+	git clone git@github.com:ansible/ansible.git
+fi
+
+source ansible/hacking/env-setup &>/dev/null
+
+function do_hosts () {
+
+	ansible-playbook \
+		--extra-vars @deploy-config \
+		--extra-vars @runtime-config \
+		--inventory hosts \
+		playbooks/hosts.yml \
+		"$@"
+
+}
+
+function build_image () {
+
+	base_image="$1"
+	image_name="$2"
+	container_name="$3"
+
+	shift 3
+
+	# kill and remove existing container
+
+	docker kill "$container_name" 2>/dev/null || true
+
+	docker rm "$container_name" 2>/dev/null || true
+
+	# use existing image as base, if it exists
+
+	if docker inspect "$image_name" &>/dev/null; then
+		echo "updating existing image"
+		base_image="$image_name"
+	else
+		echo "creating new image"
+	fi
+
+	# create temp dir
+
+	temp="$(pwd)/data/temp"
+	sudo rm -rf "$temp"
+	mkdir -p "$temp"
+	sudo chown root:root "$temp"
+	sudo chmod 1777 "$temp"
+
+	# run the ansible scripts in a container
+
+	docker run \
+		--name "$container_name" \
+		--volume "$(pwd):/datingnode-ansible" \
+		--volume "$DATINGNODE_SUPER:/datingnode-super" \
+		--volume "$temp:/tmp" \
+		--dns "$DNS_PRIMARY" \
+		--dns "$DNS_SECONDARY" \
+		--interactive \
+		--tty \
+		"$base_image" \
+		/datingnode-ansible/misc/docker-ansible-script \
+		"$@"
+
+	# remove existing image
+
+	docker rmi "$image_name" &>/dev/null || true
+
+	# commit and tag new image
+
+	image_id=$(
+		docker commit "$container_name"
+	)
+
+	docker tag "$image_id" "$image_name"
+
+	# remove container
+
+	docker rm "$container_name"
+
+}
+
+# --------- image clean
+
+function do_image_clean () {
+
+	for container in "${CONTAINERS[@]}"; do
+
+		echo "Removing container $container"
+
+		docker kill "$container" &>/dev/null || true
+
+		docker rm "$container" &>/dev/null || true
+
+	done
+
+	for image in "${IMAGES[@]}"; do
+
+		echo "Removing image $image"
+
+		docker rmi "$image" &>/dev/null || true
+
+	done
+
+}
+
+# --------- images
+
+function do_image_build_base () {
+
+	build_image \
+		"$IMAGE_UBUNTU" \
+		"$IMAGE_BASE" \
+		"$CONTAINER_BASE" \
+		init-system \
+		init-ansible \
+		copy-ansible \
+		build-updates \
+		build-common
+
+}
+
+function do_image_build_database () {
+
+	build_image \
+		"$IMAGE_BASE" \
+		"$IMAGE_DATABASE" \
+		"$CONTAINER_DATABASE" \
+		copy-ansible \
+		build-common \
+		build-database
+
+}
+
+function do_image_build_web_server () {
+
+	build_image \
+		"$IMAGE_BASE" \
+		"$IMAGE_WEB_SERVER" \
+		"$CONTAINER_WEB_SERVER" \
+		copy-ansible \
+		build-common \
+		build-web-server
+
+}
+
+function do_image_build_web_application () {
+
+	build_image \
+		"$IMAGE_WEB_SERVER" \
+		"$IMAGE_WEB_APPLICATION" \
+		"$CONTAINER_WEB_APPLICATION" \
+		copy-ansible \
+		build-common \
+		build-web-server \
+		build-web-application
+
+}
+
+function do_image_build_vhost_proxy () {
+
+	build_image \
+		"$IMAGE_BASE" \
+		"$IMAGE_VHOST_PROXY" \
+		"$CONTAINER_VHOST_PROXY" \
+		copy-ansible \
+		build-common \
+		build-vhost-proxy
+
+}
+
+# ---------- image push
+
+function do_image_push () {
+
+	image_name="$1"
+
+	docker push "$image_name"
+
+}
+
+# ---------- cluster control
+
+function do_cluster_start () {
+
+	cluster="$1"
+	shift
+
+	ansible-playbook \
+		--extra-vars @deploy-config \
+		--extra-vars @runtime-config \
+		--extra-vars "cluster_name=$cluster" \
+		--inventory "$cluster" \
+		playbooks/start.yml \
+		"$@"
+
+}
+
+function do_cluster_stop () {
+
+	cluster="$1"
+	shift
+
+	ansible-playbook \
+		--extra-vars @deploy-config \
+		--extra-vars @runtime-config \
+		--extra-vars "cluster_name=$cluster" \
+		--inventory "$cluster" \
+		playbooks/stop.yml \
+		"$@"
+
+}
+
+function do_cluster_delete () {
+
+	cluster="$1"
+	shift
+
+	ansible-playbook \
+		--extra-vars @deploy-config \
+		--extra-vars @runtime-config \
+		--extra-vars "cluster_name=$cluster" \
+		--inventory "$cluster" \
+		playbooks/delete.yml \
+		"$@"
+
+}
+
+# --------- help
+
+if test "$#" = 0; then
+
+	cat >&2 <<-EOF
+
+		Dating Node devops script
+
+		Usage:
+
+		   $0 COMMAND...
+
+		Available commands:
+
+		   Manager server infrastructure:
+		      hosts              Configure servers
+
+		   Manage docker images:
+		      image-clean        Delete all images
+		      image-build-all    Build all images
+		      image-build-IMAGE  Build specified image
+		      image-push-all     Push all images
+
+		   Manage cluster:
+		      CLUSTER-start      Start containers
+		      CLUSTER-stop       Stop containers
+		      CLUSTER-delete     Destroy and delete all data
+
+		Other information:
+
+		   Available images:
+		      base               Base image from which others are derived
+		      database           PostgreSQL database server
+		      web-server         Generic web server
+		      web-application    Web server with datingnode app
+
+		   Available clusters:
+		      local              Development cluster on local machine
+		      live               Production app
+
+	EOF
+
+	exit
+
+fi
+
+# ----------- main
+
+command="$1"
+shift
+
+case "$command" in
+
+(image-clean)
+	do_image_clean
+	;;
+
+(image-build-all)
+	do_image_build_base
+	do_image_build_database
+	do_image_build_web_server
+	do_image_build_web_application
+	do_image_build_vhost_proxy
+	;;
+
+(image-build-*)
+	image="${command##image-build-}"
+	do_image_build_$(echo $image | tr '-' '_')
+	;;
+
+(image-push-all)
+	do_image_push "$IMAGE_BASE"
+	do_image_push "$IMAGE_DATABASE"
+	do_image_push "$IMAGE_WEB_SERVER"
+	do_image_push "$IMAGE_WEB_APPLICATION"
+	do_image_push "$IMAGE_VHOST_PROXY"
+	;;
+
+(image-push-*)
+	image="${command##image-push-}"
+	image_var="IMAGE_$(echo $image | tr '-' '_' | tr 'a-z' 'A-Z')"
+	do_image_push "${!image_var}"
+	;;
+
+(hosts)
+	do_hosts "$@"
+	;;
+
+(*-start)
+	do_cluster_start "${command%%-*}" "$@"
+	;;
+
+(*-stop)
+	do_cluster_stop "${command%%-*}" "$@"
+	;;
+
+(*-delete)
+	do_cluster_delete "${command%%-*}" "$@"
+	;;
+
+(*)
+	echo "Error '$command'"
+	exit 1
+	;;
+
+esac

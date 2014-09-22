@@ -1,5 +1,10 @@
 ---
 
+- name: "common"
+  hosts: "hosts"
+  gather_facts: "no"
+  roles: [ "start-common" ]
+
 - name: "database master"
   hosts: "database-master"
   gather_facts: "no"
@@ -9,3 +14,8 @@
   hosts: "database-slave"
   gather_facts: "no"
   roles: [ "start-database-slave" ]
+
+- name: "web application"
+  hosts: "web-application"
+  gather_facts: "no"
+  roles: [ "start-web-application" ]

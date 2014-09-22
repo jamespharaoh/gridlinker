@@ -1,0 +1,10 @@
+---
+
+- name: "configure nginx"
+  action:
+    module: "template"
+    src: "nginx-config"
+    dest: "/etc/nginx/nginx.conf"
+  sudo: "yes"
+
+# ex: et ts=2 filetype=yaml

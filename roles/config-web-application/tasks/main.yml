@@ -1,0 +1,44 @@
+---
+
+- include: "site.yml"
+  label: "main"
+  config: "apache{{ apache_version }}-control-vhost-main.j2"
+  site: "dp_control__main"
+  enabled: "yes"
+
+- include: "site.yml"
+  label: "service"
+  config: "apache{{ apache_version }}-service-vhost-main.j2"
+  site: "dp_service__{{ item.main_domain }}__main"
+  enabled: "item.enabled"
+  with_items: "services"
+
+- include: "site.yml"
+  label: "api"
+  config: "apache{{ apache_version }}-service-vhost-api.j2"
+  site: "dp_service__{{ item.main_domain }}__api"
+  enabled: "item.enabled"
+  with_items: "services"
+
+- include: "site.yml"
+  label: "static"
+  config: "apache{{ apache_version }}-service-vhost-static.j2"
+  site: "dp_service__{{ item.main_domain }}__static"
+  enabled: "item.enabled"
+  with_items: "services"
+
+- include: "site.yml"
+  label: "beta"
+  config: "apache{{ apache_version }}-service-vhost-beta-main.j2"
+  site: "dp_service__{{ item.main_domain }}__beta"
+  enabled: "item.enabled"
+  with_items: "services"
+
+- include: "site.yml"
+  label: "static beta"
+  config: "apache{{ apache_version }}-service-vhost-beta-static.j2"
+  site: "dp_service__{{ item.main_domain }}__beta_static"
+  enabled: "item.enabled"
+  with_items: "services"
+
+# ex: et ts=2 filetype=yaml

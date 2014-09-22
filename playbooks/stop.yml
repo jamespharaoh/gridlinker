@@ -1,0 +1,11 @@
+---
+
+- name: "stop database master"
+  hosts: "containers"
+  gather_facts: "no"
+  roles: [ "docker-stop" ]
+
+- name: "stop database slave"
+  hosts: "containers"
+  gather_facts: "no"
+  roles: [ "docker-destroy" ]

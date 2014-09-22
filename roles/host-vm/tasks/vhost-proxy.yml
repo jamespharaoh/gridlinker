@@ -1,0 +1,55 @@
+---
+
+- name: "create vhost proxy config dir"
+  action:
+    module: "file"
+    path: "/vhost-proxy"
+    state: "directory"
+  sudo: "yes"
+
+- name: "create vhost proxy runtime config"
+  action:
+    module: "copy"
+    src: "../runtime-config"
+    dest: "/vhost-proxy/runtime-config"
+  sudo: "yes"
+  notify: "destroy vhost proxy"
+
+- name: "create vhost proxy parent config"
+  action:
+    module: "template"
+    src: "parent-config"
+    dest: "/vhost-proxy/parent-config"
+  sudo: "yes"
+  notify: "destroy vhost proxy"
+
+- meta: "flush_handlers"
+
+- name: "start vhost proxy"
+  action:
+    module: "docker"
+    name: "vhost-proxy"
+    state: "running"
+    image: "{{ docker_registry }}/{{ docker_images.vhost_proxy }}:{{ vhost_proxy_build }}"
+    command: "/sbin/my_init"
+    dns:
+      - "{{ dns_servers.primary }}"
+      - "{{ dns_servers.secondary }}"
+    expose:
+      - "80"
+    ports:
+      - "80:80"
+    volumes:
+      - "/vhost-proxy:/vhost-proxy"
+    tty: true
+    stdin_open: true
+
+- name: "wait for connection"
+  action:
+    module: "wait_for"
+    host: "localhost"
+    port: "80"
+    state: "started"
+    timeout: "5"
+
+# ex: et ts=2 filetype=yaml

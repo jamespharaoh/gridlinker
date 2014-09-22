@@ -1,0 +1,9 @@
+---
+
+- name: "update system packages"
+  action:
+    module: "apt"
+    update_cache: "yes"
+    upgrade: "yes"
+  sudo: "yes"
+  tags: "update"
