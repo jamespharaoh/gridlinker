@@ -19,10 +19,11 @@ source ansible/hacking/env-setup &>/dev/null
 function do_hosts () {
 
 	ansible-playbook \
-		--extra-vars @deploy-config \
-		--extra-vars @runtime-config \
-		--inventory hosts \
-		playbooks/hosts.yml \
+		--extra-vars "@deploy-config" \
+		--extra-vars "@runtime-config" \
+		--extra-vars "cluster_name=shared" \
+		--inventory "hosts" \
+		"playbooks/hosts.yml" \
 		"$@"
 
 }
@@ -32,14 +33,13 @@ function build_image () {
 	base_image="$1"
 	image_name="$2"
 	container_name="$3"
-
-	shift 3
+	build_name="$4"
 
 	# kill and remove existing container
 
-	docker kill "$container_name" 2>/dev/null || true
+	docker kill "$container_name" &>/dev/null || true
 
-	docker rm "$container_name" 2>/dev/null || true
+	docker rm "$container_name" &>/dev/null || true
 
 	# use existing image as base, if it exists
 
@@ -71,7 +71,7 @@ function build_image () {
 		--tty \
 		"$base_image" \
 		/datingnode-ansible/misc/docker-ansible-script \
-		"$@"
+		"$build_name"
 
 	# remove existing image
 
@@ -83,11 +83,11 @@ function build_image () {
 		docker commit "$container_name"
 	)
 
-	docker tag "$image_id" "$image_name"
+	docker tag "$image_id" "$image_name" &>/dev/null
 
 	# remove container
 
-	docker rm "$container_name"
+	docker rm "$container_name" &>/dev/null
 
 }
 
@@ -123,11 +123,7 @@ function do_image_build_base () {
 		"$IMAGE_UBUNTU" \
 		"$IMAGE_BASE" \
 		"$CONTAINER_BASE" \
-		init-system \
-		init-ansible \
-		copy-ansible \
-		build-updates \
-		build-common
+		"base"
 
 }
 
@@ -137,9 +133,7 @@ function do_image_build_database () {
 		"$IMAGE_BASE" \
 		"$IMAGE_DATABASE" \
 		"$CONTAINER_DATABASE" \
-		copy-ansible \
-		build-common \
-		build-database
+		"database"
 
 }
 
@@ -149,9 +143,7 @@ function do_image_build_web_server () {
 		"$IMAGE_BASE" \
 		"$IMAGE_WEB_SERVER" \
 		"$CONTAINER_WEB_SERVER" \
-		copy-ansible \
-		build-common \
-		build-web-server
+		"web-server"
 
 }
 
@@ -161,10 +153,7 @@ function do_image_build_web_application () {
 		"$IMAGE_WEB_SERVER" \
 		"$IMAGE_WEB_APPLICATION" \
 		"$CONTAINER_WEB_APPLICATION" \
-		copy-ansible \
-		build-common \
-		build-web-server \
-		build-web-application
+		"web-application"
 
 }
 
@@ -174,9 +163,7 @@ function do_image_build_vhost_proxy () {
 		"$IMAGE_BASE" \
 		"$IMAGE_VHOST_PROXY" \
 		"$CONTAINER_VHOST_PROXY" \
-		copy-ansible \
-		build-common \
-		build-vhost-proxy
+		"vhost-proxy"
 
 }
 

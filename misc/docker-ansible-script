@@ -10,108 +10,82 @@ heading () {
 	echo "" >&2
 }
 
-for arg in "$@"; do
+build_name="$1"
 
-	case "$arg" in
+if test "$build_name" = "base"; then
 
-	(init-system)
+	if ! test -f /etc/dnode-update-flag; then
 
-		if ! test -f /etc/dnode-update-flag; then
+		heading "Updating system packages"
 
-			heading "Updating system packages"
+		source /datingnode-ansible/datingnode-config
 
-			source /datingnode-ansible/datingnode-config
+		cat <<-EOF >/etc/apt/sources.list
 
-			cat <<-EOF >/etc/apt/sources.list
+			deb $UBUNTU_MAIN/ trusty main restricted universe
+			deb-src $UBUNTU_MAIN/ trusty main restricted universe
 
-				deb $UBUNTU_MAIN/ trusty main restricted universe
-				deb-src $UBUNTU_MAIN/ trusty main restricted universe
+			deb $UBUNTU_MAIN/ trusty-updates main restricted universe
+			deb-src $UBUNTU_MAIN/ trusty-updates main restricted universe
 
-				deb $UBUNTU_MAIN/ trusty-updates main restricted universe
-				deb-src $UBUNTU_MAIN/ trusty-updates main restricted universe
+			deb $UBUNTU_SECURITY/ trusty-security main restricted universe
+			deb-src $UBUNTU_SECURITY/ trusty-security main restricted universe
 
-				deb $UBUNTU_SECURITY/ trusty-security main restricted universe
-				deb-src $UBUNTU_SECURITY/ trusty-security main restricted universe
+		EOF
 
-			EOF
+		apt-get update
+		apt-get dist-upgrade --yes
 
-			apt-get update
-			apt-get dist-upgrade --yes
+		touch /etc/dnode-update-flag
 
-			touch /etc/dnode-update-flag
+	fi
 
-		fi
+	if ! test -f /etc/dnode-ansible-flag; then
 
-		;;
+		heading "Installing required packages for ansible"
 
-	(init-ansible)
+		apt-get install --yes aptitude python-dev python-pip rsync
+		pip install paramiko PyYAML jinja2 httplib2
 
-		if ! test -f /etc/dnode-ansible-flag; then
+		touch /etc/dnode-ansible-flag
 
-			heading "Installing required packages for ansible"
+	fi
 
-			apt-get install --yes aptitude python-dev python-pip rsync
-			pip install paramiko PyYAML jinja2 httplib2
+fi
 
-			touch /etc/dnode-ansible-flag
+heading "Copying datingnode-ansible into container"
 
-		fi
+rsync \
+	--archive \
+	--times \
+	--verbose \
+	--delete \
+	--exclude ".git" \
+	--include "/ansible" \
+	--include "/ansible.cfg" \
+	--include "/group_vars" \
+	--include "/host_vars" \
+	--include "/build-inventory" \
+	--include "/misc" \
+	--include "/roles" \
+	--exclude "/*" \
+	"/datingnode-ansible/" \
+	"$HOME/datingnode-ansible/"
 
-		;;
+cd "$HOME/datingnode-ansible"
 
-	(copy-ansible)
+if ! test "$ANSIBLE_HOME"; then
 
-		heading "Copying datingnode-ansible into container"
+	heading "Initialising ansible environment"
 
-		rsync \
-			--archive \
-			--times \
-			--verbose \
-			--delete \
-			--exclude ".git" \
-			--include "/ansible" \
-			--include "/ansible.cfg" \
-			--include "/group_vars" \
-			--include "/host_vars" \
-			--include "/local" \
-			--include "/misc" \
-			--include "/roles" \
-			--exclude "/*" \
-			"/datingnode-ansible/" \
-			"$HOME/datingnode-ansible/"
+	source ansible/hacking/env-setup
 
-		;;
+fi
 
-	(*)
+heading "Applying ansible build $build_name"
 
-		cd "$HOME/datingnode-ansible"
-
-		if ! test "$ANSIBLE_HOME"; then
-
-			heading "Initialising ansible environment"
-
-			source ansible/hacking/env-setup
-
-		fi
-
-		if test "$arg" != "build-updates" -o ! -f /etc/updates-flag; then
-
-			heading "Applying ansible role $arg"
-
-			ansible-playbook \
-				-c local \
-				-i local \
-				misc/apply-role.yml \
-				-e "role=$arg"
-
-			if test "$arg" = "build-updates"; then
-				touch /etc/updates-flag
-			fi
-
-		fi
-
-		;;
-
-	esac
-
-done
+ansible-playbook \
+	--connection "local" \
+	--inventory "build-inventory" \
+	--limit "$build_name-build" \
+	"misc/build.yml"

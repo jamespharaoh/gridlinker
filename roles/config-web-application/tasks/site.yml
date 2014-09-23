@@ -4,18 +4,21 @@
   action:
     module: "template"
     src: "{{ config }}"
-    dest: "/etc/apache2/sites-available/{{ site }}"
+    dest: "/etc/apache2/sites-available/{{ prefix }}__{{ item.main_domain }}__{{ suffix }}.conf"
   sudo: "yes"
+  with_items: "sites"
 
 - name: "enable apache site {{ label }}"
   command:
-    a2ensite {{ site }}
+    a2ensite "{{ prefix }}__{{ item.main_domain }}__{{ suffix }}"
   sudo: "yes"
-  when: "enabled == true"
+  when: "item.enabled == true"
+  with_items: "sites"
 
 - name: "disable apache site {{ label }}"
   command:
-    a2dissite {{ site }}
-  when: "enabled == false"
+    a2dissite "{{ prefix }}__{{ item.main_domain }}__{{ suffix }}"
+  when: "item.enabled == false"
+  with_items: "sites"
 
 # ex: et ts=2 filetype=yaml

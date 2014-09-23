@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+
+cd /root/datingnode-ansible
+
+source ansible/hacking/env-setup
+
+cp /config/runtime-config .
+cp /config/parent-config .
+cp /config/inventory .
+
+ansible-playbook \
+	--connection "local" \
+	--inventory "inventory" \
+	--extra-vars "@runtime-config" \
+	--extra-vars "@parent-config" \
+	misc/config.yml

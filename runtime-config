@@ -2,9 +2,13 @@
 
 clusters:
 
+  shared:
+
+    build: "james"
+
   local:
 
-    build: "local"
+    build: "james"
 
     domain_suffix: "local.datingnode.com"
 

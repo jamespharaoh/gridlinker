@@ -29,3 +29,11 @@
     src: "ssh-authorized-keys"
     dest: "/root/.ssh/authorized_keys"
   sudo: "yes"
+
+- name: "create ansible init script"
+  action:
+    module: "template"
+    src: "ansible-init-script"
+    dest: "/etc/my_init.d/ansible"
+    mode: "0755"
+  sudo: "yes"

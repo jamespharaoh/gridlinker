@@ -1,0 +1,14 @@
+[base]
+base-build
+
+[database]
+database-build
+
+[web-server]
+web-server-build
+
+[web-application]
+web-application-build
+
+[vhost-proxy]
+vhost-proxy-build

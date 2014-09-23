@@ -1,21 +1,6 @@
 ---
 
-- name: "common"
-  hosts: "hosts"
+- name: "start docker containers"
+  hosts: "containers"
   gather_facts: "no"
-  roles: [ "start-common" ]
-
-- name: "database master"
-  hosts: "database-master"
-  gather_facts: "no"
-  roles: [ "start-database-master" ]
-
-- name: "database slave"
-  hosts: "database-slave"
-  gather_facts: "no"
-  roles: [ "start-database-slave" ]
-
-- name: "web application"
-  hosts: "web-application"
-  gather_facts: "no"
-  roles: [ "start-web-application" ]
+  roles: [ "docker-start" ]

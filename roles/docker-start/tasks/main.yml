@@ -1,0 +1,65 @@
+---
+
+- name: "create config dir"
+  delegate_to: "{{ parent }}"
+  action:
+    module: "file"
+    path: "{{ data_dir }}/{{ inventory_hostname }}/config"
+    state: "directory"
+  sudo: "yes"
+
+- name: "create runtime config"
+  delegate_to: "{{ parent }}"
+  action:
+    module: "copy"
+    src: "../runtime-config"
+    dest: "{{ data_dir }}/{{ inventory_hostname }}/config"
+  sudo: "yes"
+
+- name: "create parent config"
+  delegate_to: "{{ parent }}"
+  action:
+    module: "template"
+    src: "parent-config"
+    dest: "{{ data_dir }}/{{ inventory_hostname }}/config/parent-config"
+  sudo: "yes"
+
+- name: "create inventory"
+  delegate_to: "{{ parent }}"
+  action:
+    module: "template"
+    src: "ansible-inventory"
+    dest: "{{ data_dir }}/{{ inventory_hostname }}/config/inventory"
+  sudo: "yes"
+
+- name: "start container"
+  delegate_to: "{{ parent }}"
+  action:
+    module: "docker"
+    name: "{{ container_name }}"
+    state: "running"
+    image: "{{ start_image }}"
+    command: "/sbin/my_init"
+    dns:
+      - "{{ dns_servers.primary }}"
+      - "{{ dns_servers.secondary }}"
+    expose: "{{ start_expose }}"
+    ports: "{{ start_ports }}"
+    tty: "True"
+    stdin_open: "True"
+    volumes:
+      - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
+      - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+    env: "{{ start_env }}"
+
+#- name: "wait for connection"
+#  delegate_to: "{{ parent }}"
+#  action:
+#    module: "wait_for"
+#    host: "{{ hostvars [parent].private_address }}"
+#    port: "{{ item }}"
+#    state: "started"
+#    timeout: "10"
+#  with_items: "start_wait"
+
+# ex: et ts=2 filetype=yaml

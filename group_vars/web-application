@@ -1,0 +1,25 @@
+---
+
+container_type: "web-application"
+
+start_label: "web application"
+
+start_image: "{{ docker_registry }}/{{ docker_images.web_application }}:{{ cluster.build }}"
+
+start_expose:
+  - "80"
+
+start_ports:
+  - "{{ hostvars [parent].private_address }}:{{ cluster.ports.web_application }}:80"
+
+start_env:
+  - "DATABASE_MODE=slave"
+  - "DATABASE_MASTER_HOSTNAME={{ hostvars [parent].private_address }}"
+  - "DATABASE_MASTER_PORT={{ cluster.ports.database_master }}"
+
+start_env: []
+
+start_wait:
+  - "{{ cluster.ports.web_application }}"
+
+# ex: et ts=2 filetype=yaml

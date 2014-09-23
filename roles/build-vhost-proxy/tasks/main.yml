@@ -8,14 +8,6 @@
     - "nginx"
   sudo: "yes"
 
-- name: "create ansible init script"
-  action:
-    module: "template"
-    src: "ansible-init-script"
-    dest: "/etc/my_init.d/ansible"
-    mode: "0755"
-  sudo: "yes"
-
 - name: "create nginx service directory"
   action:
     module: "file"

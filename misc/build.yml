@@ -1,0 +1,16 @@
+---
+
+- hosts: "base-build"
+  roles: [ "build-common" ]
+
+- hosts: "database-build"
+  roles: [ "build-common", "build-database" ]
+
+- hosts: "web-server-build"
+  roles: [ "build-common", "build-web-server" ]
+
+- hosts: "web-application-build"
+  roles: [ "build-common", "build-web-server", "build-web-application" ]
+
+- hosts: "vhost-proxy-build"
+  roles: [ "build-common", "build-vhost-proxy" ]

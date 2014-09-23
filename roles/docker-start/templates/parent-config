@@ -1,0 +1,3 @@
+---
+cluster_name: "{{ cluster_name }}"
+parent_address: "{{ hostvars [parent].private_address }}"

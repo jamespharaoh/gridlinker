@@ -1,3 +1,0 @@
----
-
-private_address: "{{ private_address }}"

@@ -1,14 +1,19 @@
 # {{ ansible_managed }}
-<VirtualHost {{ interfaces|default('*') }}:{{ port|default('80') }}>
-	ServerName {{ item.api_domain }}
-	ServerAlias {% if test_domain_extension is defined %}{{ item.api_domain }}.datingnode.com.{{test_domain_extension}}{% endif %} {{ item.api_domain }}.staging.datingnode.com
 
-	ServerAdmin {{server_admin_email}}
+<VirtualHost *:80>
+
+	ServerName {{ item.api_domain }}
+
+	ServerAlias {{ item.api_domain }}.datingnode.com.{{ cluster.domain_suffix }}
+
+	ServerAdmin {{ server_admin_email }}
 
 	SetEnvIf Remote_Addr ^ SERVICE_DOMAIN={{ item.main_domain }}
 
-	DocumentRoot {{platform_super_dir}}
-	<Directory {{platform_super_dir}}>
+	DocumentRoot {{ platform_super_dir }}
+
+	<Directory {{ platform_super_dir }}>
+
 		Options FollowSymLinks
 		AllowOverride none
 		Require all granted
@@ -21,7 +26,7 @@
 
 	ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000{{platform_super_dir}}$1
 
- 	<Location />
+	<Location />
 		<IfModule mod_filter.c>
 		<IfModule mod_deflate.c>
 		AddOutputFilterByType DEFLATE application/atom+xml \

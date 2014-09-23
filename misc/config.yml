@@ -1,0 +1,7 @@
+---
+
+- hosts: "web-application"
+  roles: [ "config-web-application" ]
+
+- hosts: "vhost-proxy"
+  roles: [ "config-vhost-proxy" ]

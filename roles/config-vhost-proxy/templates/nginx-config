@@ -31,10 +31,10 @@ http {
 
 	# load balancer
 
-{% for cluster_name, cluster in clusters.iteritems () %}
+{% for cluster_name, cluster in clusters.iteritems () if 'ports' in cluster %}
 
 	upstream {{ cluster_name }} {
-		server {{ private_address }}:{{ cluster.ports.web_application }};
+		server {{ parent_address }}:{{ cluster.ports.web_application }};
 	}
 
 	server {
@@ -45,6 +45,7 @@ http {
 
 		location / {
 			proxy_pass http://{{ cluster_name }};
+			proxy_set_header Host $host;
 		}
 
 	}
