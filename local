@@ -1,11 +1,21 @@
-# local is applied to all hosts in this inventory
+# live
 
 [local:children]
+hosts
+containers
+
+# hosts
+
+[hosts]
+localhost
+
+# containers
+
+[containers:children]
 database-master
 database-slave
-
-[local]
-localhost
+web-application
+vhost-proxy
 
 # database
 
@@ -18,3 +28,13 @@ database-master-0  parent=localhost
 
 [database-slave]
 database-slave-0   parent=localhost
+
+# web app
+
+[web-application]
+web-application-0  parent=localhost
+
+# vhost proxy
+
+[vhost-proxy]
+vhost-proxy        parent=localhost

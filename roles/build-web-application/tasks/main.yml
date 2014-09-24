@@ -15,7 +15,7 @@
 - name: "create plaform directories"
   action:
     module: "file"
-    path: "{{ platform_assets_dir }}"
+    path: "{{ item }}"
     state: "directory"
     owner: "www-data"
     group: "www-data"

@@ -7,7 +7,6 @@
   with_items:
    - "apache2"
    - "apachetop"
-   - "libapache2-mod-fcgid"
    - "memcached"
    - "php5"
    - "php5-cli"
@@ -26,12 +25,28 @@
     name: "{{ item }}"
   with_items:
    - "actions"
+   - "alias"
    - "deflate"
    - "env"
+   - "fcgid"
    - "proxy"
    - "proxy_fcgi"
    - "rewrite"
    - "ssl"
+
+- name: "create apache php5 fpm config"
+  action:
+    module: "template"
+    src: "apache-php5-fpm-config"
+    dest: "/etc/apache2/conf-available/php5-fpm.conf"
+  sudo: "yes"
+
+- name: "enable apache php5 fpm config"
+  command:
+    a2enconf php5-fpm
+  args:
+    creates: "/etc/apache2/conf-enabled/php5-fpm.conf"
+  sudo: "yes"
 
 - name: "create service dir"
   action:
@@ -42,6 +57,7 @@
   with_items:
     - "apache"
     - "memcached"
+    - "php-fpm"
 
 - name: "create service script"
   action:
@@ -53,5 +69,13 @@
   with_items:
     - "apache"
     - "memcached"
+    - "php-fpm"
+
+- name: "create php5 fpm www config"
+  action:
+    module: "template"
+    src: "php5-fpm-www-config"
+    dest: "/etc/php5/fpm/pool.d/www.conf"
+  sudo: "yes"
 
 # ex: et ts=2 filetype=yaml
