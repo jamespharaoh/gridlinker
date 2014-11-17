@@ -30,4 +30,11 @@
   config: "apache{{ apache_version }}-service-vhost-static.j2"
   sites: "{{ services }}"
 
+- name: "create datingnode-config.json"
+  action:
+    module: "template"
+    src: "datingnode-config"
+    dest: "/var/www/datingnode-config.json"
+  sudo: "yes"
+
 # ex: et ts=2 filetype=yaml

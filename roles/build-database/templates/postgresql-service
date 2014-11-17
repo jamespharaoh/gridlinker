@@ -137,6 +137,22 @@ if test "$DATABASE_MODE" = "master" -a "$FIRST_RUN"; then
 
 		"
 
+	echo "-- creating app databases and users"
+
+	setuid postgres \
+	psql \
+		-c "
+
+			CREATE USER jimmyff
+			ENCRYPTED PASSWORD 'topsecret';
+
+			CREATE DATABASE dating
+			OWNER jimmyff;
+
+		"
+
+	datingNode2009
+
 fi
 
 wait $POSTGRESQL_PID

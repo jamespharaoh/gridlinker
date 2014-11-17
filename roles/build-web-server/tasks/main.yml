@@ -79,4 +79,11 @@
     dest: "/etc/php5/fpm/pool.d/www.conf"
   sudo: "yes"
 
+- name: "create datingnode config"
+  action:
+    module: "template"
+    src: "datingnode-config"
+    dest: "/var/www/datingnode-config.json"
+  sudo: "yes"
+
 # ex: et ts=2 filetype=yaml

@@ -1,0 +1,118 @@
+{
+
+	"datingnode": {
+
+		"dir" : "/tink/projects/dating/datingnode-super/",
+
+		"ssl" : {
+			"img"			: false,
+			"secure"		: false,
+			"api"			: false
+		},
+
+		"domain-postfix" : {
+			"secure" 			: false,
+			"img" 				: false,
+			"api" 				: false
+		},
+
+		"components": {
+			"app-web" : {
+
+				"ssl" : {
+					"main"		: false,
+					"img"		: false,
+					"static"	: false,
+					"api"		: false
+				},
+
+				"domain-postfix" : {
+					"main"		: ".togepi",
+					"img"		: false,
+					"static"	: false,
+					"api"		: ".togepi"
+				},
+
+				"sitemap-dir" 	: "/tink/projects/dating/sitemaps/"
+			},
+
+			"cms" : {
+				"ssl" : {
+					"main"	: false,
+					"api"	: false
+				},
+				"domain-postfix" : {
+					"main"	: false,
+					"api"	: false
+				}
+			},
+
+			"control" : {
+				"ssl" : {
+					"main"	: false,
+					"api"	: false
+				},
+				"domain-postfix" : {
+					"main"	: false,
+					"api"	: false
+				}
+			},
+
+			"reports" : {
+				"ssl" : {
+					"main"	: false,
+					"api"	: false
+				},
+				"domain-postfix" : {
+					"main"	: false,
+					"api"	: false
+				}
+			},
+
+
+			"website" : {
+				"ssl" : {
+					"main"	: false,
+					"img"	: false
+				},
+				"domain-postfix" : {
+					"main"	: false,
+					"img"	: false
+				}
+			}
+		}
+	},
+
+	"development" : {
+		"debug" 		: true,
+		"environment" 	: "development",
+		"server-ref"	: "web4"
+	},
+
+	"database" : {
+		"postgresql" : {
+			"name" 		: "dating",
+			"host" 		: "{{ parent_address }}",
+			"port" 		: "{{ cluster.ports.database_master }}",
+			"user" 		: "jimmy",
+			"password" 	: "topsecret"
+		}
+	},
+
+	"cache" : {
+		"memcache" : {
+			"host" 	: "localhost",
+			"port" 	: 11211
+		}
+	},
+
+	"data-store" : {
+		"user-data-dir"		: "/tink/projects/dating/user_data/",
+		"image-cache-dir" 	: "/tink/projects/dating/image_cache/"
+	},
+
+	"errors" : {
+		"email"		: "errors@datingnode.com",
+		"log-dir"	: "/tink/projects/dating/error_logs/"
+	}
+}
