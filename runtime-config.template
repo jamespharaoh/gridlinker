@@ -10,7 +10,7 @@ clusters:
 
     build: "{{ deployment_name }}"
 
-    domain_suffix: "{{ deployment_name }}"
+    domain_suffix: "{{ deployment_name }}.datingnode.com"
 
     ports:
       database_master: 5001
@@ -31,6 +31,8 @@ clusters:
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
 vhost_proxy_build: "{{ deployment_name }}"
+
+devbox_private: "{{ devbox_private }}"
 
 services:
 
