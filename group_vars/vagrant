@@ -1,0 +1,29 @@
+---
+
+ansible_connection: "local"
+
+devbox_user: "vagrant"
+devbox_home: "/home/vagrant"
+
+devbox_install_packages:
+
+  - "btrfs-tools"
+  - "colordiff"
+  - "encfs"
+  - "git"
+  - "nfs-kernel-server"
+  - "ngrep"
+  - "samba"
+  - "whois"
+
+devbox_checkouts:
+
+  - name: "datingnode-ansible"
+    remote: "git@bitbucket.org:jamespharaoh/datingnode-ansible.git"
+    branch: "docker"
+
+  - name: "datingnode-super"
+    remote: "git@bitbucket.org:jimmyff/datingnode-super.git"
+    branch: "master"
+
+# ex: et ts=2 filetype=yaml

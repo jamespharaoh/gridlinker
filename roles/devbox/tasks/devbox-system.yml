@@ -1,0 +1,29 @@
+---
+
+- name: "install system packages"
+  action:
+    module: "apt"
+    state: "present"
+    name: "{{ item }}"
+  sudo: "yes"
+  sudo_user: "root"
+  with_items: "devbox_install_packages"
+  tags: "update"
+
+- name: "setup sudo"
+  action:
+    module: "template"
+    src: "devbox-sudoers-ssh-agent"
+    dest: "/etc/sudoers.d/ssh-agent"
+  sudo: "yes"
+  sudo_user: "root"
+
+- name: "install ssh known hosts"
+  action:
+    module: "template"
+    src: "devbox-ssh-known-hosts"
+    dest: "/etc/ssh/ssh_known_hosts"
+  sudo: "yes"
+  sudo_user: "root"
+
+# ex: et ts=2 filetype=yaml

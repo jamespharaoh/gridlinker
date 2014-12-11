@@ -55,3 +55,17 @@ global_remove_packages:
   - "resolvconf"
 
 remove_packages: "{{ global_remove_packages }}"
+
+ssh_host_keys:
+
+  - name: "bitbucket.org"
+    type: "ssh-rsa"
+    data:
+      - "AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB"
+      - "33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCa"
+      - "Ho6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlB"
+      - "p4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeuk"
+      - "U0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSB"
+      - "ne8+seeFVBoGqzHM9yXw=="
+
+# ex: et ts=2 filetype=yaml

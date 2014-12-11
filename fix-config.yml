@@ -1,0 +1,15 @@
+---
+
+- hosts: "localhost"
+  gather_facts: false
+  tasks:
+
+  - name: "create datingnode-ansible config"
+    action:
+      module: "template"
+      src: "config.template"
+      dest: "/home/vagrant/datingnode-ansible/config"
+    sudo: "yes"
+    sudo_user: "vagrant"
+
+# ex: et ts=2 filetype=yaml
