@@ -24,5 +24,6 @@
     with_items:
       - "datingnode-config"
       - "deploy-config"
+      - "runtime-config"
 
 # ex: et ts=2 filetype=yaml

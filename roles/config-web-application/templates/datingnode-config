@@ -2,7 +2,7 @@
 
 	"datingnode": {
 
-		"dir" : "/tink/projects/dating/datingnode-super/",
+		"dir" : "/var/www/datingnode-super/",
 
 		"ssl" : {
 			"img"			: false,
@@ -33,7 +33,7 @@
 					"api"		: ".togepi"
 				},
 
-				"sitemap-dir" 	: "/tink/projects/dating/sitemaps/"
+				"sitemap-dir" 	: "/var/www/datingnode-assets/sitemaps/"
 			},
 
 			"cms" : {
@@ -107,12 +107,12 @@
 	},
 
 	"data-store" : {
-		"user-data-dir"		: "/tink/projects/dating/user_data/",
-		"image-cache-dir" 	: "/tink/projects/dating/image_cache/"
+		"user-data-dir"		: "/var/www/datingnode-assets/user-data/",
+		"image-cache-dir" 	: "/var/www/datingnode-assets/image-cache/"
 	},
 
 	"errors" : {
 		"email"		: "errors@datingnode.com",
-		"log-dir"	: "/tink/projects/dating/error_logs/"
+		"log-dir"	: "{{ platform_log_dir }}"
 	}
 }

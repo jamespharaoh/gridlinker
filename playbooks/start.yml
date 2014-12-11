@@ -4,3 +4,5 @@
   hosts: "containers"
   gather_facts: "no"
   roles: [ "docker-start" ]
+
+# ex: et ts=2 filetype=yaml

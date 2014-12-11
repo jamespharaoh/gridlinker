@@ -143,15 +143,27 @@ if test "$DATABASE_MODE" = "master" -a "$FIRST_RUN"; then
 	psql \
 		-c "
 
-			CREATE USER jimmyff
+			CREATE USER jimmy
 			ENCRYPTED PASSWORD 'topsecret';
+		"
+
+	setuid postgres \
+	psql \
+		-c "
 
 			CREATE DATABASE dating
-			OWNER jimmyff;
+			OWNER jimmy;
 
 		"
 
-	datingNode2009
+	setuid postgres \
+	psql dating \
+		-c "
+
+			CREATE SCHEMA gis;
+			CREATE EXTENSION postgis WITH SCHEMA gis;
+
+		"
 
 fi
 

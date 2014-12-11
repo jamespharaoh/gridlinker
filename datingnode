@@ -185,8 +185,9 @@ function do_cluster_start () {
 	shift
 
 	ansible-playbook \
-		--extra-vars @deploy-config \
-		--extra-vars @runtime-config \
+		--extra-vars "@config" \
+		--extra-vars "@deploy-config" \
+		--extra-vars "@runtime-config" \
 		--extra-vars "cluster_name=$cluster" \
 		--inventory "$cluster" \
 		playbooks/start.yml \
@@ -200,8 +201,9 @@ function do_cluster_stop () {
 	shift
 
 	ansible-playbook \
-		--extra-vars @deploy-config \
-		--extra-vars @runtime-config \
+		--extra-vars "@config" \
+		--extra-vars "@deploy-config" \
+		--extra-vars "@runtime-config" \
 		--extra-vars "cluster_name=$cluster" \
 		--inventory "$cluster" \
 		playbooks/stop.yml \
@@ -215,8 +217,9 @@ function do_cluster_delete () {
 	shift
 
 	ansible-playbook \
-		--extra-vars @deploy-config \
-		--extra-vars @runtime-config \
+		--extra-vars "@config" \
+		--extra-vars "@deploy-config" \
+		--extra-vars "@runtime-config" \
 		--extra-vars "cluster_name=$cluster" \
 		--inventory "$cluster" \
 		playbooks/delete.yml \

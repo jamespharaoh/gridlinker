@@ -13,4 +13,11 @@ export LC_NAME="C.UTF-8"
 
 export PATH="$HOME/bin:$PATH"
 
+# postgres connection
+
+export PGHOST="{{ devbox_private }}"
+export PGPORT="5001"
+export PGUSER="postgres"
+export PGPASSWORD="topsecret"
+
 # ex: noet ts=4 filetype=sh

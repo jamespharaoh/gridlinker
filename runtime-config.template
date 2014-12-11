@@ -4,13 +4,13 @@ clusters:
 
   shared:
 
-    build: "james"
+    build: "{{ deployment_name }}"
 
   local:
 
-    build: "james"
+    build: "{{ deployment_name }}"
 
-    domain_suffix: "local.datingnode.com"
+    domain_suffix: "{{ deployment_name }}"
 
     ports:
       database_master: 5001
@@ -19,18 +19,18 @@ clusters:
 
   live:
 
-    build: "james"
+    build: "{{ deployment_name }}"
 
-    domain_suffix: "james.datingnode.com"
+    domain_suffix: "live.datingnode.com"
 
     ports:
       database_master: 5101
       database_slave: 5102
       web_application: 5103
 
-cluster: "{{ clusters [cluster_name] }}"
+cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
-vhost_proxy_build: "james"
+vhost_proxy_build: "{{ deployment_name }}"
 
 services:
 

@@ -13,8 +13,13 @@ devbox_install_packages:
   - "git"
   - "nfs-kernel-server"
   - "ngrep"
+  - "postgresql-client-9.3"
   - "samba"
   - "whois"
+
+devbox_install_python:
+
+  - "docker-py"
 
 devbox_checkouts:
 
