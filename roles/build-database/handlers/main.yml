@@ -1,4 +1,0 @@
----
-
-- name: Restart postgresql
-  action: service name=postgresql state=restarted

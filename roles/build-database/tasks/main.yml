@@ -1,25 +1,15 @@
 ---
 
-- name: "Ubuntu: Install Postgresql & Postgis"
-  sudo: yes
-  apt: name={{ item }} state=present
+- name: "install postgresql packages"
+  action:
+    module: "apt"
+    name: "{{ item }}"
   with_items:
-   - postgresql-9.3
-   - postgresql-9.3-postgis-2.1
-   - postgresql-9.3-postgis-2.1-scripts
-   - postgresql-client
-  when: ansible_distribution == "Ubuntu"
-  notify: Restart postgresql
-
-- name: "Debian: Install Postgresql & Postgis"
+    - "postgresql-9.3"
+    - "postgresql-9.3-postgis-2.1"
+    - "postgresql-9.3-postgis-2.1-scripts"
+    - "postgresql-client"
   sudo: yes
-  apt: name={{ item }} state=present
-  with_items:
-   - postgresql-9.1
-   - postgresql-9.1-postgis
-   - postgresql-client
-  when: ansible_distribution == "Debian"
-  notify: Restart postgresql
 
 - name: "create postgresql service directory"
   action:

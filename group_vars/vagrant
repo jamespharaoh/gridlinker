@@ -24,6 +24,6 @@ devbox_checkouts:
 
   - name: "datingnode-super"
     remote: "git@bitbucket.org:jimmyff/datingnode-super.git"
-    branch: "master"
+    branch: "unified-conversations"
 
 # ex: et ts=2 filetype=yaml

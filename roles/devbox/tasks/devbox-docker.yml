@@ -1,0 +1,35 @@
+---
+
+- name: "install docker key"
+  action:
+    module: "apt_key"
+    keyserver: "keyserver.ubuntu.com"
+    id: "36A1D7869245C8950F966E92D8576A8BA88D21E9"
+  sudo: "yes"
+  sudo_user: "root"
+
+- name: "configure docker repository"
+  action:
+    module: "apt_repository"
+    repo: "deb https://get.docker.com/ubuntu docker main"
+    update_cache: "yes"
+  sudo: "yes"
+  sudo_user: "root"
+
+- name: "install docker"
+  action:
+    module: "apt"
+    name: "lxc-docker"
+  sudo: "yes"
+  sudo_user: "root"
+
+- name: "add ubuntu to docker group"
+  action:
+    module: "user"
+    name: "vagrant"
+    append: "yes"
+    groups: "docker"
+  sudo: "yes"
+  sudo_user: "root"
+
+# ex: et ts=2 filetype=yaml
