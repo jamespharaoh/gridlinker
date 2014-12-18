@@ -25,8 +25,8 @@ database-slave
 [database-master]
 database-master-0  parent=rocket-hz-vm-1
 
-[database-slave]
-database-slave-0   parent=rocket-hz-vm-1
+#[database-slave]
+#database-slave-0   parent=rocket-hz-vm-1
 
 # web application
 

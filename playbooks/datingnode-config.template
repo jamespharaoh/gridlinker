@@ -1,4 +1,4 @@
-BUILD="{{ deployment_name }}"
+BUILD="{{ deployment_name }}-{{ lookup ('file', '../build') }}"
 
 DNS_PRIMARY="8.8.8.8"
 DNS_SECONDARY="8.8.4.4"

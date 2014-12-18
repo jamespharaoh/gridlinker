@@ -246,6 +246,7 @@ if test "$#" = 0; then
 
 		   Manage docker images:
 		      image-clean        Delete all images
+		      image-build-inc    Increment build number
 		      image-build-all    Build all images
 		      image-build-IMAGE  Build specified image
 		      image-push-all     Push all images
@@ -282,6 +283,12 @@ case "$command" in
 
 (image-clean)
 	do_image_clean
+	;;
+
+(image-build-inc)
+	build="$(cat build)"
+	let build="build + 1"
+	echo "$build" > build
 	;;
 
 (image-build-all)

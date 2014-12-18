@@ -7,32 +7,32 @@ cd "$(dirname "$0")"
 # always run as root
 
 if test "$UID" != "0"; then
-        exec sudo "$0" "$@"
+	exec sudo "$0" "$@"
 fi
 
 # load config
 
 function parse_yaml {
 
-        local filename="$1"
-        local prefix="$2"
+	local filename="$1"
+	local prefix="$2"
 
-        local s='[[:space:]]*'
-        local w='[a-zA-Z0-9_]*'
-        local fs=$(echo @ | tr @ '\034')
+	local s='[[:space:]]*'
+	local w='[a-zA-Z0-9_]*'
+	local fs=$(echo @ | tr @ '\034')
 
-        sed -ne "s|^\($s\):|\1|" \
-                -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
-                -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$filename" |
-        awk -F$fs '{
-                indent = length ($1) / 2;
-                vname [indent] = $2;
-                for (i in vname) { if (i > indent) { delete vname [i] } }
-                if (length ($3) > 0) {
-                        vn=""; for (i = 0; i < indent; i ++) { vn = (vn) (vname [i]) ("_") }
-                        printf ("%s%s%s=\"%s\"\n", "'$prefix'", vn, $2, $3);
-                }
-        }'
+	sed -ne "s|^\($s\):|\1|" \
+		-e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+		-e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$filename" |
+	awk -F$fs '{
+		indent = length ($1) / 2;
+		vname [indent] = $2;
+		for (i in vname) { if (i > indent) { delete vname [i] } }
+		if (length ($3) > 0) {
+			vn=""; for (i = 0; i < indent; i ++) { vn = (vn) (vname [i]) ("_") }
+			printf ("%s%s%s=\"%s\"\n", "'$prefix'", vn, $2, $3);
+		}
+	}'
 
 }
 
@@ -41,41 +41,41 @@ eval "$(parse_yaml config config_)"
 # check deployment mode
 
 if ! test "$config_deployment_mode"; then
-        config_deployment_mode="vagrant"
+	config_deployment_mode="vagrant"
 fi
 
 case "$config_deployment_mode" in
 
-        (vagrant)
+	(vagrant)
 
-                if test "$HOSTNAME" != "datingnode-devbox"; then
-                        echo "This command must be run from inside vagrant" >&2
-                        echo "Please run 'vagrant ssh' and try again" >&2
-                        exit 1
-                fi
+		if test "$HOSTNAME" != "datingnode-devbox"; then
+			echo "This command must be run from inside vagrant" >&2
+		echo "Please run 'vagrant ssh' and try again" >&2
+			exit 1
+		fi
 
-                echo "Running in VAGRANT deployment mode"
+		echo "Running in VAGRANT deployment mode"
 
-                deployment_home="/home/vagrant"
-                deployment_user="vagrant"
+		deployment_home="/home/vagrant"
+		deployment_user="vagrant"
 
-                ;;
+		;;
 
-        (direct)
+	(direct)
 
-                echo "Running in DIRECT deployment mode"
+		echo "Running in DIRECT deployment mode"
 
-                deployment_home="/home/ubuntu"
-                deployment_user="ubuntu"
+		deployment_home="/home/ubuntu"
+		deployment_user="ubuntu"
 
-                ;;
+		;;
 
-        (*)
+	(*)
 
-                echo "Unrecognised deployment mode: $config_deployment_mode"
-                exit 1
+		echo "Unrecognised deployment mode: $config_deployment_mode"
+		exit 1
 
-                ;;
+		;;
 
 esac
 
@@ -89,17 +89,19 @@ export PYTHONUNBUFFERED=1
 
 if test "$config_deployment_mode" = "vagrant"; then
 
-        ansible-playbook \
-                --inventory-file inventory \
-                --extra-vars @config \
-                --limit vagrant \
-                fix-config.yml
+	ansible-playbook \
+		--inventory-file "inventory" \
+		--extra-vars "@config" \
+		--limit "vagrant" \
+		"playbooks/fix-config.yml"
 
 fi
 
 # run ansible-playbook
 
 exec ansible-playbook \
-        --inventory-file inventory \
-        --extra-vars @config \
-        "${@}"
+	--inventory-file "inventory" \
+	--extra-vars "@config" \
+	"${@}"
+
+# ex: noet ts=4 filetype=sh
