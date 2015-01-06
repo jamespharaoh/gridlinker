@@ -1,0 +1,21 @@
+---
+
+container_type: "storage"
+
+start_label: "storage"
+
+start_image: "{{ docker_registry }}/{{ docker_images.storage }}:{{ cluster.build }}"
+
+start_expose:
+  - "1234"
+
+start_ports:
+  - "{{ hostvars [parent].private_address }}:{{ cluster.ports.storage }}:1234"
+
+start_env:
+  HELLO: "world"
+
+start_wait:
+  - "{{ cluster.ports.storage }}"
+
+# ex: et ts=2 filetype=yaml

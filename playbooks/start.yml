@@ -4,5 +4,6 @@
   hosts: "containers"
   gather_facts: "no"
   roles: [ "docker-start" ]
+  serial: "1"
 
 # ex: et ts=2 filetype=yaml

@@ -1,5 +1,7 @@
 ---
 
+ansible_ssh_host: "{{ public_address }}"
+
 public_address: "148.251.241.187"
 public_netmask: "255.255.255.248"
 public_network: "148.251.241.184"
@@ -10,3 +12,5 @@ private_address: "10.69.128.3"
 private_netmask: "255.255.192.0"
 private_network: "10.69.128.0"
 private_broadcast: "10.69.131.255"
+
+# ex: et ts=2 filetype=yaml

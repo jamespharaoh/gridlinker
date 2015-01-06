@@ -8,12 +8,12 @@ start_expose:
   - "5432"
 
 start_ports:
-  - "{{ devbox_private }}:{{ cluster.ports.database_slave }}:5432"
+  - "{{ hostvars [parent].private_address }}:{{ cluster.ports.database_slave }}:5432"
 
 start_env:
-  - "DATABASE_MODE=slave"
-  - "DATABASE_MASTER_HOSTNAME={{ devbox_private }}"
-  - "DATABASE_MASTER_PORT={{ cluster.ports.database_master }}"
+  DATABASE_MODE: "slave"
+  DATABASE_MASTER_HOSTNAME: "{{ hostvars [parent].private_address }}"
+  DATABASE_MASTER_PORT: "{{ cluster.ports.database_master }}"
 
 start_wait:
   - "{{ cluster.ports.database_slave }}"

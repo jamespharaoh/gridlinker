@@ -6,7 +6,10 @@ containers
 
 # hosts
 
-[hosts]
+[hosts:children]
+rocket-hz-vm
+
+[rocket-hz-vm]
 rocket-hz-vm-1
 
 # containers
@@ -15,6 +18,7 @@ rocket-hz-vm-1
 database-master
 database-slave
 web-application
+vhost-proxy
 
 # database
 
@@ -25,10 +29,15 @@ database-slave
 [database-master]
 database-master-0  parent=rocket-hz-vm-1
 
-#[database-slave]
+[database-slave]
 #database-slave-0   parent=rocket-hz-vm-1
 
 # web application
 
 [web-application]
 web-application-0  parent=rocket-hz-vm-1
+
+# vhost proxy
+
+[vhost-proxy]
+vhost-proxy-0      parent=rocket-hz-vm-1

@@ -10,3 +10,5 @@ private_address: "10.69.128.1"
 private_netmask: "255.255.192.0"
 private_network: "10.69.128.0"
 private_broadcast: "10.69.131.255"
+
+# ex: et ts=2 filetype=yaml

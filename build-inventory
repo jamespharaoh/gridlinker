@@ -12,3 +12,6 @@ web-application-build
 
 [vhost-proxy]
 vhost-proxy-build
+
+[storage]
+storage-build

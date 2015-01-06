@@ -10,14 +10,9 @@ start_expose:
   - "80"
 
 start_ports:
-  - "{{ devbox_private }}:{{ cluster.ports.web_application }}:80"
+  - "{{ hostvars [parent].private_address }}:{{ cluster.ports.web_application }}:80"
 
-start_env:
-  - "DATABASE_MODE=slave"
-  - "DATABASE_MASTER_HOSTNAME={{ devbox_private }}"
-  - "DATABASE_MASTER_PORT={{ cluster.ports.database_master }}"
-
-start_env: []
+start_env: {}
 
 start_wait:
   - "{{ cluster.ports.web_application }}"

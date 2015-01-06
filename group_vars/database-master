@@ -10,10 +10,10 @@ start_expose:
   - "5432"
 
 start_ports:
-  - "{{ devbox_private }}:{{ cluster.ports.database_master }}:5432"
+  - "{{ hostvars [parent].private_address }}:{{ cluster.ports.database_master }}:5432"
 
 start_env:
-  - "DATABASE_MODE=master"
+  DATABASE_MODE: "master"
 
 start_wait:
   - "{{ cluster.ports.database_master }}"

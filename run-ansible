@@ -82,7 +82,6 @@ esac
 # load ansible environment
 
 source ansible/hacking/env-setup >/dev/null
-
 export PYTHONUNBUFFERED=1
 
 # fix config
@@ -99,9 +98,11 @@ fi
 
 # run ansible-playbook
 
-exec ansible-playbook \
-	--inventory-file "inventory" \
-	--extra-vars "@config" \
-	"${@}"
+if test "$#" != "0"; then
+	exec ansible-playbook \
+		--inventory-file "inventory" \
+		--extra-vars "@config" \
+		"${@}"
+fi
 
 # ex: noet ts=4 filetype=sh

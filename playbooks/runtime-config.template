@@ -4,11 +4,11 @@ clusters:
 
   shared:
 
-    build: "{{ deployment_name }}"
+    build: "{{ deployment_name }}-{{ deployment_build }}"
 
   local:
 
-    build: "{{ deployment_name }}"
+    build: "{{ deployment_name }}-{{ deployment_build }}"
 
     domain_suffix: "{{ deployment_name }}.datingnode.com"
 
@@ -16,10 +16,11 @@ clusters:
       database_master: 5001
       database_slave: 5002
       web_application: 5003
+      storage: 5004
 
   live:
 
-    build: "{{ deployment_name }}"
+    build: "{{ deployment_name }}-{{ deployment_build }}"
 
     domain_suffix: "live.datingnode.com"
 
@@ -27,6 +28,7 @@ clusters:
       database_master: 5101
       database_slave: 5102
       web_application: 5103
+      storage: 5004
 
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 

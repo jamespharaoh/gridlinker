@@ -62,6 +62,7 @@ rsync \
 	--delete \
 	--exclude ".git" \
 	--include "/ansible" \
+	--include "/ansible-modules" \
 	--include "/ansible.cfg" \
 	--include "/group_vars" \
 	--include "/host_vars" \
