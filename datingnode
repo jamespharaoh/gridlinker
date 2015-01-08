@@ -70,23 +70,35 @@ function build_image () {
 
 	# remove existing image
 
+	echo "remove existing..."
+
 	docker rmi "$image_name" &>/dev/null || true
 	docker rmi "$image_name:$BUILD_NAME" &>/dev/null || true
 	docker rmi "$image_name:$BUILD_ID" &>/dev/null || true
 
 	# commit and tag new image
 
+	echo "commit..."
+
 	image_id=$(
 		docker commit "$container_name"
 	)
 
-	docker tag "$image_id" "$image_name" &>/dev/null
-	docker tag "$image_id" "$image_name:$BUILD_NAME" &>/dev/null
-	docker tag "$image_id" "$image_name:$BUILD_ID" &>/dev/null
+	echo "tag new..."
+
+	docker tag -f "$image_id" "$image_name"
+	docker tag -f "$image_id" "$image_name:$BUILD_NAME"
+	docker tag -f "$image_id" "$image_name:$BUILD_ID"
 
 	# remove container
 
+	echo "remove container..."
+
 	docker rm "$container_name" &>/dev/null
+
+	# done
+
+	echo "done!"
 
 }
 
