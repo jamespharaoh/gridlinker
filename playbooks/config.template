@@ -14,4 +14,6 @@ docker_quay_auth: "{{ docker_quay_auth | default ('') }}"
 
 devbox_private: "{{ devbox_private | default ('') }}"
 
+instant_deploy: "{{ instant_deploy | default ('no') }}"
+
 # ex: et ts=2 filetype=yaml

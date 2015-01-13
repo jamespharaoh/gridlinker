@@ -12,6 +12,10 @@ start_expose:
 start_ports:
   - "{{ hostvars [parent].private_address }}:{{ cluster.ports.database_master }}:5432"
 
+start_volumes:
+  - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
+  - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+
 start_env:
   DATABASE_MODE: "master"
 

@@ -10,6 +10,10 @@ start_expose:
 start_ports:
   - "80:80"
 
+start_volumes:
+  - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
+  - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+
 start_env: {}
 
 start_wait:

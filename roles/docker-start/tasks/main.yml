@@ -47,9 +47,7 @@
     ports: "{{ start_ports }}"
     tty: "True"
     stdin_open: "True"
-    volumes:
-      - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
-      - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+    volumes: "{{ start_volumes }}"
     env: "{{ start_env }}"
 
 #- name: "wait for connection"
