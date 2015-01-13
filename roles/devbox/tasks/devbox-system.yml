@@ -34,4 +34,31 @@
   sudo_user: "root"
   with_items: "devbox_install_python"
 
+- name: "get info about second disk"
+  action:
+    module: "stat"
+    path: "/dev/sdb"
+  register: "sdb_result"
+
+- name: "check second disk is present"
+  action:
+    module: "fail"
+    msg: "please add second drive to virtual machine"
+  when: "not sdb_result.stat.exists"
+
+- name: "setup second disk"
+  shell:
+    set -e;
+    parted /dev/sdb --script --align none -- mklabel gpt;
+    parted /dev/sdb --script --align none -- unit mb mkpart primary ext4 0 -0;
+    mkfs.ext4 /dev/sdb1;
+    mkdir -p /datingnode-local;
+    echo '/dev/sdb1 /datingnode-local ext4 defaults 0 0' >>/etc/fstab;
+    mount /datingnode-local;
+    touch /datingnode-local/.setup-flag;
+    true;
+  args:
+    creates: "/datingnode-local/.setup-flag"
+  sudo: "yes"
+
 # ex: et ts=2 filetype=yaml
