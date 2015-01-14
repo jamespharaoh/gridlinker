@@ -88,6 +88,11 @@ export PYTHONUNBUFFERED=1
 
 if test "$config_deployment_mode" = "vagrant"; then
 
+	if ! test -f "build"; then
+		sudo -u vagrant touch build
+		echo "0" > build
+	fi
+
 	ansible-playbook \
 		--inventory-file "inventory" \
 		--extra-vars "@config" \
