@@ -8,6 +8,7 @@ docker_images:
   web_application: "datingnode-web-application"
   vhost_proxy: "datingnode-vhost-proxy"
   storage: "datingnode-storage"
+  memcache: "datingnode-memcache"
 
 dns_servers:
   primary: "8.8.8.8"

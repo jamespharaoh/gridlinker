@@ -1,0 +1,24 @@
+---
+
+container_type: "memcache"
+
+start_label: "memcache"
+
+start_image: "{{ docker_registry }}/{{ docker_images.memcache }}:{{ cluster.build }}"
+
+start_expose:
+  - "11211"
+
+start_ports:
+  - "{{ hostvars [parent].private_address }}:{{ cluster.ports.memcache }}:11211"
+
+start_volumes:
+  - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
+  - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+
+start_env: {}
+
+start_wait:
+  - "{{ cluster.ports.memcache }}"
+
+# ex: et ts=2 filetype=yaml

@@ -188,6 +188,16 @@ function do_image_build_storage () {
 
 }
 
+function do_image_build_memcache () {
+
+	build_image \
+		"$IMAGE_BASE:$BUILD_ID" \
+		"$IMAGE_MEMCACHE" \
+		"$CONTAINER_MEMCACHE" \
+		"memcache"
+
+}
+
 # ---------- image push
 
 function do_image_push () {
@@ -321,6 +331,7 @@ case "$command" in
 	do_image_build_web_application
 	do_image_build_vhost_proxy
 	do_image_build_storage
+	do_image_build_memcache
 	echo ""
 	echo "all done sir!"
 	;;
@@ -337,6 +348,7 @@ case "$command" in
 	do_image_push "$IMAGE_WEB_APPLICATION"
 	do_image_push "$IMAGE_VHOST_PROXY"
 	do_image_push "$IMAGE_STORAGE"
+	do_image_push "$IMAGE_MEMCACHE"
 	;;
 
 (image-push-*)

@@ -16,6 +16,7 @@ database-master
 database-slave
 web-application
 vhost-proxy
+memcache
 
 # database
 
@@ -38,3 +39,8 @@ web-application-0  parent=localhost
 
 [vhost-proxy]
 vhost-proxy        parent=localhost
+
+# memcache
+
+[memcache]
+memcache-0         parent=localhost

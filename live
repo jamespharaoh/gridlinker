@@ -19,6 +19,7 @@ database-master
 database-slave
 web-application
 vhost-proxy
+memcache
 
 # database
 
@@ -30,7 +31,7 @@ database-slave
 database-master-0  parent=rocket-hz-vm-1
 
 [database-slave]
-#database-slave-0   parent=rocket-hz-vm-1
+# TODO
 
 # web application
 
@@ -41,3 +42,8 @@ web-application-0  parent=rocket-hz-vm-1
 
 [vhost-proxy]
 vhost-proxy-0      parent=rocket-hz-vm-1
+
+# memcache
+
+[memcache]
+memcache-0         parent=rocket-hz-vm-1
