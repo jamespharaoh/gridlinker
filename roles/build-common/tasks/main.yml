@@ -1,5 +1,7 @@
 ---
 
+- shell: sudo apt-get update
+
 - name: "install system packages"
   action:
     module: "apt"

@@ -4,7 +4,6 @@
 
 	ServerName control.datingnode.com
 	ServerAlias control.{{ cluster.domain_suffix }}
-	ServerAlias control.datingnode.com.{{ cluster.domain_suffix }}
 
 	ServerAdmin {{ server_admin_email }}
 
@@ -20,14 +19,14 @@
 
 		RewriteEngine on
 
-        RewriteRule  ^v[^/]*/css/(.*)$ 		/var/www/datingnode-super/control/www/css/$1 [L,END]
-        RewriteRule ^v[^/]*/img/(.*)$ 		/var/www/datingnode-super/control/www/img/$1 [L,END]
-        RewriteRule ^v[^/]*/js/(.*)$ 		/var/www/datingnode-super/control/www/js/$1 [L,END]
-        RewriteRule ^v[^/]*/font/(.*)$ 		/var/www/datingnode-super/control/www/font/$1 [L,END]
+        RewriteRule  ^v[^/]*/css/(.*)$ 		{{platform_super_dir}}/control/www/css/$1 [L,END]
+        RewriteRule ^v[^/]*/img/(.*)$ 		{{platform_super_dir}}/control/www/img/$1 [L,END]
+        RewriteRule ^v[^/]*/js/(.*)$ 		{{platform_super_dir}}/control/www/js/$1 [L,END]
+        RewriteRule ^v[^/]*/font/(.*)$ 		{{platform_super_dir}}/control/www/font/$1 [L,END]
 
         RewriteCond %{REQUEST_URI} !php$
         RewriteCond %{REQUEST_URI} !control/www/
-        RewriteRule ^(.*)$ fcgi://127.0.0.1:9000/var/www/datingnode-super/control/index.php [P]
+        RewriteRule ^(.*)$ fcgi://127.0.0.1:9000{{platform_super_dir}}/control/index.php [P]
 
 	</Directory>
 
@@ -58,8 +57,8 @@
 
 	</Location>
 
-	CustomLog {{ platform_log_dir }}control-apache-access.log combined
-	ErrorLog {{ platform_log_dir }}control-apache-error.log
+	CustomLog {{ platform_log_dir }}/control-apache-access.log combined
+	ErrorLog {{ platform_log_dir }}/control-apache-error.log
 	LogLevel warn
 
 

@@ -3,8 +3,14 @@
 <VirtualHost *:80>
 
 	ServerName {{ item.api_domain }}
+	ServerAlias {{ item.api_domain }}.{{ cluster.domain_suffix }}
 
-	ServerAlias {{ item.api_domain }}.datingnode.com.{{ cluster.domain_suffix }}
+{% for discreet_domain in discreet_domains %}
+
+	ServerAlias {{ item.discreet_subdomain }}{{ discreet_domain }}
+	ServerAlias {{ item.discreet_subdomain }}{{ discreet_domain }}.{{ cluster.domain_suffix }}
+
+{% endfor %}
 
 	ServerAdmin {{ server_admin_email }}
 
@@ -22,7 +28,7 @@
 
 		RewriteEngine on
         RewriteCond %{REQUEST_URI} !php$
-        RewriteRule ^(.*)$ fcgi://127.0.0.1:9000/var/www/datingnode-super/api/pipe.php [P]
+        RewriteRule ^(.*)$ fcgi://127.0.0.1:9000{{platform_super_dir}}/api/pipe.php [P]
 
 	</Directory>
 
@@ -51,8 +57,8 @@
 		</IfModule>
 	</Location>
 
-	CustomLog {{ platform_log_dir }}service-api-apache-access.log combined
-	ErrorLog {{ platform_log_dir }}service-api-apache-error.log
+	CustomLog {{ platform_log_dir }}/api-apache-access.log combined
+	ErrorLog {{ platform_log_dir }}/api-apache-error.log
 	LogLevel warn
 
 </VirtualHost>

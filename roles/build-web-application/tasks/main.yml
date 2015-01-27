@@ -12,20 +12,20 @@
     /var/www/datingnode-super/
   sudo: "yes"
 
-- name: "create plaform directories"
+- name: "link data dirs"
   action:
     module: "file"
-    path: "{{ item }}"
-    state: "directory"
-    owner: "www-data"
-    group: "www-data"
-    mode: "0644"
+    path: "{{ item.target }}"
+    state: "link"
+    src: "{{ item.source }}"
+    force: yes
   sudo: "yes"
   with_items:
-    - "{{ platform_log_dir }}"
-    - "{{ platform_assets_dir }}"
-    - "{{ platform_assets_dir }}/image-cache"
-    - "{{ platform_assets_dir }}/sitemaps"
-    - "{{ platform_assets_dir }}/user-data"
+
+    - source: "/data/logs"
+      target: "{{ platform_log_dir }}"
+
+    - source: "/data/assets"
+      target: "{{ platform_assets_dir }}"
 
 # ex: et ts=2 filetype=yaml

@@ -1,5 +1,20 @@
 ---
 
+- name: "create data dirs"
+  action:
+    module: "file"
+    path: "{{ item }}"
+    state: "directory"
+    owner: "www-data"
+    group: "www-data"
+  sudo: "yes"
+  with_items:
+    - "/data/logs"
+    - "/data/assets"
+    - "/data/assets/image-cache"
+    - "/data/assets/sitemaps"
+    - "/data/assets/user-data"
+
 - include: "site.yml"
   label: "control"
   prefix: "dp_control"
@@ -7,7 +22,16 @@
   config: "apache{{ apache_version }}-control-vhost-main.j2"
   sites:
     - main_domain: "control.datingnode.com"
-      enabled: "yes"
+      enabled: true
+      
+- include: "site.yml"
+  label: "secure"
+  prefix: "dp_secure"
+  suffix: "main"
+  config: "apache{{ apache_version }}-secure-vhost-main.j2"
+  sites:
+    - main_domain: "secure.datingnode.com"
+      enabled: true
 
 - include: "site.yml"
   label: "service"

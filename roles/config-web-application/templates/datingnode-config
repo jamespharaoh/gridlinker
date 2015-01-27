@@ -2,7 +2,7 @@
 
 	"datingnode": {
 
-		"dir" : "/var/www/datingnode-super/",
+		"dir" : "{{ platform_super_dir }}",
 
 		"ssl" : {
 			"img"			: false,
@@ -10,13 +10,11 @@
 			"api"			: false
 		},
 
-		"domain-postfix" : {
-			"secure" 			: false,
-			"img" 				: false,
-			"api" 				: false
-		},
+		"domain-postfix" : ".{{ cluster.domain_suffix }}",
+
 
 		"components": {
+		
 			"app-web" : {
 
 				"ssl" : {
@@ -33,8 +31,22 @@
 					"api"		: ".togepi"
 				},
 
-				"sitemap-dir" 	: "/var/www/datingnode-assets/sitemaps/"
+				"sitemap-dir" 	: "{{ platform_assets_dir }}/sitemaps"
 			},
+			
+			
+			"api": {
+				"discreetDomains" : [
+					"zxyabc.io"
+				]
+			},
+			
+			"cdn": {
+				"discreetDomains" : [
+					"cbayxz.io"
+				]
+			},
+			
 
 			"cms" : {
 				"ssl" : {
@@ -100,15 +112,17 @@
 	},
 
 	"cache" : {
-		"memcache" : {
-			"host" 	: "localhost",
-			"port" 	: 11211
-		}
+		"memcache" : [
+			{
+				"host" 	: "localhost",
+				"port" 	: 11211
+			}
+		]
 	},
 
 	"data-store" : {
-		"user-data-dir"		: "/var/www/datingnode-assets/user-data/",
-		"image-cache-dir" 	: "/var/www/datingnode-assets/image-cache/"
+		"user-data-dir"		: "{{ platform_assets_dir }}/user-data",
+		"image-cache-dir" 	: "{{ platform_assets_dir }}/image-cache"
 	},
 
 	"errors" : {
