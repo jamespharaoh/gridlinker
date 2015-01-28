@@ -39,6 +39,13 @@
   suffix: "main"
   config: "apache{{ apache_version }}-service-vhost-main.j2"
   sites: "{{ services }}"
+  
+- include: "site.yml"
+  label: "service"
+  prefix: "dp_service"
+  suffix: "app-web"
+  config: "apache{{ apache_version }}-service-vhost-app-web.j2"
+  sites: "{{ services }}"
 
 - include: "site.yml"
   label: "api"
