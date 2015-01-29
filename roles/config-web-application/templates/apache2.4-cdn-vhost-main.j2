@@ -2,18 +2,16 @@
 
 <VirtualHost *:80>
 
-	ServerName secure.datingnode.com
-	ServerAlias secure.{{ cluster.domain_suffix }}
+	ServerName img.datingnode.com
+	ServerAlias cdn.datingnode.com
+	ServerAlias img.{{ cluster.domain_suffix }}
+	ServerAlias cdn.{{ cluster.domain_suffix }}
 
 	ServerAdmin {{ server_admin_email }}
 
 	DocumentRoot {{ platform_super_dir }}
 
 	SetEnv DATINGNODE_ENVIRONMENT_CONFIG /var/www/datingnode-config.json
-
-
-
-
 
 	<Directory {{ platform_super_dir }}/>
 
@@ -28,15 +26,7 @@
 		</FilesMatch>
 
 		RewriteEngine on
-
-        RewriteRule  ^css/(.*)$ 		{{platform_super_dir}}/datingnode/www/css/$1 [L,END]
-        RewriteRule ^img/(.*)$ 		{{platform_super_dir}}/datingnode/www/img/$1 [L,END]
-        RewriteRule ^js/(.*)$ 		{{platform_super_dir}}/datingnode/www/js/$1 [L,END]
-        RewriteRule ^font/(.*)$ 		{{platform_super_dir}}/datingnode/www/font/$1 [L,END]
-
-        RewriteCond %{REQUEST_URI} !php$
-        RewriteCond %{REQUEST_URI} !datingnode/www/
-        RewriteRule ^(.*)$ fcgi://127.0.0.1:9000{{platform_super_dir}}/datingnode/index.php [P]
+        RewriteRule ^(.*)$ fcgi://127.0.0.1:9000{{platform_super_dir}}/datingnode/static.php [P]
 
 	</Directory>
 
@@ -67,8 +57,8 @@
 
 	</Location>
 
-	CustomLog {{ platform_log_dir }}/secure-apache-access.log combined
-	ErrorLog {{ platform_log_dir }}/secure-apache-error.log
+	CustomLog {{ platform_log_dir }}/cdn-apache-access.log combined
+	ErrorLog {{ platform_log_dir }}/cdn-apache-error.log
 	LogLevel warn
 
 </VirtualHost>

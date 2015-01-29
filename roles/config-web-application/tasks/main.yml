@@ -32,6 +32,15 @@
   sites:
     - main_domain: "secure.datingnode.com"
       enabled: true
+      
+- include: "site.yml"
+  label: "cdn"
+  prefix: "dp_cdn"
+  suffix: "main"
+  config: "apache{{ apache_version }}-cdn-vhost-main.j2"
+  sites:
+    - main_domain: "img.datingnode.com"
+      enabled: true
 
 - include: "site.yml"
   label: "service"
