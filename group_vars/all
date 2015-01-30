@@ -1,14 +1,14 @@
 ---
 
-docker_registry: "quay.io/rocketware"
+docker_registry: "quay.io"
 
 docker_images:
   base: "ubuntu:14.04"
-  database: "datingnode-database"
-  web_application: "datingnode-web-application"
-  vhost_proxy: "datingnode-vhost-proxy"
-  storage: "datingnode-storage"
-  memcache: "datingnode-memcache"
+  database: "rocketware/datingnode-database"
+  web_application: "rocketware/datingnode-web-application"
+  vhost_proxy: "rocketware/datingnode-vhost-proxy"
+  storage: "rocketware/datingnode-storage"
+  memcache: "rocketware/datingnode-memcache"
 
 dns_servers:
   primary: "8.8.8.8"

@@ -4,7 +4,8 @@ container_type: "storage"
 
 start_label: "storage"
 
-start_image: "{{ docker_registry }}/{{ docker_images.storage }}:{{ cluster.build }}"
+start_registry: "{{ docker_registry }}"
+start_image: "{{ docker_images.storage }}:{{ cluster.build }}"
 
 start_expose:
   - "1234"

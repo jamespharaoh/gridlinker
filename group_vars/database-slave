@@ -2,7 +2,8 @@
 
 container_type: "database-slave"
 
-start_image: "{{ docker_registry }}/{{ docker_images.database }}:{{ cluster.build }}"
+start_registry: "{{ docker_registry }}"
+start_image: "{{ docker_images.database }}:{{ cluster.build }}"
 
 start_expose:
   - "5432"

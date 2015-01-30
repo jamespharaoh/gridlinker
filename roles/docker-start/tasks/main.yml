@@ -38,7 +38,8 @@
     module: "docker"
     name: "{{ container_name }}"
     state: "running"
-    image: "{{ start_image }}"
+    image: "{{ start_registry }}/{{ start_image }}"
+    registry: "{{ start_registry }}"
     command: "/sbin/my_init"
     dns:
       - "{{ dns_servers.primary }}"

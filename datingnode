@@ -204,7 +204,6 @@ function do_image_push () {
 
 	image_name="$1"
 
-	docker push "$image_name:$BUILD_NAME"
 	docker push "$image_name:$BUILD_ID"
 
 }

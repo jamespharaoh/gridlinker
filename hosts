@@ -7,12 +7,15 @@ rocket-hz-vhost-proxy
 
 [rocket-hz-host]
 rocket-hz-host-1
+rocket-hz-host-2
 
 [rocket-hz-vm]
 rocket-hz-vm-1           parent=rocket-hz-host-1
+rocket-hz-vm-2           parent=rocket-hz-host-2
 
 [rocket-hz-vhost-proxy]
 rocket-hz-vhost-proxy-1  parent=rocket-hz-vm-1
+rocket-hz-vhost-proxy-2  parent=rocket-hz-vm-2
 
 [rocket-hz-beta]
 beta                     parent=rocket-hz-host-1

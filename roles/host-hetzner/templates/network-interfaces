@@ -33,7 +33,7 @@ iface brprv0 inet static
 	netmask {{ private_netmask }}
 	broadcast {{ private_broadcast }}
 
-	bridge_ports none
+	bridge_ports eth1
 	bridge_stp off
 	bridge_maxwait 0
 	bridge_fd 0
