@@ -286,6 +286,7 @@ if test "$#" = 0; then
 		   Manage cluster:
 		      CLUSTER-start      Start containers
 		      CLUSTER-stop       Stop containers
+		      CLUSTER-restart    Stop and start containers
 		      CLUSTER-delete     Destroy and delete all data
 
 		Other information:
@@ -367,6 +368,11 @@ case "$command" in
 
 (*-stop)
 	do_cluster_stop "${command%%-*}" "$@"
+	;;
+
+(*-restart)
+	do_cluster_stop "${command%%-*}" "$@"
+	do_cluster_start "${command%%-*}" "$@"
 	;;
 
 (*-delete)
