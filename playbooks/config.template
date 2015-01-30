@@ -9,6 +9,7 @@ developer_email: "{{ developer_email | default ('') }}"
 
 ubuntu_main_url: "{{ ubuntu_main_url }}"
 ubuntu_security_url: "{{ ubuntu_security_url }}"
+docker_mirror_url: "{{ docker_mirror_url | default ('https://get.docker.com/ubuntu') }}"
 
 docker_quay_auth: "{{ docker_quay_auth | default ('') }}"
 

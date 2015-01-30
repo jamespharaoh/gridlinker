@@ -42,8 +42,7 @@
     registry: "{{ start_registry }}"
     command: "/sbin/my_init"
     dns:
-      - "{{ dns_servers.primary }}"
-      - "{{ dns_servers.secondary }}"
+      - "{{ hostvars [parent].private_address }}"
     expose: "{{ start_expose }}"
     ports: "{{ start_ports }}"
     tty: "True"

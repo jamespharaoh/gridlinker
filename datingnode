@@ -116,11 +116,12 @@ function do_image_clean () {
 
 	done
 
-	for image in "${IMAGES[@]}"; do
+	for image_name in "${IMAGES[@]}"; do
 
-		echo "Removing image $image"
+		echo "Removing image $image_name"
 
-		docker rmi "$image" &>/dev/null || true
+		docker rmi "$image_name:$BUILD_NAME" &>/dev/null || true
+		docker rmi "$image_name:$BUILD_ID" &>/dev/null || true
 
 	done
 

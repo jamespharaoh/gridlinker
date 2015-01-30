@@ -11,7 +11,7 @@
 - name: "configure docker repository"
   action:
     module: "apt_repository"
-    repo: "deb https://get.docker.com/ubuntu docker main"
+    repo: "deb {{ docker_mirror_url }} docker main"
     update_cache: "yes"
   sudo: "yes"
   sudo_user: "root"

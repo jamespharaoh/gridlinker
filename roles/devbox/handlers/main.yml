@@ -8,4 +8,11 @@
   sudo: "yes"
   sudo_user: "root"
 
+- name: "restart dnsmasq"
+  action:
+    module: "service"
+    name: "dnsmasq"
+    state: "restarted"
+  sudo: "yes"
+
 # ex: et ts=2 filetype=yaml
