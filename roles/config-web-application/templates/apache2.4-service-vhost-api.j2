@@ -7,17 +7,19 @@
 
 {% for discreet_domain in discreet_domains %}
 
-	ServerAlias {{ item.discreet_subdomain }}{{ discreet_domain }}
-	ServerAlias {{ item.discreet_subdomain }}{{ discreet_domain }}.{{ cluster.domain_suffix }}
+	ServerAlias a{{ item.service_id }}{{ discreet_domain }}
+	ServerAlias a{{ item.service_id }}{{ discreet_domain }}.{{ cluster.domain_suffix }}
 
 {% endfor %}
 
 	ServerAdmin {{ server_admin_email }}
 
-	SetEnvIf Remote_Addr ^ SERVICE_DOMAIN={{ item.main_domain }}
-
 	DocumentRoot {{ platform_super_dir }}
 
+	SetEnv SERVICE_ID {{ item.service_id }}
+	SetEnv SERVICE_DOMAIN {{ item.main_domain }}
+	SetEnv SERVICE_DOMAIN_API {{ item.api_domain }}
+	SetEnv SERVICE_DOMAIN_CDN {{ item.static_domain }}
 	SetEnv DATINGNODE_ENVIRONMENT_CONFIG /var/www/datingnode-config.json
 
 	<Directory {{ platform_super_dir }}>

@@ -24,36 +24,26 @@
 					"api"		: false
 				},
 
-				"domain-postfix" : {
-					"main"		: ".togepi",
-					"img"		: false,
-					"static"	: false,
-					"api"		: ".togepi"
-				},
-
 				"sitemap-dir" 	: "{{ platform_assets_dir }}/sitemaps"
 			},
 			
 			
 			"api": {
 				"discreetDomains" : [
-					"zxyabc.io"
+					"ariane.io",
+					"kosmos.space"
 				]
 			},
 			
 			"cdn": {
 				"discreetDomains" : [
-					"cbayxz.io"
+					"angara.io",
+					"zenit.space"
 				]
 			},
 			
-
 			"cms" : {
 				"ssl" : {
-					"main"	: false,
-					"api"	: false
-				},
-				"domain-postfix" : {
 					"main"	: false,
 					"api"	: false
 				}
@@ -63,19 +53,11 @@
 				"ssl" : {
 					"main"	: false,
 					"api"	: false
-				},
-				"domain-postfix" : {
-					"main"	: false,
-					"api"	: false
 				}
 			},
 
 			"reports" : {
 				"ssl" : {
-					"main"	: false,
-					"api"	: false
-				},
-				"domain-postfix" : {
 					"main"	: false,
 					"api"	: false
 				}
@@ -84,10 +66,6 @@
 
 			"website" : {
 				"ssl" : {
-					"main"	: false,
-					"img"	: false
-				},
-				"domain-postfix" : {
 					"main"	: false,
 					"img"	: false
 				}

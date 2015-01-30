@@ -17,7 +17,6 @@ clusters:
       database_slave: 5002
       web_application: 5003
       storage: 5004
-      memcache: 5005
 
   live:
 
@@ -29,8 +28,7 @@ clusters:
       database_master: 5101
       database_slave: 5102
       web_application: 5103
-      storage: 5104
-      memcache: 5105
+      storage: 5004
 
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
@@ -52,7 +50,7 @@ services:
     api_domain: "api.onlylads.com"
     static_domain: "static.onlylads.com"
     img_domain: "img-cloud.onlylads.com"
-    discreet_subdomain: "ol"
+    service_id: 1
     enabled: true
 
   - main_domain: "www.onlywomen.com"
@@ -60,7 +58,7 @@ services:
     api_domain: "api.onlywomen.com"
     img_domain: "img.onlywomen.com"
     static_domain: "static.onlywomen.com"
-    discreet_subdomain: "ow"
+    service_id: 7
     enabled: true
 
   - main_domain: "www.onescene.com"
@@ -68,7 +66,7 @@ services:
     api_domain: "api.onescene.com"
     img_domain: "img-cloud.onescene.com"
     static_domain: "static-cloud.onescene.com"
-    discreet_subdomain: "os"
+    service_id: 3
     enabled: true
 
   - main_domain: "www.introducingyou.com"
@@ -76,7 +74,7 @@ services:
     api_domain: "api.introducingyou.com"
     img_domain: "img-cloud.introducingyou.com"
     static_domain: "static.introducingyou.com"
-    discreet_subdomain: "iy"
+    service_id: 2
     enabled: true
 
   - main_domain: "www.letsdate.co.uk"
@@ -84,7 +82,7 @@ services:
     api_domain: "api.letsdate.co.uk"
     img_domain: "img-cloud.letsdate.co.uk"
     static_domain: "static-cloud.letsdate.co.uk"
-    discreet_subdomain: "ld"
+    service_id: 5
     enabled: true
 
   - main_domain: "www.pinkdar.com"
@@ -92,7 +90,7 @@ services:
     api_domain: "api.pinkdar.com"
     img_domain: "img-cloud.pinkdar.com"
     static_domain: "static.pinkdar.com"
-    discreet_subdomain: "pd"
+    service_id: 4
     enabled: true
 
   - main_domain: "www.gtdate.co.uk"
@@ -100,7 +98,7 @@ services:
     api_domain: "api.gtdate.co.uk"
     img_domain: "img-cloud.gtdate.co.uk"
     static_domain: "static.gtdate.co.uk"
-    discreet_subdomain: "gd"
+    service_id: 70
     enabled: true
 
   - main_domain: "www.divadate.co.uk"
@@ -108,7 +106,7 @@ services:
     api_domain: "api.divadate.co.uk"
     img_domain: "img-cloud.divadate.co.uk"
     static_domain: "static.divadate.co.uk"
-    discreet_subdomain: "dd"
+    service_id: 71
     enabled: true
 
   - main_domain: "dating.pinkpaper.com"
@@ -116,7 +114,7 @@ services:
     api_domain: "api.dating.pinkpaper.com"
     img_domain: "img.dating.pinkpaper.com"
     static_domain: "static.dating.pinkpaper.com"
-    discreet_subdomain: "pp"
+    service_id: 60
     enabled: true
 
   - main_domain: "dating.fashiontv.com"
@@ -124,7 +122,7 @@ services:
     api_domain: "api.dating.fashiontv.com"
     img_domain: "img.dating.fashiontv.com"
     static_domain: "static.dating.fashiontv.com"
-    discreet_subdomain: "ft"
+    service_id: 80
     enabled: true
 
   - main_domain: "www.gayxchange.com"
@@ -132,7 +130,7 @@ services:
     api_domain: "api.gayxchange.com"
     img_domain: "img-cloud.gayxchange.com"
     static_domain: "static.gayxchange.com"
-    discreet_subdomain: "gx"
+    service_id: 9
     enabled: true
 
 # ex: et ts=2 filetype=yaml
