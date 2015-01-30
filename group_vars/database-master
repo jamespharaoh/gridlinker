@@ -4,7 +4,8 @@ container_type: "database-master"
 
 start_label: "database master"
 
-start_image: "{{ docker_registry }}/{{ docker_images.database }}:{{ cluster.build }}"
+start_registry: "{{ docker_registry }}"
+start_image: "{{ docker_images.database }}:{{ cluster.build }}"
 
 start_expose:
   - "5432"

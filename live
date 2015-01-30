@@ -11,6 +11,7 @@ rocket-hz-vm
 
 [rocket-hz-vm]
 rocket-hz-vm-1
+rocket-hz-vm-2
 
 # containers
 
@@ -28,22 +29,25 @@ database-master
 database-slave
 
 [database-master]
-database-master-0  parent=rocket-hz-vm-1
+database-1         parent=rocket-hz-vm-1
 
 [database-slave]
-# TODO
+database-2         parent=rocket-hz-vm-2
 
 # web application
 
 [web-application]
-web-application-0  parent=rocket-hz-vm-1
+web-application-1  parent=rocket-hz-vm-1
+web-application-2  parent=rocket-hz-vm-2
 
 # vhost proxy
 
 [vhost-proxy]
-vhost-proxy-0      parent=rocket-hz-vm-1
+vhost-proxy-1      parent=rocket-hz-vm-1
+vhost-proxy-2      parent=rocket-hz-vm-2
 
 # memcache
 
 [memcache]
-memcache-0         parent=rocket-hz-vm-1
+memcache-1         parent=rocket-hz-vm-1
+memcache-2         parent=rocket-hz-vm-2

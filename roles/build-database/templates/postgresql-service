@@ -147,24 +147,6 @@ if test "$DATABASE_MODE" = "master" -a "$FIRST_RUN"; then
 			ENCRYPTED PASSWORD 'topsecret';
 		"
 
-	setuid postgres \
-	psql \
-		-c "
-
-			CREATE DATABASE dating
-			OWNER jimmy;
-
-		"
-
-	setuid postgres \
-	psql dating \
-		-c "
-
-			CREATE SCHEMA gis;
-			CREATE EXTENSION postgis WITH SCHEMA gis;
-
-		"
-
 fi
 
 wait $POSTGRESQL_PID

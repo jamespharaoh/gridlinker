@@ -10,7 +10,7 @@
 - name: "setup docker apt repository"
   action:
     module: "apt_repository"
-    repo: "deb https://get.docker.io/ubuntu docker main"
+    repo: "deb https://get.docker.com/ubuntu docker main"
     update_cache: "yes"
   sudo: "yes"
 

@@ -2,7 +2,8 @@
 
 container_type: "vhost-proxy"
 
-start_image: "{{ docker_registry }}/{{ docker_images.vhost_proxy }}:{{ cluster.build }}"
+start_registry: "{{ docker_registry }}"
+start_image: "{{ docker_images.vhost_proxy }}:{{ cluster.build }}"
 
 start_expose:
   - "80"

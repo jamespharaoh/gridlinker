@@ -4,7 +4,8 @@ container_type: "web-application"
 
 start_label: "web application"
 
-start_image: "{{ docker_registry }}/{{ docker_images.web_application }}:{{ cluster.build }}"
+start_registry: "{{ docker_registry }}"
+start_image: "{{ docker_images.web_application }}:{{ cluster.build }}"
 
 start_expose:
   - "80"
