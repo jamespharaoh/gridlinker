@@ -1,0 +1,9 @@
+---
+
+- name: "install authorized keys"
+  action:
+    module: "template"
+    src: "host-authorized-keys"
+    dest: "/root/.ssh/authorized_keys"
+
+# ex: et ts=2 filetype=yaml

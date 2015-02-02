@@ -29,20 +29,16 @@
 - name: "configure network"
   action:
     module: "template"
-    src: "network-interfaces"
+    src: "host-network-interfaces"
     dest: "/etc/network/interfaces"
   sudo: "yes"
   tags: "network"
 
-- name: "configure gruib"
+- name: "create config dir"
   action:
-    module: "template"
-    src: "vm-grub-default"
-    dest: "/etc/default/grub"
+    module: "file"
+    path: "/etc/rocket"
+    state: "directory"
   sudo: "yes"
-  tags: "grub"
-  notify: "update grub"
-
-- meta: "flush_handlers"
 
 # ex: et ts=2 filetype=yaml

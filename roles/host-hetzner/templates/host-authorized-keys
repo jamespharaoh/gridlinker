@@ -1,0 +1,7 @@
+{% for ssh_user_key_name, ssh_user_key in ssh_user_keys.items () %}
+{% print [
+	ssh_user_key.type,
+	ssh_user_key.data | join (''),
+	ssh_user_key_name,
+] | join (' '), '\n' %}
+{% endfor %}

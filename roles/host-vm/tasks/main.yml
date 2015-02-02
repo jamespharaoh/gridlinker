@@ -1,3 +1,7 @@
 ---
-- include: "system.yml"
-- include: "docker.yml"
+
+- include: "vm-system.yml"
+- include: "vm-security.yml"
+- include: "vm-docker.yml"
+
+# ex: et ts=2 filetype=yaml

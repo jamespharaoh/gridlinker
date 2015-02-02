@@ -15,7 +15,7 @@
 - name: "create libvirt-network-public.xml"
   action:
     module: "template"
-    src: "libvirt-network-public"
+    src: "host-libvirt-network-public"
     dest: "/etc/rocket/libvirt-network-public.xml"
   sudo: "yes"
   tags: "kvm"
@@ -23,7 +23,7 @@
 - name: "create libvirt-network-private.xml"
   action:
     module: "template"
-    src: "libvirt-network-private"
+    src: "host-libvirt-network-private"
     dest: "/etc/rocket/libvirt-network-private.xml"
   sudo: "yes"
   tags: "kvm"

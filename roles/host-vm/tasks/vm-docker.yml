@@ -39,5 +39,7 @@
 - name: "create docker config"
   action:
     module: "template"
-    src: "docker-config"
+    src: "vm-docker-config"
     dest: "/home/ubuntu/.dockercfg"
+
+# ex: et ts=2 filetype=yaml
