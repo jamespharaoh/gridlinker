@@ -1,3 +1,7 @@
 ---
 
+failover_addresses:
+  - "144.76.77.83"
+  - "144.76.88.97"
+
 # ex: et ts=2 filetype=yaml

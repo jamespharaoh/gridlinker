@@ -1,3 +1,9 @@
 ---
 
 container_name: "{{ cluster_name }}-{{ inventory_hostname }}"
+
+database_master: "{{ hostvars [groups ['database-master'].0] }}"
+database_master_parent: "{{ hostvars [database_master.parent] }}"
+database_master_address: "{{ database_master_parent.private_address }}"
+
+# ex: et ts=2 filetype=yaml

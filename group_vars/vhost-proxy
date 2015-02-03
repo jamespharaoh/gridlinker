@@ -9,7 +9,7 @@ start_expose:
   - "80"
 
 start_ports:
-  - "80:80"
+  - "{{ cluster.ports.vhost_proxy }}:80"
 
 start_volumes:
   - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"

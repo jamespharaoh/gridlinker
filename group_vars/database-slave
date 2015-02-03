@@ -17,7 +17,7 @@ start_volumes:
 
 start_env:
   DATABASE_MODE: "slave"
-  DATABASE_MASTER_HOSTNAME: "{{ hostvars [parent].private_address }}"
+  DATABASE_MASTER_HOSTNAME: "{{ hostvars [database_master.parent].private_address }}"
   DATABASE_MASTER_PORT: "{{ cluster.ports.database_master }}"
 
 start_wait:

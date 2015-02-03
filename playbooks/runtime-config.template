@@ -13,6 +13,7 @@ clusters:
     domain_suffix: "{{ deployment_name }}.datingnode.com"
 
     ports:
+      vhost_proxy: 80
       database_master: 5001
       database_slave: 5002
       web_application: 5003
@@ -26,6 +27,7 @@ clusters:
     domain_suffix: "live.datingnode.com"
 
     ports:
+      vhost_proxy: 80
       database_master: 5101
       database_slave: 5102
       web_application: 5103
@@ -39,6 +41,7 @@ clusters:
     domain_suffix: "staging.datingnode.com"
 
     ports:
+      vhost_proxy: 5200
       database_master: 5201
       database_slave: 5202
       web_application: 5203

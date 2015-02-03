@@ -24,8 +24,8 @@ devbox_install_python:
 devbox_checkouts:
 
   - name: "datingnode-ansible"
-    remote: "git@bitbucket.org:jamespharaoh/datingnode-ansible.git"
-    branch: "docker"
+    remote: "git@bitbucket.org:jimmyff/datingnode-ansible.git"
+    branch: "master"
 
   - name: "datingnode-super"
     remote: "git@bitbucket.org:jimmyff/datingnode-super.git"
