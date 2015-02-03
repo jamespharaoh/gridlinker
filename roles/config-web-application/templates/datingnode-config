@@ -100,7 +100,7 @@
 {% endif %}
 			{
 				"host" 	: "{{ memcache_node.name }}",
-				"port" 	: {{ memcache_node.port }}"
+				"port" 	: {{ memcache_node.port }}
 			}
 {% set first = false %}
 {% endfor %}
