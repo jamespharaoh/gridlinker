@@ -51,7 +51,6 @@ vhost_proxy_build: "{{ deployment_name }}"
 
 devbox_private: "{{ devbox_private }}"
 
-
 discreet_api_domains:
 
   - "ariane.io"

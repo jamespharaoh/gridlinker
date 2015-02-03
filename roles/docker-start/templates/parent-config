@@ -1,3 +1,15 @@
 ---
+
 cluster_name: "{{ cluster_name }}"
+
 parent_address: "{{ hostvars [parent].private_address }}"
+
+memcache_nodes:
+{% for memcache_name in groups.memcache %}
+{% set memcache = hostvars [memcache_name] %}
+{% set memcache_parent = hostvars [memcache.parent] %}
+  - name: "{{ memcache_parent.private_address }}"
+    port: "{{ cluster.ports.memcache }}"
+{% endfor %}
+
+# ex: et ts=2 filetype=yaml

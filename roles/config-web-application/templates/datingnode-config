@@ -93,10 +93,17 @@
 
 	"cache" : {
 		"memcache" : [
+{% set first = true %}
+{% for memcache_node in memcache_nodes %}
+{% if not first %}
+		,
+{% endif %}
 			{
-				"host" 	: "localhost",
-				"port" 	: 11211
+				"host" 	: "{{ memcache_node.name }}",
+				"port" 	: {{ memcache_node.port }}"
 			}
+{% set first = false %}
+{% endfor %}
 		]
 	},
 
