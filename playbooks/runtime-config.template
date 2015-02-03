@@ -37,11 +37,15 @@ vhost_proxy_build: "{{ deployment_name }}"
 devbox_private: "{{ devbox_private }}"
 
 
-discreet_domains:
+discreet_api_domains:
 
-  - "xba123.io"
-  - "dnode.co"
-  - "rocket1.net"
+  - "ariane.io"
+  - "kosmos.space"
+
+discreet_cdn_domains:
+
+  - "angara.io"
+  - "zenit.space"
 
 services:
 

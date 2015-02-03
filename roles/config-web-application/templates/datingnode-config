@@ -29,6 +29,7 @@
 			
 			
 			"api": {
+			
 				"discreetDomains" : [
 					"ariane.io",
 					"kosmos.space"
@@ -36,6 +37,7 @@
 			},
 			
 			"cdn": {
+			
 				"discreetDomains" : [
 					"angara.io",
 					"zenit.space"

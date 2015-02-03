@@ -8,6 +8,13 @@
 	ServerAlias {{ item.img_domain }}
 	ServerAlias {{ item.img_domain }}.{{ cluster.domain_suffix }}
 
+{% for discreet_domain in discreet_cdn_domains %}
+
+	ServerAlias a{{ item.service_id }}.{{ discreet_domain }}
+	ServerAlias a{{ item.service_id }}.{{ discreet_domain }}.{{ cluster.domain_suffix }}
+
+{% endfor %}
+
 	ServerAdmin {{ server_admin_email }}
 
 	SetEnv SERVICE_ID {{ item.service_id }}
