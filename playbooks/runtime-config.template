@@ -17,6 +17,7 @@ clusters:
       database_slave: 5002
       web_application: 5003
       storage: 5004
+      memcache: 5005
 
   live:
 
@@ -28,7 +29,21 @@ clusters:
       database_master: 5101
       database_slave: 5102
       web_application: 5103
-      storage: 5004
+      storage: 5104
+      memcache: 5105
+
+  staging:
+
+    build: "{{ deployment_name }}-{{ deployment_build }}"
+
+    domain_suffix: "staging.datingnode.com"
+
+    ports:
+      database_master: 5201
+      database_slave: 5202
+      web_application: 5203
+      storage: 5204
+      memcache: 5205
 
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
