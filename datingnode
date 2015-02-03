@@ -2,6 +2,8 @@
 
 set -e
 
+cd "$(dirname "$0")"
+
 if ! test -f datingnode-config; then
 	echo "Please create datingnode-config file" >&2
 	echo "There is an example in datingnode-config.template" >&2
@@ -10,6 +12,10 @@ fi
 
 source "datingnode-config"
 source ansible/hacking/env-setup &>/dev/null
+
+if test "$#" != 0; then
+	./run-ansible
+fi
 
 function do_hosts () {
 
