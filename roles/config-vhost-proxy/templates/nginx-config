@@ -34,8 +34,23 @@ http {
 {% for cluster_name, cluster in clusters.iteritems () if 'ports' in cluster %}
 
 	upstream {{ cluster_name }} {
-		server {{ parent_address }}:{{ cluster.ports.web_application }};
+{% for vm_address in vm_addresses %}
+		server {{ vm_address }}:{{ cluster.ports.web_application }};
+{% endfor %}
 	}
+
+{% if cluster_name == 'live' %}
+	server {
+
+		listen 80 default_server;
+
+		location / {
+			proxy_pass http://{{ cluster_name }};
+			proxy_set_header Host $host;
+		}
+
+	}
+{% endif %}
 
 	server {
 
@@ -44,8 +59,19 @@ http {
 		server_name ~\.{{ cluster.domain_suffix | replace ('.', '\.') }}$;
 
 		location / {
+
 			proxy_pass http://{{ cluster_name }};
 			proxy_set_header Host $host;
+
+			add_header X-Robots-Tag "noindex, nofollow";
+
+{% if cluster_name != 'local' %}
+{% for whitelist_ip in whitelist_ips %}
+			allow {{ whitelist_ip }};
+{% endfor %}
+			deny all;
+{% endif %}
+
 		}
 
 	}
