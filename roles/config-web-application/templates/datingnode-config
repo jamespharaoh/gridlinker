@@ -26,8 +26,7 @@
 
 				"sitemap-dir" 	: "{{ platform_assets_dir }}/sitemaps"
 			},
-			
-			
+
 			"api": {
 			
 				"discreetDomains" : [
@@ -84,8 +83,8 @@
 	"database" : {
 		"postgresql" : {
 			"name" 		: "dating",
-			"host" 		: "{{ parent_address }}",
-			"port" 		: "{{ cluster.ports.database_master }}",
+			"host" 		: "{{ database_master_address }}",
+			"port" 		: "{{ database_master_port }}",
 			"user" 		: "jimmy",
 			"password" 	: "topsecret"
 		}

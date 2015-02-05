@@ -4,6 +4,9 @@ cluster_name: "{{ cluster_name }}"
 
 parent_address: "{{ hostvars [parent].private_address }}"
 
+database_master_address: "{{ database_master_address }}"
+database_master_port: "{{ cluster.ports.database_master }}"
+
 memcache_nodes:
 {% for memcache_name in groups.memcache %}
 {% set memcache = hostvars [memcache_name] %}
