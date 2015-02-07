@@ -20,7 +20,7 @@ iface brpub0 inet static
 
 	up route add -net {{ public_network }} netmask {{ public_netmask }} gw {{ public_gateway }} brpub0
 
-{% foreach failover_address in failover_addreses %}
+{% for failover_address in failover_addresses %}
 	up ip addr add {{ failover_address }}/32 dev brpub0
 {% endfor %}
 
