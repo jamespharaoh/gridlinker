@@ -1,5 +1,5 @@
 {% for cluster in 'live', 'staging' %}
-{% for vm_name in groups ['rocket-hz-vm'] %}
+{% for vm_name in groups ['rocket-hz-vm'] if vm_name != inventory_hostname %}
 {% set vm = hostvars [vm_name] %}
 {% for idx in [1, 2] %}
 /datingnode-{{ cluster }}/web-application-{{ idx }}/fast {{ vm.private_address }}(rw,async,no_subtree_check)
