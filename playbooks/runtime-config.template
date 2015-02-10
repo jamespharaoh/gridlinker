@@ -50,6 +50,10 @@ clusters:
 
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
+vm_addresses:
+  - "10.69.128.3"
+  - "10.69.128.5"
+
 vhost_proxy_build: "{{ deployment_name }}"
 
 devbox_private: "{{ devbox_private }}"
@@ -153,5 +157,10 @@ services:
     static_domain: "static.gayxchange.com"
     service_id: 9
     enabled: true
+
+whitelist_ips:
+{% for whitelist_ip in lookup ('file', '../data/whitelist-ips') | from_yaml %}
+  - "{{ whitelist_ip }}"
+{% endfor %}
 
 # ex: et ts=2 filetype=yaml

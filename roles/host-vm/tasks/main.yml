@@ -2,6 +2,7 @@
 
 - include: "vm-system.yml"
 - include: "vm-security.yml"
+- include: "vm-dnsmasq.yml"
 - include: "vm-docker.yml"
 
 # ex: et ts=2 filetype=yaml

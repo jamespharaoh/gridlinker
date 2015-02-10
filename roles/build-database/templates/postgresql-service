@@ -143,8 +143,18 @@ if test "$DATABASE_MODE" = "master" -a "$FIRST_RUN"; then
 	psql \
 		-c "
 
+			ALTER ROLE postgres
+			SET search_path
+			TO \"\$user\",public,gis;
+
 			CREATE USER jimmy
-			ENCRYPTED PASSWORD 'topsecret';
+			ENCRYPTED PASSWORD 'topsecret'
+			SUPERUSER;
+
+			ALTER ROLE jimmy
+			SET search_path
+			TO \"\$user\",public,gis;
+
 		"
 
 fi
