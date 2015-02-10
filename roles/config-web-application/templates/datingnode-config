@@ -12,7 +12,6 @@
 
 		"domain-postfix" : ".{{ cluster.domain_suffix }}",
 
-
 		"components": {
 		
 			"app-web" : {
@@ -111,7 +110,7 @@
 		"user-data-dir"		: "{{ platform_assets_dir }}/user-data",
 		"image-cache-dir" 	: "{{ platform_assets_dir }}/image-cache"
 	},
-
+ 
 	"errors" : {
 		"email"		: "errors@datingnode.com",
 		"log-dir"	: "{{ platform_log_dir }}"
