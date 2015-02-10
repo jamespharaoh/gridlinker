@@ -51,12 +51,9 @@ clusters:
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
 vm_addresses:
-  - "10.69.128.3"
-  - "10.69.128.5"
-
 {% for vm_name in groups ['rocket-hz-vm'] %}
 {% set vm = hostvars [vm_name] %}
-# {{ vm.private_address }}
+  - "{{ vm.private_address }}"
 {% endfor %}
 
 vhost_proxy_build: "{{ deployment_name }}"
@@ -166,6 +163,11 @@ services:
 whitelist_ips:
 {% for whitelist_ip in lookup ('file', '../data/whitelist-ips') | from_yaml %}
   - "{{ whitelist_ip }}"
+{% endfor %}
+
+trusted_ips:
+{% for trusted_ip in lookup ('file', '../data/trusted-ips') | from_yaml %}
+  - "{{ trusted_ip }}"
 {% endfor %}
 
 # ex: et ts=2 filetype=yaml
