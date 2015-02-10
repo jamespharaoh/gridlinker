@@ -54,6 +54,11 @@ vm_addresses:
   - "10.69.128.3"
   - "10.69.128.5"
 
+{% for vm_name in groups ['rocket-hz-vm'] %}
+{% set vm = hostvars [vm_name] %}
+# {{ vm.private_address }}
+{% endfor %}
+
 vhost_proxy_build: "{{ deployment_name }}"
 
 devbox_private: "{{ devbox_private }}"

@@ -19,4 +19,12 @@
     state: "restarted"
   sudo: "yes"
 
+- name: "reload nfs server"
+  action:
+    module: "service"
+    name: "nfs-kernel-server"
+    state: "reloaded"
+  sudo: "yes"
+  sudo_user: "root"
+
 # ex: et ts=2 filetype=yaml

@@ -94,7 +94,7 @@ if test "$config_deployment_mode" = "vagrant"; then
 	fi
 
 	ansible-playbook \
-		--inventory-file "inventory" \
+		--inventory-file "hosts" \
 		--extra-vars "@config" \
 		--limit "vagrant" \
 		"playbooks/fix-config.yml"
@@ -105,7 +105,7 @@ fi
 
 if test "$#" != "0"; then
 	exec ansible-playbook \
-		--inventory-file "inventory" \
+		--inventory-file "hosts" \
 		--extra-vars "@config" \
 		"${@}"
 fi

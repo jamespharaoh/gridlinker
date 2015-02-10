@@ -1,3 +1,6 @@
+[vagrant]
+vagrant
+
 [rocket-hz:children]
 rocket-hz-host
 rocket-hz-vm
