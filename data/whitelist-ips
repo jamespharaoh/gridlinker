@@ -41,6 +41,9 @@
 # jimmy office leeds
 - "5.148.154.0/24"
 
+# jimmy home
+- "86.169.15.111"
+
 # james office barcelona
 - "2.139.161.249"
 
