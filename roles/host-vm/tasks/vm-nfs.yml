@@ -1,0 +1,23 @@
+---
+
+- name: "install nfs packages"
+  action:
+    module: "apt"
+    name: "{{ item }}"
+  sudo: "yes"
+  with_items:
+    - "nfs-common"
+    - "nfs-kernel-server"
+
+- name: "create exports"
+  action:
+    module: "template"
+    src: "vm-nfs-exports"
+    dest: "/etc/exports"
+  sudo: "yes"
+  sudo_user: "root"
+  notify: "reload nfs server"
+
+- meta: "flush_handlers"
+
+# ex: et ts=2 filetype=yaml
