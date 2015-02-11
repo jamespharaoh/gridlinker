@@ -41,7 +41,7 @@ http {
 
 	upstream {{ cluster_name }} {
 {% if cluster_name == 'local' %}
-		server {{ parent_address }};
+		server {{ parent_address }}:{{ cluster.ports.web_application }};
 {% else %}
 {% for vm_address in vm_addresses %}
 		server {{ vm_address }}:{{ cluster.ports.web_application }};
