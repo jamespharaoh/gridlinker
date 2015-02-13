@@ -40,12 +40,13 @@
 
 # Finoit office
 - "122.160.79.70"
+- "122.177.235.162"
 
 # jimmy office leeds
 - "5.148.154.0/24"
 
-# jimmy home (BT - might change)
-- "86.169.15.0/24"
+# jimmy home (BT - changes)
+- "86.169.8.223"
 
 # james office barcelona
 - "2.139.161.249"
