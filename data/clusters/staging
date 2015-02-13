@@ -1,0 +1,15 @@
+---
+
+build: "james-18"
+
+domain_suffix: "staging.datingnode.com"
+
+ports:
+  vhost_proxy: 5200
+  database_master: 5201
+  database_slave: 5202
+  web_application: 5203
+  storage: 5204
+  memcache: 5205
+
+# ex: et ts=2 filetype=yaml

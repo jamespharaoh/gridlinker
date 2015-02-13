@@ -1,0 +1,15 @@
+---
+
+build: "james-18"
+
+domain_suffix: "live.datingnode.com"
+
+ports:
+  vhost_proxy: 80
+  database_master: 5101
+  database_slave: 5102
+  web_application: 5103
+  storage: 5104
+  memcache: 5105
+
+# ex: et ts=2 filetype=yaml

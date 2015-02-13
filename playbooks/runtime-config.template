@@ -1,52 +1,10 @@
 ---
 
 clusters:
-
-  shared:
-
-    build: "{{ deployment_name }}-{{ deployment_build }}"
-
-  local:
-
-    build: "{{ deployment_name }}-{{ deployment_build }}"
-
-    domain_suffix: "{{ deployment_name }}.datingnode.com"
-
-    ports:
-      vhost_proxy: 80
-      database_master: 5001
-      database_slave: 5002
-      web_application: 5003
-      storage: 5004
-      memcache: 5005
-
-  live:
-
-    build: "{{ deployment_name }}-{{ deployment_build }}"
-
-    domain_suffix: "live.datingnode.com"
-
-    ports:
-      vhost_proxy: 80
-      database_master: 5101
-      database_slave: 5102
-      web_application: 5103
-      storage: 5104
-      memcache: 5105
-
-  staging:
-
-    build: "{{ deployment_name }}-{{ deployment_build }}"
-
-    domain_suffix: "staging.datingnode.com"
-
-    ports:
-      vhost_proxy: 5200
-      database_master: 5201
-      database_slave: 5202
-      web_application: 5203
-      storage: 5204
-      memcache: 5205
+  shared: "{{ lookup ('file', '../data/clusters/shared') | from_yaml }}"
+  local: "{{ lookup ('file', '../data/clusters/local') | from_yaml }}"
+  live: "{{ lookup ('file', '../data/clusters/live') | from_yaml }}"
+  staging: "{{ lookup ('file', '../data/clusters/staging') | from_yaml }}"
 
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
@@ -70,95 +28,7 @@ discreet_cdn_domains:
   - "angara.io"
   - "zenit.space"
 
-services:
-
-  - main_domain: "www.onlylads.com"
-    main_alias: [ "onlylads.com" ]
-    api_domain: "api.onlylads.com"
-    static_domain: "static.onlylads.com"
-    img_domain: "img-cloud.onlylads.com"
-    service_id: 1
-    enabled: true
-
-  - main_domain: "www.onlywomen.com"
-    main_alias: [ "onlywomen.com" ]
-    api_domain: "api.onlywomen.com"
-    img_domain: "img.onlywomen.com"
-    static_domain: "static.onlywomen.com"
-    service_id: 7
-    enabled: true
-
-  - main_domain: "www.onescene.com"
-    main_alias: [ "onescene.com" ]
-    api_domain: "api.onescene.com"
-    img_domain: "img-cloud.onescene.com"
-    static_domain: "static-cloud.onescene.com"
-    service_id: 3
-    enabled: true
-
-  - main_domain: "www.introducingyou.com"
-    main_alias: [ "introducingyou.com" ]
-    api_domain: "api.introducingyou.com"
-    img_domain: "img-cloud.introducingyou.com"
-    static_domain: "static.introducingyou.com"
-    service_id: 2
-    enabled: true
-
-  - main_domain: "www.letsdate.co.uk"
-    main_alias: [ "letsdate.co.uk" ]
-    api_domain: "api.letsdate.co.uk"
-    img_domain: "img-cloud.letsdate.co.uk"
-    static_domain: "static-cloud.letsdate.co.uk"
-    service_id: 5
-    enabled: true
-
-  - main_domain: "www.pinkdar.com"
-    main_alias: [ "pinkdar.com" ]
-    api_domain: "api.pinkdar.com"
-    img_domain: "img-cloud.pinkdar.com"
-    static_domain: "static.pinkdar.com"
-    service_id: 4
-    enabled: true
-
-  - main_domain: "www.gtdate.co.uk"
-    main_alias: [ ]
-    api_domain: "api.gtdate.co.uk"
-    img_domain: "img-cloud.gtdate.co.uk"
-    static_domain: "static.gtdate.co.uk"
-    service_id: 70
-    enabled: true
-
-  - main_domain: "www.divadate.co.uk"
-    main_alias: [ ]
-    api_domain: "api.divadate.co.uk"
-    img_domain: "img-cloud.divadate.co.uk"
-    static_domain: "static.divadate.co.uk"
-    service_id: 71
-    enabled: true
-
-  - main_domain: "dating.pinkpaper.com"
-    main_alias: [ ]
-    api_domain: "api.dating.pinkpaper.com"
-    img_domain: "img.dating.pinkpaper.com"
-    static_domain: "static.dating.pinkpaper.com"
-    service_id: 60
-    enabled: true
-
-  - main_domain: "dating.fashiontv.com"
-    main_alias: [ ]
-    api_domain: "api.dating.fashiontv.com"
-    img_domain: "img.dating.fashiontv.com"
-    static_domain: "static.dating.fashiontv.com"
-    service_id: 80
-    enabled: true
-
-  - main_domain: "www.gayxchange.com"
-    main_alias: [ "gayxchange.com" ]
-    api_domain: "api.gayxchange.com"
-    img_domain: "img-cloud.gayxchange.com"
-    static_domain: "static.gayxchange.com"
-    service_id: 9
-    enabled: true
+services: "{{ lookup ('file', '../data/services') | from_yaml }}"
 
 whitelist_ips:
 {% for whitelist_ip in lookup ('file', '../data/whitelist-ips') | from_yaml %}

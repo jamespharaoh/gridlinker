@@ -1,0 +1,15 @@
+---
+
+build: "{{ deployment_name }}-{{ deployment_build }}"
+
+domain_suffix: "{{ deployment_name }}.datingnode.com"
+
+ports:
+  vhost_proxy: 80
+  database_master: 5001
+  database_slave: 5002
+  web_application: 5003
+  storage: 5004
+  memcache: 5005
+
+# ex: et ts=2 filetype=yaml
