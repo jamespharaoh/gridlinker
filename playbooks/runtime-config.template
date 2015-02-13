@@ -1,10 +1,10 @@
 ---
 
 clusters:
-  shared: "{{ lookup ('file', '../data/clusters/shared') | from_yaml }}"
-  local: "{{ lookup ('file', '../data/clusters/local') | from_yaml }}"
-  live: "{{ lookup ('file', '../data/clusters/live') | from_yaml }}"
-  staging: "{{ lookup ('file', '../data/clusters/staging') | from_yaml }}"
+  shared: {{ lookup ('template', '../data/clusters/shared') | from_yaml | to_json }}
+  local: {{ lookup ('template', '../data/clusters/local') | from_yaml | to_json  }}
+  live: {{ lookup ('template', '../data/clusters/live') | from_yaml | to_json  }}
+  staging: {{ lookup ('template', '../data/clusters/staging') | from_yaml | to_json  }}
 
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
@@ -28,7 +28,8 @@ discreet_cdn_domains:
   - "angara.io"
   - "zenit.space"
 
-services: "{{ lookup ('file', '../data/services') | from_yaml }}"
+services:
+{{ lookup ('file', '../data/services') | from_yaml | to_nice_yaml }}
 
 whitelist_ips:
 {% for whitelist_ip in lookup ('file', '../data/whitelist-ips') | from_yaml %}
