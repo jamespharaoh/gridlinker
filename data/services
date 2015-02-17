@@ -3,22 +3,24 @@
 - main_domain: "www.onlylads.com"
   main_alias: [ "onlylads.com" ]
   api_domain: "api.onlylads.com"
-  static_domain: "static.onlylads.com"
-  img_domain: "img-cloud.onlylads.com"
+  cdn_domain: "cdn.onlylads.com"
+  cdn_alias: [ "static.onlylads.com", "img.onlylads.com", "img-cloud.onlylads.com" ]
   service_id: 1
   enabled: true
 
 - main_domain: "www.onlywomen.com"
   main_alias: [ "onlywomen.com" ]
   api_domain: "api.onlywomen.com"
-  img_domain: "img.onlywomen.com"
-  static_domain: "static.onlywomen.com"
+  cdn_domain: "cdn.onlywomen.com"
+  cdn_alias: [ "static.onlywomen.com", "img.onlywomen.com" ]
   service_id: 7
   enabled: true
 
 - main_domain: "www.onescene.com"
   main_alias: [ "onescene.com" ]
   api_domain: "api.onescene.com"
+  cdn_domain: "cdn.onescene.com"
+  cdn_alias: [ "static.onescene.com", "img.onescene.com", "static-cloud.onescene.com", "img-cloud.onescene.com" ]
   img_domain: "img-cloud.onescene.com"
   static_domain: "static-cloud.onescene.com"
   service_id: 3
@@ -27,64 +29,64 @@
 - main_domain: "www.introducingyou.com"
   main_alias: [ "introducingyou.com" ]
   api_domain: "api.introducingyou.com"
-  img_domain: "img-cloud.introducingyou.com"
-  static_domain: "static.introducingyou.com"
+  cdn_domain: "cdn.introducingyou.com"
+  cdn_alias: [ "static.introducingyou.com", "img.introducingyou.com", "img-cloud.introducingyou.com" ]
   service_id: 2
   enabled: true
 
 - main_domain: "www.letsdate.co.uk"
   main_alias: [ "letsdate.co.uk" ]
   api_domain: "api.letsdate.co.uk"
-  img_domain: "img-cloud.letsdate.co.uk"
-  static_domain: "static-cloud.letsdate.co.uk"
+  cdn_domain: "cdn.letsdate.co.uk"
+  cdn_alias: [ "static.letsdate.co.uk", "img.letsdate.co.uk", "static-cloud.letsdate.co.uk", "img-cloud.letsdate.co.uk" ]
   service_id: 5
   enabled: true
 
 - main_domain: "www.pinkdar.com"
   main_alias: [ "pinkdar.com" ]
   api_domain: "api.pinkdar.com"
-  img_domain: "img-cloud.pinkdar.com"
-  static_domain: "static.pinkdar.com"
+  cdn_domain: "cdn.pinkdar.com"
+  cdn_alias: [ "static.pinkdar.com", "img.pinkdar.com", "img-cloud.pinkdar.com" ]
   service_id: 4
   enabled: true
 
 - main_domain: "www.gtdate.co.uk"
   main_alias: [ ]
   api_domain: "api.gtdate.co.uk"
-  img_domain: "img-cloud.gtdate.co.uk"
-  static_domain: "static.gtdate.co.uk"
+  cdn_domain: "cdn.gtdate.co.uk"
+  cdn_alias: [ "static.gtdate.co.uk", "img.gtdate.co.uk", "img-cloud.gtdate.co.uk" ]
   service_id: 70
   enabled: true
 
 - main_domain: "www.divadate.co.uk"
   main_alias: [ ]
   api_domain: "api.divadate.co.uk"
-  img_domain: "img-cloud.divadate.co.uk"
-  static_domain: "static.divadate.co.uk"
+  cdn_domain: "cdn.divadate.co.uk"
+  cdn_alias: [ "static.divadate.co.uk", "img.divadate.co.uk", "img-cloud.divadate.co.uk" ]
   service_id: 71
   enabled: true
 
 - main_domain: "dating.pinkpaper.com"
   main_alias: [ ]
   api_domain: "api.dating.pinkpaper.com"
-  img_domain: "img.dating.pinkpaper.com"
-  static_domain: "static.dating.pinkpaper.com"
+  cdn_domain: "cdn.dating.pinkpaper.com"
+  cdn_alias: [ "static.dating.pinkpaper.com", "img.dating.pinkpaper.com" ]
   service_id: 60
   enabled: true
 
 - main_domain: "dating.fashiontv.com"
   main_alias: [ ]
   api_domain: "api.dating.fashiontv.com"
-  img_domain: "img.dating.fashiontv.com"
-  static_domain: "static.dating.fashiontv.com"
+  cdn_domain: "cdn.dating.fashiontv.com"
+  cdn_alias: [ "static.dating.fashiontv.com", "img.dating.fashiontv.com" ]
   service_id: 80
   enabled: true
 
 - main_domain: "www.gayxchange.com"
   main_alias: [ "gayxchange.com" ]
   api_domain: "api.gayxchange.com"
-  img_domain: "img-cloud.gayxchange.com"
-  static_domain: "static.gayxchange.com"
+  cdn_domain: "cdn.gayxchange.com"
+  cdn_alias: [ "static.gayxchange.com", "img.gayxchange.com", "img-cloud.gayxchange.com" ]
   service_id: 9
   enabled: true
 
