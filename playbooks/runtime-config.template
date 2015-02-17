@@ -1,52 +1,10 @@
 ---
 
 clusters:
-
-  shared:
-
-    build: "{{ deployment_name }}-{{ deployment_build }}"
-
-  local:
-
-    build: "{{ deployment_name }}-{{ deployment_build }}"
-
-    domain_suffix: "{{ deployment_name }}.datingnode.com"
-
-    ports:
-      vhost_proxy: 80
-      database_master: 5001
-      database_slave: 5002
-      web_application: 5003
-      storage: 5004
-      memcache: 5005
-
-  live:
-
-    build: "{{ deployment_name }}-{{ deployment_build }}"
-
-    domain_suffix: "live.datingnode.com"
-
-    ports:
-      vhost_proxy: 80
-      database_master: 5101
-      database_slave: 5102
-      web_application: 5103
-      storage: 5104
-      memcache: 5105
-
-  staging:
-
-    build: "{{ deployment_name }}-{{ deployment_build }}"
-
-    domain_suffix: "staging.datingnode.com"
-
-    ports:
-      vhost_proxy: 5200
-      database_master: 5201
-      database_slave: 5202
-      web_application: 5203
-      storage: 5204
-      memcache: 5205
+  shared: {{ lookup ('template', '../data/clusters/shared') | from_yaml | to_json }}
+  local: {{ lookup ('template', '../data/clusters/local') | from_yaml | to_json }}
+  live: {{ lookup ('template', '../data/clusters/live') | from_yaml | to_json }}
+  staging: {{ lookup ('template', '../data/clusters/staging') | from_yaml | to_json }}
 
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
