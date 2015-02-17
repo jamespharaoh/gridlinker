@@ -1,9 +1,9 @@
 # Datingnode Ansible
 
-Setup the Datingnode environment.
 
-// example:
-ansible-playbook deploy-app.yml -i inventory-jimmy-dev --extra-vars="vars_file=vars-jimmy-dev.yml"
+
+// update the whitelist and deploy
+./datingnode live-restart
 
 
 // setup search path:

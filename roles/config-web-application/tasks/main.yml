@@ -39,7 +39,16 @@
   suffix: "main"
   config: "apache{{ apache_version }}-cdn-vhost-main.j2"
   sites:
-    - main_domain: "img.datingnode.com"
+    - main_domain: "cdn.datingnode.com"
+      enabled: true
+      
+- include: "site.yml"
+  label: "api"
+  prefix: "dp_api"
+  suffix: "main"
+  config: "apache{{ apache_version }}-api-vhost-main.j2"
+  sites:
+    - main_domain: "api.datingnode.com"
       enabled: true
 
 - include: "site.yml"
@@ -64,10 +73,10 @@
   sites: "{{ services }}"
 
 - include: "site.yml"
-  label: "static"
+  label: "cdn"
   prefix: "dp_service"
-  suffix: "static"
-  config: "apache{{ apache_version }}-service-vhost-static.j2"
+  suffix: "cdn"
+  config: "apache{{ apache_version }}-service-vhost-cdn.j2"
   sites: "{{ services }}"
 
 - name: "create datingnode-config.json"

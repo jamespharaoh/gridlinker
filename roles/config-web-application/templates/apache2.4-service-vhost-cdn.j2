@@ -2,17 +2,17 @@
 
 <VirtualHost *:80>
 
-	ServerName {{ item.static_domain }}
-	ServerAlias {{ item.static_domain }}.{{ cluster.domain_suffix }}
+	ServerName {{ item.cdn_domain }}
+	ServerAlias {{ item.cdn_domain }}.{{ cluster.domain_suffix }}
 
-	ServerAlias {{ item.img_domain }}
-	ServerAlias {{ item.img_domain }}.{{ cluster.domain_suffix }}
+{% for alias in item.cdn_alias %}
+	ServerAlias {{ alias }}
+	ServerAlias {{ alias }}.{{ cluster.domain_suffix }}
+{% endfor %}
 
 {% for discreet_domain in discreet_cdn_domains %}
-
 	ServerAlias a{{ item.service_id }}.{{ discreet_domain }}
 	ServerAlias a{{ item.service_id }}.{{ discreet_domain }}.{{ cluster.domain_suffix }}
-
 {% endfor %}
 
 	ServerAdmin {{ server_admin_email }}
@@ -20,7 +20,7 @@
 	SetEnv SERVICE_ID {{ item.service_id }}
 	SetEnv SERVICE_DOMAIN {{ item.main_domain }}
 	SetEnv SERVICE_DOMAIN_API {{ item.api_domain }}
-	SetEnv SERVICE_DOMAIN_CDN {{ item.static_domain }}
+	SetEnv SERVICE_DOMAIN_CDN {{ item.cdn_domain }}
 	SetEnv DATINGNODE_ENVIRONMENT_CONFIG /var/www/datingnode-config.json
 
 	DocumentRoot {{ platform_super_dir }}
@@ -44,10 +44,10 @@
 		RewriteRule ^v[^/]*/d/js/(.*)$ 		/var/www/datingnode-super/datingnode/www/js/$1 [L,END]
 		RewriteRule ^v[^/]*/d/font/(.*)$ 	/var/www/datingnode-super/datingnode/www/font/$1 [L,END]
 
-		RewriteRule ^v[^/]*/css/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/css/$1 [L,END]
-		RewriteRule ^v[^/]*/img/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/img/$1 [L,END]
-		RewriteRule ^v[^/]*/js/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/js/$1 [L,END]
-		RewriteRule ^v[^/]*/font/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/font/$1 [L,END]
+		RewriteRule ^v[^/]*/css/(.*)$ 		/var/www/datingnode-super/services/{{ item.main_domain }}/css/$1 [L,END]
+		RewriteRule ^v[^/]*/img/(.*)$ 		/var/www/datingnode-super/services/{{ item.main_domain }}/img/$1 [L,END]
+		RewriteRule ^v[^/]*/js/(.*)$ 		/var/www/datingnode-super/services/{{ item.main_domain }}/js/$1 [L,END]
+		RewriteRule ^v[^/]*/font/(.*)$ 		/var/www/datingnode-super/services/{{ item.main_domain }}/font/$1 [L,END]
 
 
 		RewriteCond %{REQUEST_URI} !php$

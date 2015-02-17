@@ -2,14 +2,12 @@
 
 <VirtualHost *:80>
 
-	ServerName cdn.datingnode.com
-	ServerAlias img.datingnode.com
-	ServerAlias cdn.{{ cluster.domain_suffix }}
-	ServerAlias img.{{ cluster.domain_suffix }}
+	ServerName api.datingnode.com
+	ServerAlias api.{{ cluster.domain_suffix }}
 
-{% for discreet_domain in discreet_cdn_domains %}
-	ServerAlias cdn.{{ discreet_domain }}
-	ServerAlias cdn.{{ discreet_domain }}.{{ cluster.domain_suffix }}
+{% for discreet_domain in discreet_api_domains %}
+	ServerAlias api.{{ discreet_domain }}
+	ServerAlias api.{{ discreet_domain }}.{{ cluster.domain_suffix }}
 {% endfor %}
 
 	ServerAdmin {{ server_admin_email }}
@@ -31,12 +29,12 @@
 		</FilesMatch>
 
 		RewriteEngine on
-        RewriteRule ^(.*)$ fcgi://127.0.0.1:9000{{platform_super_dir}}/datingnode/static.php [P]
+        RewriteRule ^(.*)$ fcgi://127.0.0.1:9000{{platform_super_dir}}/api/pipe.php [P]
 
 	</Directory>
 
 	ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000{{platform_super_dir}}$1
-
+	
 	<Location />
 
 		<IfModule mod_filter.c>
@@ -62,8 +60,8 @@
 
 	</Location>
 
-	CustomLog {{ platform_log_dir }}/cdn-apache-access.log combined
-	ErrorLog {{ platform_log_dir }}/cdn-apache-error.log
+	CustomLog {{ platform_log_dir }}/api-apache-access.log combined
+	ErrorLog {{ platform_log_dir }}/api-apache-error.log
 	LogLevel warn
 
 </VirtualHost>

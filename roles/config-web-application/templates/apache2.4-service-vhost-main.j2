@@ -16,7 +16,7 @@
 	SetEnv SERVICE_ID {{ item.service_id }}
 	SetEnv SERVICE_DOMAIN {{ item.main_domain }}
 	SetEnv SERVICE_DOMAIN_API {{ item.api_domain }}
-	SetEnv SERVICE_DOMAIN_CDN {{ item.static_domain }}
+	SetEnv SERVICE_DOMAIN_CDN {{ item.cdn_domain }}
 	SetEnv DATINGNODE_ENVIRONMENT_CONFIG /var/www/datingnode-config.json
 
 	DocumentRoot {{ platform_super_dir }}
@@ -29,15 +29,16 @@
 
 		RewriteEngine on
 
-        RewriteRule ^v[^/]*/d/css/(.*)$ 	{{platform_super_dir}}/datingnode/www/css/$1 [L,END]
-        RewriteRule ^v[^/]*/d/img/(.*)$ 	{{platform_super_dir}}/datingnode/www/img/$1 [L,END]
-        RewriteRule ^v[^/]*/d/js/(.*)$ 		{{platform_super_dir}}/datingnode/www/js/$1 [L,END]
-        RewriteRule ^v[^/]*/d/font/(.*)$ 	{{platform_super_dir}}/datingnode/www/font/$1 [L,END]
+#        RewriteRule ^v[^/]*/d/css/(.*)$ 	{{platform_super_dir}}/datingnode/www/css/$1 [L,END]
+#        RewriteRule ^v[^/]*/d/img/(.*)$ 	{{platform_super_dir}}/datingnode/www/img/$1 [L,END]
+#        RewriteRule ^v[^/]*/d/js/(.*)$ 		{{platform_super_dir}}/datingnode/www/js/$1 [L,END]
+#        RewriteRule ^v[^/]*/d/font/(.*)$ 	{{platform_super_dir}}/datingnode/www/font/$1 [L,END]
 
-        RewriteRule ^v[^/]*/css/(.*)$ 		{{platform_super_dir}}/services/%{ENV:SERVICE_DOMAIN}/css/$1 [L,END]
-        RewriteRule ^v[^/]*/img/(.*)$ 		{{platform_super_dir}}/services/%{ENV:SERVICE_DOMAIN}/img/$1 [L,END]
-        RewriteRule ^v[^/]*/js/(.*)$ 		{{platform_super_dir}}/services/%{ENV:SERVICE_DOMAIN}/js/$1 [L,END]
-        RewriteRule ^v[^/]*/font/(.*)$ 		{{platform_super_dir}}/services/%{ENV:SERVICE_DOMAIN}/font/$1 [L,END]
+
+#        RewriteRule ^v[^/]*/css/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/css/$1 [L,END]
+#        RewriteRule ^v[^/]*/img/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/img/$1 [L,END]
+#        RewriteRule ^v[^/]*/js/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/js/$1 [L,END]
+#        RewriteRule ^v[^/]*/font/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/font/$1 [L,END]
 
         RewriteCond %{REQUEST_URI} !php$
         RewriteCond %{REQUEST_URI} !services/

@@ -29,10 +29,10 @@
 
 		RewriteEngine on
 
-        RewriteRule  ^css/(.*)$ 		{{platform_super_dir}}/datingnode/www/css/$1 [L,END]
+        RewriteRule  ^css/(.*)$ 	{{platform_super_dir}}/datingnode/www/css/$1 [L,END]
         RewriteRule ^img/(.*)$ 		{{platform_super_dir}}/datingnode/www/img/$1 [L,END]
         RewriteRule ^js/(.*)$ 		{{platform_super_dir}}/datingnode/www/js/$1 [L,END]
-        RewriteRule ^font/(.*)$ 		{{platform_super_dir}}/datingnode/www/font/$1 [L,END]
+        RewriteRule ^font/(.*)$ 	{{platform_super_dir}}/datingnode/www/font/$1 [L,END]
 
         RewriteCond %{REQUEST_URI} !php$
         RewriteCond %{REQUEST_URI} !datingnode/www/

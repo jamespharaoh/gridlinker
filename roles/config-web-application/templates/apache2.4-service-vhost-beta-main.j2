@@ -6,10 +6,8 @@
 	ServerAlias {{ item.main_domain }}.beta.datingnode.com.{{ cluster.domain_suffix }}
 
 {% for alias in item.main_alias %}
-
 	ServerAlias {{ alias }}.beta.datingnode.com
 	ServerAlias {{ alias }}.beta.datingnode.com
-
 {% endfor %}
 
 	ServerAdmin {{server_admin_email}}
@@ -17,7 +15,7 @@
 	SetEnv SERVICE_ID {{ item.service_id }}
 	SetEnv SERVICE_DOMAIN {{ item.main_domain }}
 	SetEnv SERVICE_DOMAIN_API {{ item.api_domain }}
-	SetEnv SERVICE_DOMAIN_CDN {{ item.static_domain }}
+	SetEnv SERVICE_DOMAIN_CDN {{ item.cdn_domain }}
 	SetEnv DATINGNODE_ENVIRONMENT_CONFIG /var/www/datingnode-config.json
 
 	DocumentRoot {{ platform_super_dir }}/app-web
@@ -29,15 +27,15 @@
 
 		RewriteEngine on
 
-        RewriteRule ^v[^/]*/d/css/(.*)$ 	/var/www/datingnode-super/app-web/www/css/$1 [L,END]
-        RewriteRule ^v[^/]*/d/img/(.*)$ 	/var/www/datingnode-super/app-web/www/img/$1 [L,END]
-        RewriteRule ^v[^/]*/d/js/(.*)$ 		/var/www/datingnode-super/app-web/www/js/$1 [L,END]
-        RewriteRule ^v[^/]*/d/font/(.*)$ 	/var/www/datingnode-super/app-web/www/font/$1 [L,END]
+#        RewriteRule ^v[^/]*/d/css/(.*)$ 	/var/www/datingnode-super/app-web/www/css/$1 [L,END]
+#        RewriteRule ^v[^/]*/d/img/(.*)$ 	/var/www/datingnode-super/app-web/www/img/$1 [L,END]
+#        RewriteRule ^v[^/]*/d/js/(.*)$ 		/var/www/datingnode-super/app-web/www/js/$1 [L,END]
+#        RewriteRule ^v[^/]*/d/font/(.*)$ 	/var/www/datingnode-super/app-web/www/font/$1 [L,END]
 
-        RewriteRule ^v[^/]*/css/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/css/$1 [L,END]
-        RewriteRule ^v[^/]*/img/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/img/$1 [L,END]
-        RewriteRule ^v[^/]*/js/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/js/$1 [L,END]
-        RewriteRule ^v[^/]*/font/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/font/$1 [L,END]
+#        RewriteRule ^v[^/]*/css/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/css/$1 [L,END]
+#        RewriteRule ^v[^/]*/img/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/img/$1 [L,END]
+#        RewriteRule ^v[^/]*/js/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/js/$1 [L,END]
+#        RewriteRule ^v[^/]*/font/(.*)$ 		/var/www/datingnode-super/services/%{ENV:SERVICE_DOMAIN}/font/$1 [L,END]
 
         RewriteCond %{REQUEST_URI} !php$
         RewriteCond %{REQUEST_URI} !services/
