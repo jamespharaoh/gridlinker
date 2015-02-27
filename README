@@ -1,6 +1,13 @@
 # Datingnode Ansible
 
 
+// deploy to staging
+./datingnode image-build-inc
+./datingnode image-build-all
+// update data/clusters/staging to correct tag
+./datingnode image-push-all
+./datingnode staging-restart
+
 
 // update the whitelist and deploy
 ./datingnode live-restart

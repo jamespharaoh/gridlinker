@@ -13,7 +13,7 @@ localhost
 
 [containers:children]
 database-master
-database-slave
+# database-slave
 web-application
 vhost-proxy
 memcache
@@ -22,13 +22,13 @@ memcache
 
 [database:children]
 database-master
-database-slave
+# database-slave
 
 [database-master]
 database-master-0  parent=localhost
 
 [database-slave]
-database-slave-0   parent=localhost
+# database-slave-0   parent=localhost
 
 # web app
 
