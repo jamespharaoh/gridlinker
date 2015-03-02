@@ -12,4 +12,17 @@ ports:
   storage: 5104
   memcache: 5105
 
+
+app_debug_visible: false
+
+app_show_adverts: true
+
+app_send_external_communications: true
+
+app_external_communication_email_white_list:
+ - jimmyxx@gmail.com
+ - jimmy@rocketware.co.uk
+ - jimmy@rocketware.org
+ 
+
 # ex: et ts=2 filetype=yaml

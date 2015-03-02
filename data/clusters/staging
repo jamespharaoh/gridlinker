@@ -1,6 +1,6 @@
 ---
 
-build: "jimmy-7"
+build: "jimmy-8"
 
 domain_suffix: "staging.datingnode.com"
 
@@ -11,5 +11,19 @@ ports:
   web_application: 5203
   storage: 5204
   memcache: 5205
+
+
+app_debug_visible: false
+
+app_show_adverts : false
+
+app_send_external_communications: false
+
+app_external_communication_email_white_list:
+ - jimmyxx@gmail.com
+ - jimmy@rocketware.co.uk
+ - jimmy@rocketware.org
+
+
 
 # ex: et ts=2 filetype=yaml
