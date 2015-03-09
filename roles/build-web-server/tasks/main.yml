@@ -35,6 +35,7 @@
    - "proxy_fcgi"
    - "rewrite"
    - "ssl"
+   - "headers"
 
 - name: "create apache php5 fpm config"
   action:
