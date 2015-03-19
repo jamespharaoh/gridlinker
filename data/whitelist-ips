@@ -47,6 +47,8 @@
 
 # jimmy home (BT - changes)
 - "86.169.8.223"
+- "86.169.14.170"
+
 
 # james office barcelona
 - "2.139.161.249"
@@ -56,5 +58,7 @@
 
 # Isi (designer)
 - "151.224.183.148"
+
+
 
 # ex: et ts=2 filetype=yaml

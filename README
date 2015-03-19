@@ -2,6 +2,7 @@
 
 
 // deploy to staging
+// turn instant_deploy to no!
 ./datingnode image-build-inc
 ./datingnode image-build-all
 // update data/clusters/staging to correct tag

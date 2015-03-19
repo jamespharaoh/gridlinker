@@ -1,6 +1,6 @@
 ---
 
-build: "jimmy-8"
+build: "jimmy-14"
 
 domain_suffix: "staging.datingnode.com"
 
