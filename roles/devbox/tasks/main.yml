@@ -2,6 +2,8 @@
 
 - include: "devbox-system.yml"
 - include: "devbox-dnsmasq.yml"
+- include: "devbox-network.yml"
+- include: "devbox-postfix.yml"
 - include: "devbox-nfs.yml"
 - include: "devbox-docker.yml"
 - include: "devbox-user.yml"

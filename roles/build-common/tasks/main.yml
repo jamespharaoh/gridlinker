@@ -1,41 +1,8 @@
 ---
 
-- shell: sudo apt-get update
+- include: "common-system.yml"
+- include: "common-ssh.yml"
+- include: "common-ansible.yml"
+- include: "common-nullmailer.yml"
 
-- name: "install system packages"
-  action:
-    module: "apt"
-    package: "{{ item }}"
-    state: "present"
-  sudo: yes
-  with_items: "install_packages"
-
-- name: "remove system packages"
-  action:
-    module: "apt"
-    package: "{{ item }}"
-    state: "absent"
-  sudo: yes
-  with_items: "remove_packages"
-
-- name: "configure ssh known hosts"
-  action:
-    module: "template"
-    src: "ssh-known-hosts"
-    dest: "/etc/ssh/ssh_known_hosts"
-  sudo: "yes"
-
-- name: "configure ssh authorized keys"
-  action:
-    module: "template"
-    src: "ssh-authorized-keys"
-    dest: "/root/.ssh/authorized_keys"
-  sudo: "yes"
-
-- name: "create ansible init script"
-  action:
-    module: "template"
-    src: "ansible-init-script"
-    dest: "/etc/my_init.d/ansible"
-    mode: "0755"
-  sudo: "yes"
+# ex: et ts=2 filetype=yaml

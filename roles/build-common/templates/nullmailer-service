@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mkfifo /var/spool/nullmailer/trigger                                                                                                           
+chown mail:root /var/spool/nullmailer/trigger
+chmod 0622 /var/spool/nullmailer/trigger
+
+exec setuid mail \
+/usr/sbin/nullmailer-send --syslog

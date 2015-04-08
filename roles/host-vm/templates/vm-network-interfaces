@@ -37,3 +37,13 @@ iface brprv0 inet static
 	bridge_stp off
 	bridge_maxwait 0
 	bridge_fd 0
+
+# dummy for mail
+
+auto dummy0
+iface dummy0 inet static
+
+	pre-up modprobe dummy
+
+	address 10.69.132.1
+	netmask 255.255.255.255

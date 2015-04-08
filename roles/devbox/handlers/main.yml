@@ -15,4 +15,11 @@
     state: "restarted"
   sudo: "yes"
 
+- name: "restart postfix"
+  action:
+    module: "service"
+    name: "postfix"
+    state: "restarted"
+  sudo: "yes"
+
 # ex: et ts=2 filetype=yaml

@@ -1,0 +1,22 @@
+---
+
+- name: "update"
+  shell: "sudo apt-get update"
+
+- name: "install system packages"
+  action:
+    module: "apt"
+    package: "{{ item }}"
+    state: "present"
+  sudo: yes
+  with_items: "install_packages"
+
+- name: "remove system packages"
+  action:
+    module: "apt"
+    package: "{{ item }}"
+    state: "absent"
+  sudo: yes
+  with_items: "remove_packages"
+
+# ex: et ts=2 filetype=yaml

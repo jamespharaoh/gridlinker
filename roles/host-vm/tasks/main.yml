@@ -3,6 +3,7 @@
 - include: "vm-system.yml"
 - include: "vm-security.yml"
 - include: "vm-dnsmasq.yml"
+- include: "vm-postfix.yml"
 - include: "vm-docker.yml"
 - include: "vm-nfs.yml"
 
