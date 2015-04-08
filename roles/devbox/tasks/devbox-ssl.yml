@@ -1,0 +1,13 @@
+---
+
+- name: "create ssl directory"
+  action:
+    module: "file"
+    name: "/datingnode-ssl"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  sudo: "yes"
+
+# ex: et ts=2 filetype=yaml

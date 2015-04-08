@@ -8,5 +8,6 @@
 - include: "devbox-docker.yml"
 - include: "devbox-user.yml"
 - include: "devbox-checkouts.yml"
+- include: "devbox-ssl.yml"
 
 # ex: et ts=2 filetype=yaml
