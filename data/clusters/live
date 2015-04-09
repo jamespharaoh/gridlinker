@@ -1,5 +1,5 @@
 ---
-
+deployment: "{{ deployment_name }}"
 build: "james-18"
 
 domain_suffix: "live.datingnode.com"
@@ -16,6 +16,8 @@ ports:
 app_debug_visible: false
 
 app_show_adverts: true
+
+app_log_api: false
 
 app_send_external_communications: true
 

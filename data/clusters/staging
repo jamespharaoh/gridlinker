@@ -1,6 +1,6 @@
 ---
-
-build: "jimmy-14"
+deployment: "{{ deployment_name }}"
+build: "jimmy-21"
 
 domain_suffix: "staging.datingnode.com"
 
@@ -17,7 +17,9 @@ app_debug_visible: false
 
 app_show_adverts : false
 
-app_send_external_communications: false
+app_log_api: true
+
+app_send_external_communications: false                     
 
 app_external_communication_email_white_list:
  - jimmyxx@gmail.com

@@ -1,5 +1,6 @@
 ---
 
+deployment: "{{ deployment_name }}"
 build: "{{ deployment_name }}-{{ deployment_build }}"
 
 domain_suffix: "{{ deployment_name }}.datingnode.com"
@@ -16,6 +17,8 @@ ports:
 app_debug_visible: true
 
 app_show_adverts: false
+
+app_log_api: true
 
 app_send_external_communications: false
 

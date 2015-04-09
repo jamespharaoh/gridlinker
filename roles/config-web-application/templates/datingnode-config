@@ -2,7 +2,9 @@
 
 	"datingnode": {
 
-		"dir" : "{{ platform_super_dir }}",
+		"deployment" 	: "{{ cluster.deployment }}",
+		"build" 		: "{{ cluster.build }}",
+		"dir" 			: "{{ platform_super_dir }}",
 		
 		"debug-visible" 		: {{ cluster.app_debug_visible }},
 
@@ -43,7 +45,9 @@
 
 				"sitemap-dir" 		: "{{ platform_assets_dir }}/sitemaps",
 				
-				"adverts-active"	: {{ cluster.app_show_adverts }}
+				"adverts-active"	: {{ cluster.app_show_adverts }},
+							
+				"sentry":"https://8d563d2e914b4a6f8b4c09d5d97dd2c4:bac6407966b8417aa751694195abd2f4@app.getsentry.com/40742"
 			},
 
 			"api": {
@@ -51,7 +55,11 @@
 				"discreet-domains" : [
 					"ariane.io",
 					"kosmos.space"
-				]
+				],
+				
+				"sentry":"https://7b441642a16c47afad861eeb9c3c0ba2:43a63d9f8ab54ddd87274c4cb86186d0@app.getsentry.com/40377",
+				
+				"logReqeusts": {{ cluster.app_log_api }}
 			},
 			
 			"cdn": {
@@ -59,21 +67,27 @@
 				"discreet-domains" : [
 					"angara.io",
 					"zenit.space"
-				]
+				],
+                 				
+                 "sentry":"https://71102a9e8ed545eca4c230dd97287617:aef467c0b11d4660912040f0986b9ece@app.getsentry.com/41006"
 			},
 			
 			"cms" : {
 				"ssl" : {
 					"main"	: false,
 					"api"	: false
-				}
+				},
+				
+				"sentry":"https://29f78b77e5c04c0691e6ec80e6f958ee:c3215b6489fd48fdb407f9aa069d8b21@app.getsentry.com/41005"
 			},
 
 			"control" : {
 				"ssl" : {
 					"main"	: false,
 					"api"	: false
-				}
+				},
+				
+				"sentry": "https://0618461e313e4c19b1bd0785603ece30:6653920925db4ac6b99f78986bdc1958@app.getsentry.com/41004"
 			},
 
 			"reports" : {
