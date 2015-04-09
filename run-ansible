@@ -4,12 +4,6 @@ set -e
 
 cd "$(dirname "$0")"
 
-# always run as root
-
-if test "$UID" != "0"; then
-	exec sudo "$0" "$@"
-fi
-
 # load config
 
 function parse_yaml {

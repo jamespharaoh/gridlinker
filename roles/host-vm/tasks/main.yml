@@ -1,9 +1,24 @@
 ---
 
 - include: "vm-system.yml"
+  tags: "vm-system"
+
 - include: "vm-security.yml"
+  tags: "vm-security"
+
 - include: "vm-dnsmasq.yml"
+  tags: "vm-dnsmasq"
+
+- include: "vm-postfix.yml"
+  tags: "vm-postfix"
+
 - include: "vm-docker.yml"
+  tags: "vm-docker"
+
 - include: "vm-nfs.yml"
+  tags: "vm-nfs"
+
+- include: "vm-ssl.yml"
+  tags: "vm-ssl"
 
 # ex: et ts=2 filetype=yaml

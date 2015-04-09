@@ -1,0 +1,17 @@
+---
+
+- name: "configure ssh known hosts"
+  action:
+    module: "template"
+    src: "ssh-known-hosts"
+    dest: "/etc/ssh/ssh_known_hosts"
+  sudo: "yes"
+
+- name: "configure ssh authorized keys"
+  action:
+    module: "template"
+    src: "ssh-authorized-keys"
+    dest: "/root/.ssh/authorized_keys"
+  sudo: "yes"
+
+# ex: et ts=2 filetype=yaml
