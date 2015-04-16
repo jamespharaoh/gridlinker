@@ -10,6 +10,17 @@
   with_items: "devbox_install_packages"
   tags: "update"
 
+- name: "remove system packages"
+  action:
+    module: "apt"
+    state: "removed"
+    purge: "yes"
+    name: "{{ item }}"
+  sudo: "yes"
+  sudo_user: "root"
+  with_items: "devbox_remove_packages"
+  tags: "update"
+
 - name: "setup sudo"
   action:
     module: "template"

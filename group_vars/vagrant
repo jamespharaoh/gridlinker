@@ -17,6 +17,14 @@ devbox_install_packages:
   - "samba"
   - "whois"
 
+devbox_remove_packages:
+
+  - "chef"
+  - "chef-zero"
+  - "cloud-init"
+  - "puppet"
+  - "puppet-common"
+
 devbox_install_python:
 
   - "docker-py"
