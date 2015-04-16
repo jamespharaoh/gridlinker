@@ -3,5 +3,6 @@
 /datingnode-config
 /deploy-config
 /runtime-config
+/secret-plain
 /.Trash-*
 /data/temp
