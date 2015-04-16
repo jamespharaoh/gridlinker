@@ -10,4 +10,26 @@
     mode: "0755"
   sudo: "yes"
 
+- name: "create ssl certificates"
+  action:
+    module: "copy"
+    src: "secret-plain/ssl/{{ item }}.cert"
+    dest: "/datingnode-ssl/{{ item }}.cert"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  sudo: "yes"
+  with_items: "ssl_domains"
+
+- name: "create ssl keys"
+  action:
+    module: "copy"
+    src: "secret-plain/ssl/{{ item }}.key"
+    dest: "/datingnode-ssl/{{ item }}.key"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  sudo: "yes"
+  with_items: "ssl_domains"
+
 # ex: et ts=2 filetype=yaml

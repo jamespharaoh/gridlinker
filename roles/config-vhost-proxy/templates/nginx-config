@@ -62,23 +62,6 @@ http {
 
 	}
 
-	server {
-
-		listen 443 ssl;
-
-		server_name a1.ariane.io;
-
-		ssl on;
-		ssl_certificate /config/ssl/a1.ariane.io.cert;
-		ssl_certificate /config/ssl/a1.ariane.io.key;
-
-		location / {
-			proxy_pass http://{{ cluster_name }};
-			proxy_set_header Host $host;
-		}
-		
-	}
-
 {% endif %}
 
 	server {
@@ -104,6 +87,38 @@ http {
 		}
 
 	}
+
+{% for ssl_domain in cluster.ssl_domains | default ([]) %}
+
+	server {
+
+		listen 443 ssl;
+
+		server_name {{ ssl_domain }};
+
+		ssl on;
+		ssl_certificate /config/ssl/{{ ssl_domain }}.cert;
+		ssl_certificate_key /config/ssl/{{ ssl_domain }}.key;
+
+		location / {
+
+			proxy_pass http://{{ cluster_name }};
+			proxy_set_header Host $host;
+
+			add_header X-Robots-Tag "noindex, nofollow";
+
+{% if cluster_name != 'local' %}
+{% for whitelist_ip in whitelist_ips %}
+			allow {{ whitelist_ip }};
+{% endfor %}
+			deny all;
+{% endif %}
+
+		}
+		
+	}
+
+{% endfor %}
 
 {% endfor %}
 

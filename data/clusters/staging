@@ -1,4 +1,5 @@
 ---
+
 deployment: "{{ deployment_name }}"
 build: "jimmy-21"
 
@@ -12,6 +13,16 @@ ports:
   storage: 5204
   memcache: 5205
 
+ssl_domains:
+
+  - a1.ariane.io.staging.datingnode.com
+  - a50.ariane.io.staging.datingnode.com
+  - a7.ariane.io.staging.datingnode.com
+  - cdn.angara.io.staging.datingnode.com
+  - api.onlylads.com.staging.datingnode.com
+  - www.onlylads.com.beta.staging.datingnode.com
+  - www.onlylads.com.staging.datingnode.com
+  - cdn.onlylads.com.staging.datingnode.com
 
 app_debug_visible: false
 
@@ -25,7 +36,5 @@ app_external_communication_email_white_list:
  - jimmyxx@gmail.com
  - jimmy@rocketware.co.uk
  - jimmy@rocketware.org
-
-
 
 # ex: et ts=2 filetype=yaml

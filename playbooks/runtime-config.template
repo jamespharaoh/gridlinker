@@ -1,10 +1,17 @@
 ---
 
+{% set clusters = {
+  'shared': lookup ('template', '../data/clusters/shared') | from_yaml,
+  'local': lookup ('template', '../data/clusters/local') | from_yaml,
+  'live': lookup ('template', '../data/clusters/live') | from_yaml,
+  'staging': lookup ('template', '../data/clusters/staging') | from_yaml,
+} %}
+
 clusters:
-  shared: {{ lookup ('template', '../data/clusters/shared') | from_yaml | to_json }}
-  local: {{ lookup ('template', '../data/clusters/local') | from_yaml | to_json  }}
-  live: {{ lookup ('template', '../data/clusters/live') | from_yaml | to_json  }}
-  staging: {{ lookup ('template', '../data/clusters/staging') | from_yaml | to_json  }}
+  shared: {{ clusters.shared | to_json }}
+  local: {{ clusters.local | to_json }}
+  live: {{ clusters.live | to_json }}
+  staging: {{ clusters.staging | to_json }}
 
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
@@ -43,6 +50,15 @@ trusted_ips:
   - "{{ trusted_ip }}"
 {% endfor %}
 
+{% set ssl_domains = []
+  | union (clusters.live.ssl_domains | default ([]))
+  | union (clusters.staging.ssl_domains | default ([]))
+  | union (clusters.local.ssl_domains | default ([]))
+%}
 
+ssl_domains:
+{% for ssl_domain in ssl_domains %}
+  - "{{ ssl_domain }}"
+{% endfor %}
 
 # ex: et ts=2 filetype=yaml
