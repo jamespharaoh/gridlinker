@@ -6,12 +6,12 @@ domain_suffix: "live.datingnode.com"
 
 ports:
   vhost_proxy: 80
+  vhost_proxy_ssl: 443
   database_master: 5101
   database_slave: 5102
   web_application: 5103
   storage: 5104
   memcache: 5105
-
 
 app_debug_visible: false
 

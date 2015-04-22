@@ -7,6 +7,7 @@ domain_suffix: "{{ deployment_name }}.datingnode.com"
 
 ports:
   vhost_proxy: 80
+  vhost_proxy_ssl: 443
   database_master: 5001
   database_slave: 5002
   web_application: 5003
