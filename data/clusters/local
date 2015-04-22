@@ -13,16 +13,7 @@ ports:
   storage: 5004
   memcache: 5005
   
-ssl_domains:
-  - a1.ariane.io.jimmy.datingnode.com
-  - a50.ariane.io.jimmy.datingnode.com
-  - a7.ariane.io.jimmy.datingnode.com
-  - cdn.angara.io.jimmy.datingnode.com
-  - api.onlylads.com.jimmy.datingnode.com
-  - www.onlylads.com.beta.jimmy.datingnode.com
-  - www.onlylads.com.jimmy.datingnode.com
-  - cdn.onlylads.com.jimmy.datingnode.com
-
+  
 app_debug_visible: true
 
 app_show_adverts: false
