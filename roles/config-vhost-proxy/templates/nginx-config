@@ -64,31 +64,29 @@ http {
 
 {% endif %}
 
+{% for ssl_domain in cluster.ssl_domains | default ([]) %}
+
 	server {
 
 		listen 80;
+		server_name {{ ssl_domain }};
 
-		server_name ~\.{{ cluster.domain_suffix | replace ('.', '\.') }}$;
+		return 301 https://{{ ssl_domain }}$request_uri;
 
-		location / {
+{% if cluster_name != 'live' %}
+		add_header X-Robots-Tag "noindex, nofollow";
+{% endif %}
 
-			proxy_pass http://{{ cluster_name }};
-			proxy_set_header Host $host;
-
-			add_header X-Robots-Tag "noindex, nofollow";
+		add_header Strict-Transport-Security "max-age={{ 60 * 60 * 24 * 365 }}";
 
 {% if cluster_name != 'local' %}
 {% for whitelist_ip in whitelist_ips %}
-			allow {{ whitelist_ip }};
+		allow {{ whitelist_ip }};
 {% endfor %}
-			deny all;
+		deny all;
 {% endif %}
 
-		}
-
 	}
-
-{% for ssl_domain in cluster.ssl_domains | default ([]) %}
 
 	server {
 
@@ -100,25 +98,50 @@ http {
 		ssl_certificate /config/ssl/{{ ssl_domain }}.cert;
 		ssl_certificate_key /config/ssl/{{ ssl_domain }}.key;
 
-		location / {
-
-			proxy_pass http://{{ cluster_name }};
-			proxy_set_header Host $host;
-
-			add_header X-Robots-Tag "noindex, nofollow";
-
 {% if cluster_name != 'local' %}
 {% for whitelist_ip in whitelist_ips %}
-			allow {{ whitelist_ip }};
+		allow {{ whitelist_ip }};
 {% endfor %}
-			deny all;
+		deny all;
 {% endif %}
 
+{% if cluster_name != 'live' %}
+		add_header X-Robots-Tag "noindex, nofollow";
+{% endif %}
+
+		add_header Strict-Transport-Security "max-age={{ 60 * 60 * 24 * 365 }}";
+
+		location / {
+			proxy_pass http://{{ cluster_name }};
+			proxy_set_header Host $host;
 		}
 		
 	}
 
 {% endfor %}
+
+	server {
+
+		listen 80;
+		server_name ~\.{{ cluster.domain_suffix | replace ('.', '\.') }}$;
+
+{% if cluster_name != 'local' %}
+{% for whitelist_ip in whitelist_ips %}
+		allow {{ whitelist_ip }};
+{% endfor %}
+		deny all;
+{% endif %}
+
+{% if cluster_name != 'live' %}
+		add_header X-Robots-Tag "noindex, nofollow";
+{% endif %}
+
+		location / {
+			proxy_pass http://{{ cluster_name }};
+			proxy_set_header Host $host;
+		}
+
+	}
 
 {% endfor %}
 

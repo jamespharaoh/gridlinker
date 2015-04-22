@@ -6,6 +6,7 @@ domain_suffix: "staging.datingnode.com"
 
 ports:
   vhost_proxy: 5200
+  vhost_proxy_ssl: 5206
   database_master: 5201
   database_slave: 5202
   web_application: 5203

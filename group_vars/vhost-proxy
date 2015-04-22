@@ -7,9 +7,11 @@ start_image: "{{ docker_images.vhost_proxy }}:{{ cluster.build }}"
 
 start_expose:
   - "80"
+  - "443"
 
 start_ports:
   - "{{ cluster.ports.vhost_proxy }}:80"
+  - "{{ cluster.ports.vhost_proxy_ssl }}:443"
 
 start_volumes:
   - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
@@ -20,5 +22,6 @@ start_env: {}
 
 start_wait:
   - "80"
+  - "443"
 
 # ex: et ts=2 filetype=yaml
