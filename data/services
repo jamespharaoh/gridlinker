@@ -87,7 +87,7 @@
   api_domain: "api.gayxchange.com"
   cdn_domain: "cdn.gayxchange.com"
   cdn_alias: [ "static.gayxchange.com", "img.gayxchange.com", "img-cloud.gayxchange.com" ]
-  service_id: 9
+  service_id: 50
   enabled: true
 
 # ex: et ts=2 filetype=yaml
