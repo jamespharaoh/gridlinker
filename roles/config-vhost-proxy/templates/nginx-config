@@ -29,6 +29,10 @@ http {
 	gzip on;
 	gzip_disable "msie6";
 
+	# various limits
+
+	client_max_body_size 19m;
+
 	# load balancer
 
 {% for trusted_ip in trusted_ips %}
