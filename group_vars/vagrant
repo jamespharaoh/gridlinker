@@ -29,6 +29,10 @@ devbox_install_python:
 
   - "docker-py"
 
+devbox_install_ruby:
+
+  - "sass"
+
 devbox_checkouts:
 
   - name: "datingnode-ansible"

@@ -42,8 +42,13 @@
     module: "pip"
     name: "{{ item }}"
   sudo: "yes"
-  sudo_user: "root"
   with_items: "devbox_install_python"
+
+- name: "install ruby packages"
+  action:
+    module: "gem"
+    name: "{{ item }}"
+  with_items: "devbox_install_ruby"
 
 - name: "get info about second disk"
   action:
