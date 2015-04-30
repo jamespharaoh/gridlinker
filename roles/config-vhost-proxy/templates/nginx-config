@@ -32,6 +32,7 @@ http {
 	# various limits
 
 	client_max_body_size 19m;
+	server_names_hash_bucket_size 1024;
 
 	# load balancer
 
