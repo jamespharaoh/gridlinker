@@ -13,7 +13,7 @@ ports:
   web_application: 5003
   storage: 5004
   memcache: 5005
-  
+ 
 ssl_domains:
  - a1.ariane.io.jimmy.datingnode.com
  - a50.ariane.io.jimmy.datingnode.com
@@ -24,7 +24,7 @@ ssl_domains:
  - www.onlylads.com.jimmy.datingnode.com
  - cdn.onlylads.com.jimmy.datingnode.com
 
-  
+
 app_debug_visible: true
 
 app_show_adverts: false
@@ -37,6 +37,5 @@ app_external_communication_email_white_list:
  - jimmyxx@gmail.com
  - jimmy@rocketware.co.uk
  - jimmy@rocketware.org
-
 
 # ex: et ts=2 filetype=yaml

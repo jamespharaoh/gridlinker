@@ -1,6 +1,7 @@
 ---
 deployment: "{{ deployment_name }}"
-build: "james-18"
+build: "jimmy-34"
+
 
 domain_suffix: "live.datingnode.com"
 
