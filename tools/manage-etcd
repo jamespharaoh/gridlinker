@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+
+import dnode
+import dnode.authority
+import dnode.data
+
+def main ():
+
+	parser = argparse.ArgumentParser ()
+	sub_parsers = parser.add_subparsers ()
+
+	# ---------- export
+
+	parser_export = sub_parsers.add_parser ("export")
+	parser_export.set_defaults (func = do_export)
+
+	parser_export.add_argument (
+		"--source",
+		default = "",
+		help = "Etcd path to read data from")
+
+	parser_export.add_argument (
+		"--target",
+		required = True,
+		help = "Local filesystem path to write data to")
+
+	# ---------- import
+
+	parser_import = sub_parsers.add_parser ("import")
+	parser_import.set_defaults (func = do_import)
+
+	parser_import.add_argument (
+		"--source",
+		required = True,
+		help = "Local filesyste path to read data from")
+
+	parser_import.add_argument (
+		"--target",
+		default = "",
+		help = "Etcd path to write data to")
+
+	# ---------- rest
+
+	args = parser.parse_args ()
+	args.func (args)
+
+def do_export (args):
+
+	dnode_client = dnode.get_client ()
+
+	print "TODO"
+
+def do_import (args):
+
+	dnode_client = dnode.get_client ()
+
+	for dir_name, subdir_list, file_list in os.walk (args.source):
+
+		dir_name = dir_name [len (args.source) + 1:]
+
+		print "/" + dir_name
+
+		for file_name in file_list:
+
+			with open (
+				args.source + "/" + dir_name + "/" + file_name
+			) as file_handle:
+				file_contents = file_handle.read ()
+
+			dnode_client.etcd_client.write (
+				args.target + "/" + dir_name + "/" + file_name,
+				file_contents)
+
+main ()

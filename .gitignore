@@ -6,3 +6,4 @@
 /secret-plain
 /.Trash-*
 /data/temp
+*.pyc

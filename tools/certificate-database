@@ -1,0 +1,111 @@
+#!/usr/bin/env python
+
+import argparse
+import itertools
+import sys
+
+import dnode
+import dnode.authority
+import dnode.data
+
+def main ():
+
+	parser = argparse.ArgumentParser ()
+	sub_parsers = parser.add_subparsers ()
+
+	# ---------- create
+
+	parser_create = sub_parsers.add_parser ("create")
+	parser_create.set_defaults (func = do_create)
+
+	parser_create.add_argument (
+		"--database",
+		required = True)
+
+	# ---------- request
+
+	parser_request = sub_parsers.add_parser ("request")
+	parser_request.set_defaults (func = do_request)
+
+	parser_request.add_argument (
+		"--database",
+		required = True)
+
+	parser_request.add_argument (
+		"--common-name",
+		required = True)
+
+	parser_request_alt_names = parser_request.add_argument_group (
+		"alt names")
+
+	parser_request_alt_names.add_argument (
+		"--alt-dns",
+		default = [],
+		action = "append")
+
+	parser_request_alt_names.add_argument (
+		"--alt-ip",
+		default = [],
+		action = "append")
+
+	parser_request_alt_names.add_argument (
+		"--alt-email",
+		default = [],
+		action = "append")
+
+	# ---------- etc
+
+	args = parser.parse_args ()
+	args.func (args)
+
+def do_create (args):
+
+	dnode_client = dnode.get_client ()
+
+	database = dnode.certificate.Database (
+		dnode_client,
+		"/certificate/" + args.database,
+		dnode.certificate_data)
+
+	if database.exists ():
+
+		print "Certificate database already exists"
+
+		return
+
+	database.create ()
+
+	print "Certificate database created"
+
+def do_request (args):
+
+	dnode_client = dnode.get_client ()
+
+	database = dnode.certificate.Database (
+		dnode_client,
+		"/certificate/" + args.database,
+		dnode.certificate_data)
+
+	alt_names = list (itertools.chain.from_iterable ([
+		[ "DNS:" + alt_dns for alt_dns in args.alt_dns ],
+		[ "IP:" + alt_ip for alt_ip in args.alt_ip ],
+		[ "email:" + alt_email for alt_email in args.alt_email ],
+	]))
+
+	success, csr, key = database.request (
+		args.common_name,
+		alt_names)
+
+	if success:
+
+		print "CSR created"
+
+		sys.exit (0)
+
+	else:
+
+		print "There is already a request pending for this common name"
+
+		sys.exit (1)
+
+main ()
