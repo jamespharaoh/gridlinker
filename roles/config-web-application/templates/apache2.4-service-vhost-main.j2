@@ -29,25 +29,14 @@
 
 		RewriteEngine on
 
-#        RewriteRule ^v[^/]*/d/css/(.*)$ 	{{platform_super_dir}}/datingnode/www/css/$1 [L,END]
-#        RewriteRule ^v[^/]*/d/img/(.*)$ 	{{platform_super_dir}}/datingnode/www/img/$1 [L,END]
-#        RewriteRule ^v[^/]*/d/js/(.*)$ 		{{platform_super_dir}}/datingnode/www/js/$1 [L,END]
-#        RewriteRule ^v[^/]*/d/font/(.*)$ 	{{platform_super_dir}}/datingnode/www/font/$1 [L,END]
-
-
-#        RewriteRule ^v[^/]*/css/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/css/$1 [L,END]
-#        RewriteRule ^v[^/]*/img/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/img/$1 [L,END]
-#        RewriteRule ^v[^/]*/js/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/js/$1 [L,END]
-#        RewriteRule ^v[^/]*/font/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/font/$1 [L,END]
-
         RewriteCond %{REQUEST_URI} !php$
         RewriteCond %{REQUEST_URI} !services/
-        RewriteCond %{REQUEST_URI} !datingnode/www/
-        RewriteRule ^(.*)$ fcgi://127.0.0.1:9000{{platform_super_dir}}/datingnode/index.php [P]
+        RewriteCond %{REQUEST_URI} !app-web/www/
+        RewriteRule ^(.*)$ fcgi://127.0.0.1:9000/var/www/datingnode-super/app-web/pipe.php [P]
 
 	</Directory>
 
-	ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000{{platform_super_dir}}$1
+	ProxyPassMatch ^/(.*\.php(/.*)?)$ fcgi://127.0.0.1:9000{{platform_super_dir}}app-web/$1
 
 	<Location />
 
@@ -76,8 +65,8 @@
 
 	</Location>
 
-	CustomLog {{ platform_log_dir }}/service-apache-access.log combined
-	ErrorLog {{ platform_log_dir }}/service-apache-error.log
+	CustomLog {{ platform_log_dir }}/app-web-apache-access.log combined
+	ErrorLog {{ platform_log_dir }}/app-web-apache-error.log
 	LogLevel warn
 
 	RewriteEngine On
