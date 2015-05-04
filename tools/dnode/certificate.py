@@ -388,7 +388,7 @@ class Database:
 
 		pass
 
-	def request (self, name, alt_names):
+	def request (self, name):
 
 		# create key
 
@@ -404,6 +404,7 @@ class Database:
 		request_csr.set_version (2)
 
 		request_csr.get_subject ().C = self.data ["country"]
+		request_csr.get_subject ().ST = "NA"
 		request_csr.get_subject ().L = self.data ["locality"]
 		request_csr.get_subject ().O = self.data ["organization"]
 		request_csr.get_subject ().CN = name
@@ -439,3 +440,41 @@ class Database:
 			request_csr_string,
 			request_key_string,
 		)
+
+	def cancel (self, name):
+
+		# write to database
+
+		request_path = self.path + "/" + name
+
+		if not self.dnode_client.exists (request_path + "/pending"):
+
+			return False
+
+		request_csr_string = self.dnode_client.get_raw (
+			request_path + "/pending/request")
+
+		request_key_string = self.dnode_client.get_raw (
+			request_path + "/pending/key")
+
+		cancelled_path, cancelled_index = self.dnode_client.make_queue_dir (
+			request_path + "/cancelled")
+
+		self.dnode_client.set_raw (
+			cancelled_path + "/request",
+			request_csr_string)
+
+		self.dnode_client.set_raw (
+			cancelled_path + "/key",
+			request_key_string)
+
+		self.dnode_client.rm_raw (
+			request_path + "/pending/request")
+
+		self.dnode_client.rm_raw (
+			request_path + "/pending/key")
+
+		self.dnode_client.rmdir_raw (
+			request_path + "/pending")
+
+		return True

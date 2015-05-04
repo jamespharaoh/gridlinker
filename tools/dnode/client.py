@@ -45,6 +45,30 @@ class DnodeClient:
 
 		self.etcd_client.write (key, value)
 
+	def rm_raw (self, key):
+
+		self.etcd_client.delete (
+			key = key)
+
+	def rmdir_raw (self, key):
+
+		self.etcd_client.delete (
+			key = key,
+			dir = True)
+
+	def make_queue_dir (self, key):
+
+		result = self.etcd_client.write (
+			key = key,
+			value = None,
+			append = True,
+			dir = True)
+
+		return (
+			str (result.key),
+			str (result.createdIndex),
+		)
+
 	def get_yaml (self, key):
 
 		some_yaml = self.get_raw (key)

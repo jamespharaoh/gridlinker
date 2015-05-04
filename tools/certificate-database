@@ -35,23 +35,18 @@ def main ():
 		"--common-name",
 		required = True)
 
-	parser_request_alt_names = parser_request.add_argument_group (
-		"alt names")
+	# ---------- cancel
 
-	parser_request_alt_names.add_argument (
-		"--alt-dns",
-		default = [],
-		action = "append")
+	parser_cancel = sub_parsers.add_parser ("cancel")
+	parser_cancel.set_defaults (func = do_cancel)
 
-	parser_request_alt_names.add_argument (
-		"--alt-ip",
-		default = [],
-		action = "append")
+	parser_cancel.add_argument (
+		"--database",
+		required = True)
 
-	parser_request_alt_names.add_argument (
-		"--alt-email",
-		default = [],
-		action = "append")
+	parser_cancel.add_argument (
+		"--common-name",
+		required = True)
 
 	# ---------- etc
 
@@ -86,26 +81,42 @@ def do_request (args):
 		"/certificate/" + args.database,
 		dnode.certificate_data)
 
-	alt_names = list (itertools.chain.from_iterable ([
-		[ "DNS:" + alt_dns for alt_dns in args.alt_dns ],
-		[ "IP:" + alt_ip for alt_ip in args.alt_ip ],
-		[ "email:" + alt_email for alt_email in args.alt_email ],
-	]))
-
 	success, csr, key = database.request (
-		args.common_name,
-		alt_names)
+		args.common_name)
 
 	if success:
 
-		print "CSR created"
+		print "Request created for " + args.common_name
 
 		sys.exit (0)
 
 	else:
 
-		print "There is already a request pending for this common name"
+		print "There is already a request pending for " + args.common_name
 
 		sys.exit (1)
 
+def do_cancel (args):
+
+	dnode_client = dnode.get_client ()
+
+	database = dnode.certificate.Database (
+		dnode_client,
+		"/certificate/" + args.database,
+		dnode.certificate_data)
+
+	success = database.cancel (
+		args.common_name)
+
+	if success:
+
+		print "Request cancelled for " + args.common_name
+
+		sys.exit (0)
+
+	else:
+
+		print "There is no request pending for " + args.common_name
+
+		sys.exit (1)
 main ()
