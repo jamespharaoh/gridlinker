@@ -29,11 +29,17 @@ devbox_remove_packages:
 
 devbox_install_python:
 
-  - "pip"
-  - "cryptography"
+  - name: "pip"
+    version: "6.1.1"
 
-  - "docker-py"
-  - "python-etcd"
+  - name: "cryptography"
+    version: "0.8.2"
+
+  - name: "docker-py"
+    version: "1.1.0"
+
+  - name: "python-etcd"
+    version: "0.3.3"
 
 devbox_install_ruby:
 

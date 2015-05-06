@@ -40,8 +40,8 @@
 - name: "install python packages"
   action:
     module: "pip"
-    name: "{{ item }}"
-    state: "latest"
+    name: "{{ item.name }}"
+    version: "{{ item.version }}"
   sudo: "yes"
   with_items: "devbox_install_python"
 
