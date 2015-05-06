@@ -409,6 +409,8 @@ class Database:
 		request_csr.get_subject ().O = self.data ["organization"]
 		request_csr.get_subject ().CN = name
 
+		request_csr.sign (request_key, "sha256")
+
 		# dump to pem
 
 		request_csr_string = crypto.dump_certificate_request (
