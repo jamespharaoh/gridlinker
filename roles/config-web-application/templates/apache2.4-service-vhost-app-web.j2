@@ -27,16 +27,16 @@
 
 		RewriteEngine on
 
+		# FIXME: it's linking to the old project...
+        RewriteRule ^v[^/]*/d/css/(.*)$ 	{{platform_super_dir}}/datingnode/www/css/$1 [L,END]
+        RewriteRule ^v[^/]*/d/img/(.*)$ 	{{platform_super_dir}}/datingnode/www/img/$1 [L,END]
+        RewriteRule ^v[^/]*/d/js/(.*)$ 		{{platform_super_dir}}/datingnode/www/js/$1 [L,END]
+        RewriteRule ^v[^/]*/d/font/(.*)$ 	{{platform_super_dir}}/datingnode/www/font/$1 [L,END]
 
-        RewriteRule ^v[^/]*/d/css/(.*)$ 	{{platform_super_dir}}/app-web/www/css/$1 [L,END]
-        RewriteRule ^v[^/]*/d/img/(.*)$ 	{{platform_super_dir}}/app-web/www/img/$1 [L,END]
-        RewriteRule ^v[^/]*/d/js/(.*)$ 		{{platform_super_dir}}/app-web/www/js/$1 [L,END]
-        RewriteRule ^v[^/]*/d/font/(.*)$ 	{{platform_super_dir}}/app-web/www/font/$1 [L,END]
-
-        RewriteRule ^v[^/]*/css/(.*)$ 		{{platform_super_dir}}/services/%{ENV:SERVICE_DOMAIN}/css/$1 [L,END]
-        RewriteRule ^v[^/]*/img/(.*)$ 		{{platform_super_dir}}/services/%{ENV:SERVICE_DOMAIN}/img/$1 [L,END]
-        RewriteRule ^v[^/]*/js/(.*)$ 		{{platform_super_dir}}/services/%{ENV:SERVICE_DOMAIN}/js/$1 [L,END]
-        RewriteRule ^v[^/]*/font/(.*)$ 		{{platform_super_dir}}/services/%{ENV:SERVICE_DOMAIN}/font/$1 [L,END]
+        RewriteRule ^v[^/]*/css/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/css/$1 [L,END]
+        RewriteRule ^v[^/]*/img/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/img/$1 [L,END]
+        RewriteRule ^v[^/]*/js/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/js/$1 [L,END]
+        RewriteRule ^v[^/]*/font/(.*)$ 		{{platform_super_dir}}/services/{{ item.main_domain }}/font/$1 [L,END]
 
 
         RewriteCond %{REQUEST_URI} !php$
