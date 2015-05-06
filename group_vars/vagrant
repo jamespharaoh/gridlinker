@@ -28,8 +28,10 @@ devbox_remove_packages:
 
 devbox_install_python:
 
+  - "pip"
+  - "cryptography"
+
   - "docker-py"
-  - "pyOpenSSL"
   - "python-etcd"
 
 devbox_install_ruby:
