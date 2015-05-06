@@ -11,6 +11,7 @@ devbox_install_packages:
   - "colordiff"
   - "encfs"
   - "git"
+  - "libffi-dev"
   - "libssl-dev"
   - "nfs-kernel-server"
   - "ngrep"
