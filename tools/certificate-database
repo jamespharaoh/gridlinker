@@ -48,6 +48,32 @@ def main ():
 		"--common-name",
 		required = True)
 
+	# ---------- signed
+
+	parser_signed = sub_parsers.add_parser ("signed")
+	parser_signed.set_defaults (func = do_signed)
+
+	parser_signed.add_argument (
+		"--database",
+		required = True)
+
+	parser_signed.add_argument (
+		"--common-name",
+		required = True)
+
+	parser_signed.add_argument (
+		"--certificate",
+		action = "append",
+		required = True)
+
+	parser_signed.add_argument (
+		"--ignore-subject-mismatch",
+		action = "store_true")
+
+	parser_signed.add_argument (
+		"--ignore-common-name-mismatch",
+		action = "store_true")
+
 	# ---------- etc
 
 	args = parser.parse_args ()
@@ -96,6 +122,34 @@ def do_request (args):
 
 		sys.exit (1)
 
+def do_signed (args):
+
+	dnode_client = dnode.get_client ()
+
+	database = dnode.certificate.Database (
+		dnode_client,
+		"/certificate/" + args.database,
+		dnode.certificate_data)
+
+	certificate_strings = []
+
+	for certificate_filename in args.certificate:
+
+		with open (certificate_filename) as file_handle:
+
+			certificate_strings.append (
+				file_handle.read ())
+
+	database.signed (
+		args.common_name,
+		certificate_strings,
+		not args.ignore_subject_mismatch,
+		not args.ignore_common_name_mismatch)
+
+	print "Request signed for " + args.common_name
+
+	sys.exit (0)
+
 def do_cancel (args):
 
 	dnode_client = dnode.get_client ()
@@ -119,4 +173,5 @@ def do_cancel (args):
 		print "There is no request pending for " + args.common_name
 
 		sys.exit (1)
+
 main ()

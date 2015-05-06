@@ -17,20 +17,31 @@ def main ():
 	parser_create = sub_parsers.add_parser ('create')
 	parser_create.set_defaults (func = do_create)
 
-	parser_create.add_argument ('--authority', required = True)
-	parser_create.add_argument ('--common-name', required = True)
+	parser_create.add_argument (
+		"--authority",
+		required = True)
+
+	parser_create.add_argument (
+		"--common-name",
+		required = True)
 
 	# ---------- issue
 
 	parser_issue = sub_parsers.add_parser ('issue')
 	parser_issue.set_defaults (func = do_issue)
 
-	parser_issue.add_argument ("--authority", required = True)
-	parser_issue.add_argument ("--common-name", required = True)
+	parser_issue.add_argument (
+		"--authority",
+		required = True)
+
+	parser_issue.add_argument (
+		"--common-name",
+		required = True)
 
 	# type
 
-	parser_issue_type = parser_issue.add_mutually_exclusive_group (required = True)
+	parser_issue_type = parser_issue.add_mutually_exclusive_group (
+		required = True)
 
 	parser_issue_type.add_argument (
 		"--server",

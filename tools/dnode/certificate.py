@@ -445,19 +445,23 @@ class Database:
 
 	def cancel (self, name):
 
-		# write to database
-
 		request_path = self.path + "/" + name
+
+		# sanity check
 
 		if not self.dnode_client.exists (request_path + "/pending"):
 
 			return False
+
+		# read pending
 
 		request_csr_string = self.dnode_client.get_raw (
 			request_path + "/pending/request")
 
 		request_key_string = self.dnode_client.get_raw (
 			request_path + "/pending/key")
+
+		# create cancelled
 
 		cancelled_path, cancelled_index = self.dnode_client.make_queue_dir (
 			request_path + "/cancelled")
@@ -470,6 +474,8 @@ class Database:
 			cancelled_path + "/key",
 			request_key_string)
 
+		# remove pending
+
 		self.dnode_client.rm_raw (
 			request_path + "/pending/request")
 
@@ -480,3 +486,163 @@ class Database:
 			request_path + "/pending")
 
 		return True
+
+	def signed (self,
+			name,
+			certificate_strings,
+			verify_subject,
+			verify_common_name):
+
+		request_path = self.path + "/" + name
+
+		# sanity check
+
+		if not self.dnode_client.exists (request_path + "/pending"):
+
+			raise Error ("No request pending")
+
+		# read pending
+
+		request_csr_string = self.dnode_client.get_raw (
+			request_path + "/pending/request")
+
+		request_key_string = self.dnode_client.get_raw (
+			request_path + "/pending/key")
+
+		request_csr = crypto.load_certificate_request (
+			crypto.FILETYPE_PEM,
+			request_csr_string)
+
+		request_key = crypto.load_privatekey (
+			crypto.FILETYPE_PEM,
+			request_key_string)
+
+		# read chain
+
+		certificates = [
+
+			crypto.load_certificate (
+				crypto.FILETYPE_PEM,
+				certificate_string)
+
+			for certificate_string
+				in certificate_strings
+
+		]
+
+		# verify chain
+
+		if not request_csr.verify (certificates [0].get_pubkey ()):
+
+			raise Exception (
+				"Public key of certificate does not match request")
+
+		if verify_subject \
+		and request_csr.get_subject () \
+			!= certificates [0].get_subject ():
+
+			raise Exception (
+				"Subject of certificate does not match request")
+
+		if verify_common_name \
+		and request_csr.get_subject ().CN \
+			!= certificates [0].get_subject ().CN:
+
+			raise Exception (
+				"Common name of certificate does not match request")
+
+		for child, parent in zip (
+			certificates [:-1],
+			certificates [1:]):
+
+			if not child.get_issuer () == parent.get_subject ():
+
+				raise Exception (
+					"Certificate chain subjects and issues do not match")
+
+		if certificates [-1].get_issuer () != certificates [-1].get_subject ():
+
+			raise Exception (
+				"Root certificate is not self-signed")
+
+		# TODO verify the actual signatures of the chain
+
+		# archive existing certificate
+
+		if self.dnode_client.exists (request_path + "/current"):
+
+			raise Exception ("TODO need to move chain somehow")
+
+			# read current
+
+			archive_csr_string = self.dnode_client.get_raw (
+				request_path + "/current/request")
+
+			archive_certificate_string = self.dnode_client.get_raw (
+				request_path + "/current/certificate")
+
+			archive_key_string = self.dnode_client.get_raw (
+				request_path + "/current/key")
+
+			# write to archive
+
+			archive_path, archive_index = self.dnode_client.make_queue_dir (
+				request_path + "/archive")
+
+			self.dnode_client.set_raw (
+				archive_path + "/request",
+				archive_csr_string)
+
+			self.dnode_client.set_raw (
+				archive_path + "/certificate",
+				archive_certificate_string)
+
+			self.dnode_client.set_raw (
+				archive_path + "/key",
+				archive_key_string)
+
+			# remove current
+
+			self.dnode_client.rm_raw (
+				request_path + "/current/request")
+
+			self.dnode_client.rm_raw (
+				request_path + "/current/certificate")
+
+			self.dnode_client.rm_raw (
+				request_path + "/current/key")
+
+			self.dnode_client.rmdir_raw (
+				request_path + "/current")
+
+		# store new certificate
+
+		self.dnode_client.set_raw (
+			request_path + "/current/request",
+			request_csr_string)
+
+		self.dnode_client.set_raw (
+			request_path + "/current/key",
+			request_key_string)
+
+		self.dnode_client.set_raw (
+			request_path + "/current/certificate",
+			certificate_strings [0])
+
+		for chain_index, chain_string \
+			in enumerate (certificate_strings [1:]):
+
+			self.dnode_client.set_raw (
+				request_path + "/current/chain/" + str (chain_index),
+				chain_string)
+
+		# remove pending
+
+		self.dnode_client.rm_raw (
+			request_path + "/pending/request")
+
+		self.dnode_client.rm_raw (
+			request_path + "/pending/key")
+
+		self.dnode_client.rmdir_raw (
+			request_path + "/pending")
