@@ -11,6 +11,7 @@ devbox_install_packages:
   - "colordiff"
   - "encfs"
   - "git"
+  - "libssl-dev"
   - "nfs-kernel-server"
   - "ngrep"
   - "postgresql-client-9.3"
@@ -28,6 +29,8 @@ devbox_remove_packages:
 devbox_install_python:
 
   - "docker-py"
+  - "pyOpenSSL"
+  - "python-etcd"
 
 devbox_install_ruby:
 
