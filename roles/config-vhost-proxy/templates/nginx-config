@@ -75,7 +75,12 @@ if 'ports' in cluster %}
 	| union (cluster.full_ssl_domains | default ([]))
 %}
 
-{% for ssl_domain in cluster_all_ssl_domains | default ([]) %}
+{% for base_domain in base_ssl_domains %}
+{% if cluster_name == 'live' %}
+{% set ssl_domain = base_domain %}
+{% else %}
+{% set ssl_domain = base_domain + '.' + cluster.domain_suffix %}
+{% endif %}
 
 	server {
 

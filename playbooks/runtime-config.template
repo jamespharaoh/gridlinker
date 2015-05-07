@@ -75,7 +75,6 @@ base_ssl_domains:
   - p.{{ root }}
   - a.{{ root }}
   - api.{{ root }}
-  - r.{{ root }}
   - a1.{{ root }}
   - a2.{{ root }}
   - a3.{{ root }}
@@ -99,9 +98,9 @@ base_ssl_domains:
 
 {% for service in lookup ('file', '../data/services') | from_yaml %}
   - {{ service.main_domain }}
-  - {{ service.api_domain }}
-  - {{ service.cdn_domain }}
-  - origin.{{ service.cdn_domain }}
+  - api.{{ service.root_domain }}
+  - cdn.{{ service.root_domain }}
+  - origin.cdn.{{ service.root_domain }}
   - static.{{ service.root_domain }}
   - img.{{ service.root_domain }}
 {% endfor %}
@@ -114,5 +113,6 @@ ssl_domain_suffixes:
   - ".staging.datingnode.com"
   - ".jimmy.datingnode.com"
   - ".jonny.datingnode.com"
+  - ".james.datingnode.com"
 
 # ex: et ts=2 filetype=yaml
