@@ -5,7 +5,7 @@ set -e
 BINARY="/usr/bin/memcached"
 USER="memcache"
 LOG="/var/log/memcached.log"
-MAX_MEMORY="{{ 4 * 1024 }}"
+MAX_MEMORY="{{ 8 * 1024 }}"
 MAX_CONNECTIONS="1024"
 LISTEN_IP="0.0.0.0"
 LISTEN_PORT="11211"

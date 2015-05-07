@@ -13,7 +13,7 @@ ports:
   storage: 5204
   memcache: 5205
 
-ssl_domains:
+own_ssl_domains:
  - a1.ariane.io.staging.datingnode.com
  - a50.ariane.io.staging.datingnode.com
  - a7.ariane.io.staging.datingnode.com
@@ -22,7 +22,6 @@ ssl_domains:
  - www.onlylads.com.beta.staging.datingnode.com
  - www.onlylads.com.staging.datingnode.com
  - cdn.onlylads.com.staging.datingnode.com
-
 
 app_debug_visible: false
 

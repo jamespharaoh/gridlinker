@@ -94,22 +94,4 @@ ssh_user_keys:
       - "0BzVAt5/Uaqs5zrOpXtNawX8JDWyZKowd5btbhooNZ8B2Abukx7wxtgzoG5luvMqN9vbD2"
       - "VoEaFnusbRiXKvJlJCc1kd"
 
-ssl_domains:
-  - "a1.ariane.io.staging.datingnode.com"
-  - "a50.ariane.io.staging.datingnode.com"
-  - "a7.ariane.io.staging.datingnode.com"
-  - "cdn.angara.io.staging.datingnode.com"
-  - "api.onlylads.com.staging.datingnode.com"
-  - "www.onlylads.com.beta.staging.datingnode.com"
-  - "www.onlylads.com.staging.datingnode.com"
-  - "cdn.onlylads.com.staging.datingnode.com"
-  - "a1.ariane.io.jimmy.datingnode.com"
-  - "a50.ariane.io.jimmy.datingnode.com"
-  - "a7.ariane.io.jimmy.datingnode.com"
-  - "cdn.angara.io.jimmy.datingnode.com"
-  - "api.onlylads.com.jimmy.datingnode.com"
-  - "www.onlylads.com.beta.jimmy.datingnode.com"
-  - "www.onlylads.com.jimmy.datingnode.com"
-  - "cdn.onlylads.com.jimmy.datingnode.com"
-
 # ex: et ts=2 filetype=yaml

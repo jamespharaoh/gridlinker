@@ -50,15 +50,31 @@ trusted_ips:
   - "{{ trusted_ip }}"
 {% endfor %}
 
-{% set ssl_domains = []
-  | union (clusters.live.ssl_domains | default ([]))
-  | union (clusters.staging.ssl_domains | default ([]))
-  | union (clusters.local.ssl_domains | default ([]))
+{% set own_ssl_domains = []
+  | union (clusters.live.own_ssl_domains | default ([]))
+  | union (clusters.staging.own_ssl_domains | default ([]))
+  | union (clusters.local.own_ssl_domains | default ([]))
 %}
 
-ssl_domains:
-{% for ssl_domain in ssl_domains %}
+own_ssl_domains:
+{% for ssl_domain in own_ssl_domains %}
   - "{{ ssl_domain }}"
 {% endfor %}
+
+{% set full_ssl_domains = []
+  | union (clusters.live.full_ssl_domains | default ([]))
+  | union (clusters.staging.full_ssl_domains | default ([]))
+  | union (clusters.local.full_ssl_domains | default ([]))
+%}
+
+full_ssl_domains:
+{% for ssl_domain in full_ssl_domains %}
+  - "{{ ssl_domain }}"
+{% endfor %}
+
+all_ssl_domains: "{{ '{{' }} []
+  | union (own_ssl_domains)
+  | union (full_ssl_domains)
+{{ '}}' }}"
 
 # ex: et ts=2 filetype=yaml

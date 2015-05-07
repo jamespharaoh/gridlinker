@@ -57,7 +57,7 @@ if ! test -d "$DATA"; then
 
 			listen_addresses = '*'
 			port = 5432
-			max_connections = 100
+			max_connections = 150
 
 			# replication
 
@@ -67,9 +67,28 @@ if ! test -d "$DATA"; then
 			max_wal_senders = 1
 			hot_standby = on
 
+			# checkpoints
+
+			checkpoint_segments = 10
+			checkpoint_completion_target = 0.9
+
+			# resources
+
+			shared_buffers = 8GB
+			temp_buffers = 32MB
+			work_mem = 95MB
+			maintenance_work_mem = 2GB
+			wal_buffers = 16MB
+
+			# planner
+
+			seq_page_cost = 1.0
+			random_page_cost = 2.0
+			cpu_tuple_cost = 0.1
+			effective_cache_size = 22GB
+
 			# misc
 
-			shared_buffers = 128MB
 			log_timezone = 'UTC'
 			datestyle = 'iso, mdy'
 			timezone = 'UTC'

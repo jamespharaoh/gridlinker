@@ -14,7 +14,7 @@ ports:
   storage: 5004
   memcache: 5005
  
-ssl_domains:
+own_ssl_domains:
  - a1.ariane.io.jimmy.datingnode.com
  - a50.ariane.io.jimmy.datingnode.com
  - a7.ariane.io.jimmy.datingnode.com

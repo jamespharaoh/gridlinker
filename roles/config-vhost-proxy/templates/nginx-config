@@ -42,7 +42,8 @@ http {
 
 	real_ip_header X-Forwarded-For;
 
-{% for cluster_name, cluster in clusters.iteritems () if 'ports' in cluster %}
+{% for cluster_name, cluster in clusters.iteritems ()
+if 'ports' in cluster %}
 
 	upstream {{ cluster_name }} {
 {% if cluster_name == 'local' %}
@@ -69,7 +70,12 @@ http {
 
 {% endif %}
 
-{% for ssl_domain in cluster.ssl_domains | default ([]) %}
+{% set cluster_all_ssl_domains = []
+	| union (cluster.own_ssl_domains | default ([]))	
+	| union (cluster.full_ssl_domains | default ([]))
+%}
+
+{% for ssl_domain in cluster_all_ssl_domains | default ([]) %}
 
 	server {
 
