@@ -1,0 +1,5 @@
+{% for base_domain in base_ssl_domains %}
+{% for domain_suffix in ssl_domain_suffixes %}
+{{ base_domain }}{{ domain_suffix }}
+{% endfor %}
+{% endfor %}

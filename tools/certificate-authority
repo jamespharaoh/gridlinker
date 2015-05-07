@@ -2,9 +2,10 @@
 
 import argparse
 import itertools
+import sys
 
 import dnode
-import dnode.authority
+import dnode.certificate
 import dnode.data
 
 def main ():
@@ -98,6 +99,25 @@ def main ():
 		default = [],
 		action = "append")
 
+	# ---------- export
+
+	parser_export = sub_parsers.add_parser ('export')
+	parser_export.set_defaults (func = do_export)
+
+	parser_export.add_argument (
+		"--authority",
+		required = True)
+
+	parser_export.add_argument (
+		"--common-name",
+		required = True)
+
+	parser_export.add_argument (
+		"--full-certificate-chain")
+
+	parser_export.add_argument (
+		"--private-key")
+
 	# ---------- etc
 
 	args = parser.parse_args ()
@@ -107,7 +127,7 @@ def do_create (args):
 
 	dnode_client = dnode.get_client ()
 
-	authority = dnode.authority.Authority (
+	authority = dnode.certificate.Authority (
 		dnode_client,
 		"/authority/" + args.authority,
 		dnode.certificate_data)
@@ -120,7 +140,7 @@ def do_issue (args):
 
 	dnode_client = dnode.get_client ()
 
-	authority = dnode.authority.Authority (
+	authority = dnode.certificate.Authority (
 		dnode_client,
 		"/authority/" + args.authority,
 		dnode.certificate_data)
@@ -133,24 +153,72 @@ def do_issue (args):
 		[ "email:" + alt_email for alt_email in args.alt_email ],
 	]))
 
-	issue_serial, issue_digest = authority.issue (
+	success, issue_serial, issue_digest = authority.issue (
 		args.type,
 		args.common_name,
 		alt_names)
 
-	print "Created certificate %s %s %s" % (
-		issue_serial,
-		issue_digest,
+	if success:
+
+		print "Created certificate %s %s %s" % (
+			issue_serial,
+			issue_digest,
+			args.common_name)
+
+		if args.store_host and args.store_key:
+
+			host_data = wbs_client.get_host (args.store_host)
+			host_data [args.store_key] = issue_digest
+			wbs_client.set_host (args.store_host, host_data)
+
+			print "Stored as %s in host %s" % (
+				args.store_key,
+				args.store_host)
+
+	else:
+
+		print "Certificate already exists for %s" % (
+			args.common_name)
+
+		sys.exit (1)
+
+def do_export (args):
+
+	dnode_client = dnode.get_client ()
+
+	authority = dnode.certificate.Authority (
+		dnode_client,
+		"/authority/" + args.authority,
+		dnode.certificate_data)
+
+	authority.load ()
+
+	success, certificate_string, key_string = authority.get (
 		args.common_name)
 
-	if args.store_host and args.store_key:
+	if success:
 
-		host_data = wbs_client.get_host (args.store_host)
-		host_data [args.store_key] = issue_digest
-		wbs_client.set_host (args.store_host, host_data)
+		if args.full_certificate_chain:
 
-		print "Stored as %s in host %s" % (
-			args.store_key,
-			args.store_host)
+			with open (args.full_certificate_chain, "w") as file_handle:
+
+				file_handle.write (certificate_string)
+				file_handle.write (authority.root_certificate ())
+
+			print "Wrote full chain to %s" % (
+				args.full_certificate_chain)
+
+		if args.private_key:
+
+			with open (args.private_key, "w") as file_handle:
+
+				file_handle.write (key_string)
+
+			print "Wrote private key to %s" % (
+				args.private_key)
+
+	else:
+
+		print "failure"
 
 main ()

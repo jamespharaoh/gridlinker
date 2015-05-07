@@ -1,0 +1,18 @@
+#!/bin/bash
+
+trap 'exit 1' INT
+
+for domain in $(cat $HOME/datingnode-domain-list); do
+
+	if test \
+		-f secret-plain/ssl/$domain.cert -a \
+		-f secret-plain/ssl/$domain.key; then
+		continue
+	fi
+
+	tools/certificate-authority issue \
+		--authority rocketware \
+		--common-name $domain \
+		--server
+
+done

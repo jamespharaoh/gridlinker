@@ -1,6 +1,7 @@
 ---
 
 - main_domain: "www.onlylads.com"
+  root_domain: "onlylads.com"
   main_alias: [ "onlylads.com" ]
   api_domain: "api.onlylads.com"
   cdn_domain: "cdn.datingnode.com"
@@ -9,6 +10,7 @@
   enabled: true
 
 - main_domain: "www.onlywomen.com"
+  root_domain: "onlywomen.com"
   main_alias: [ "onlywomen.com" ]
   api_domain: "api.onlywomen.com"
   cdn_domain: "cdn.datingnode.com"
@@ -17,6 +19,7 @@
   enabled: true
 
 - main_domain: "www.onescene.com"
+  root_domain: "onescene.com"
   main_alias: [ "onescene.com" ]
   api_domain: "api.onescene.com"
   cdn_domain: "cdn.datingnode.com"
@@ -27,6 +30,7 @@
   enabled: true
 
 - main_domain: "www.introducingyou.com"
+  root_domain: "introducingyou.com"
   main_alias: [ "introducingyou.com" ]
   api_domain: "api.introducingyou.com"
   cdn_domain: "cdn.datingnode.com"
@@ -35,6 +39,7 @@
   enabled: true
 
 - main_domain: "www.letsdate.co.uk"
+  root_domain: "letsdate.co.uk"
   main_alias: [ "letsdate.co.uk" ]
   api_domain: "api.letsdate.co.uk"
   cdn_domain: "cdn.datingnode.com"
@@ -43,6 +48,7 @@
   enabled: true
 
 - main_domain: "www.pinkdar.com"
+  root_domain: "pinkdar.com"
   main_alias: [ "pinkdar.com" ]
   api_domain: "api.pinkdar.com"
   cdn_domain: "cdn.datingnode.com"
@@ -51,6 +57,7 @@
   enabled: true
 
 - main_domain: "www.gtdate.co.uk"
+  root_domain: "gtdate.co.uk"
   main_alias: [ ]
   api_domain: "api.gtdate.co.uk"
   cdn_domain: "cdn.datingnode.com"
@@ -59,6 +66,7 @@
   enabled: true
 
 - main_domain: "www.divadate.co.uk"
+  root_domain: "divadate.co.uk"
   main_alias: [ ]
   api_domain: "api.divadate.co.uk"
   cdn_domain: "cdn.datingnode.com"
@@ -67,6 +75,7 @@
   enabled: true
 
 - main_domain: "dating.pinkpaper.com"
+  root_domain: "pinkpaper.com"
   main_alias: [ ]
   api_domain: "api.dating.pinkpaper.com"
   cdn_domain: "cdn.datingnode.com"
@@ -75,6 +84,7 @@
   enabled: true
 
 - main_domain: "dating.fashiontv.com"
+  root_domain: "dating.fashiontv.com"
   main_alias: [ ]
   api_domain: "api.dating.fashiontv.com"
   cdn_domain: "cdn.datingnode.com"
@@ -83,6 +93,7 @@
   enabled: true
 
 - main_domain: "www.gayxchange.com"
+  root_domain: "gayxchange.com"
   main_alias: [ "gayxchange.com" ]
   api_domain: "api.gayxchange.com"
   cdn_domain: "cdn.datingnode.com"

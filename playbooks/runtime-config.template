@@ -50,31 +50,69 @@ trusted_ips:
   - "{{ trusted_ip }}"
 {% endfor %}
 
-{% set own_ssl_domains = []
-  | union (clusters.live.own_ssl_domains | default ([]))
-  | union (clusters.staging.own_ssl_domains | default ([]))
-  | union (clusters.local.own_ssl_domains | default ([]))
-%}
+base_ssl_domains:
 
-own_ssl_domains:
-{% for ssl_domain in own_ssl_domains %}
-  - "{{ ssl_domain }}"
+  - img.datingnode.com
+  - origin.img.datingnode.com
+  - static.datingnode.com
+  - origin.static.datingnode.com
+  - control.datingnode.com
+  - cdn.datingnode.com
+  - origin.cdn.datingnode.com
+
+  - angara.io
+  - zenit.space
+  - c.angara.io
+  - c.zenit.space
+  - origin.c.angara.io
+  - origin.c.zenit.space
+  - origin.cdn.angara.io
+  - origin.cdn.zenit.space
+
+{% for root in [ 'ariane.io', 'kosmos.space' ] %}
+  - {{ root }}
+  - r.{{ root }}
+  - p.{{ root }}
+  - a.{{ root }}
+  - api.{{ root }}
+  - r.{{ root }}
+  - a1.{{ root }}
+  - a2.{{ root }}
+  - a3.{{ root }}
+  - a4.{{ root }}
+  - a5.{{ root }}
+  - a6.{{ root }}
+  - a7.{{ root }}
+  - a8.{{ root }}
+  - a9.{{ root }}
+  - a10.{{ root }}
+  - a20.{{ root }}
+  - a30.{{ root }}
+  - a40.{{ root }}
+  - a50.{{ root }}
+  - a60.{{ root }}
+  - a70.{{ root }}
+  - a71.{{ root }}
+  - a80.{{ root }}
+  - a90.{{ root }}
 {% endfor %}
 
-{% set full_ssl_domains = []
-  | union (clusters.live.full_ssl_domains | default ([]))
-  | union (clusters.staging.full_ssl_domains | default ([]))
-  | union (clusters.local.full_ssl_domains | default ([]))
-%}
+{% for service in lookup ('file', '../data/services') | from_yaml %}
+  - {{ service.main_domain }}
+  - {{ service.api_domain }}
+  - {{ service.cdn_domain }}
+  - origin.{{ service.cdn_domain }}
+  - static.{{ service.root_domain }}
+  - img.{{ service.root_domain }}
+{% endfor %}
 
 full_ssl_domains:
-{% for ssl_domain in full_ssl_domains %}
-  - "{{ ssl_domain }}"
-{% endfor %}
+  - cdn.datingnode.com
 
-all_ssl_domains: "{{ '{{' }} []
-  | union (own_ssl_domains)
-  | union (full_ssl_domains)
-{{ '}}' }}"
+ssl_domain_suffixes:
+  - ""
+  - ".staging.datingnode.com"
+  - ".jimmy.datingnode.com"
+  - ".jonny.datingnode.com"
 
 # ex: et ts=2 filetype=yaml

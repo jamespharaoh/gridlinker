@@ -1,0 +1,11 @@
+---
+
+- name: "write domains"
+  action:
+    module: "template"
+    src: "devbox-domains"
+    dest: "{{ devbox_home }}/datingnode-domain-list"
+  sudo: "yes"
+  sudo_user: "{{ devbox_user }}"
+
+# ex: et ts=2 filetype=yaml

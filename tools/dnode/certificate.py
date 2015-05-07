@@ -95,11 +95,11 @@ class Authority:
 
 		# dump to pem
 
-		root_cert_string = crypto.dump_certificate (
+		self.root_cert_string = crypto.dump_certificate (
 			crypto.FILETYPE_PEM,
 			self.root_cert)
 
-		root_key_string = crypto.dump_privatekey (
+		self.root_key_string = crypto.dump_privatekey (
 			crypto.FILETYPE_PEM,
 			self.root_key)
 
@@ -133,11 +133,11 @@ class Authority:
 
 		self.dnode_client.set_raw (
 			self.path + "/certificate",
-			root_cert_string)
+			self.root_cert_string)
 
 		self.dnode_client.set_raw (
 			self.path + "/key",
-			root_key_string)
+			self.root_key_string)
 
 		self.dnode_client.set_raw (
 			self.path + "/serial",
@@ -157,10 +157,10 @@ class Authority:
 		self.root_data = self.dnode_client.get_yaml (
 			self.path + "/data")
 
-		root_cert_string = self.dnode_client.get_raw (
+		self.root_cert_string = self.dnode_client.get_raw (
 			self.path + "/certificate")
 
-		root_key_string = self.dnode_client.get_raw (
+		self.root_key_string = self.dnode_client.get_raw (
 			self.path + "/key")
 
 		root_serial_string = self.dnode_client.get_raw (
@@ -168,15 +168,22 @@ class Authority:
 
 		self.root_cert = crypto.load_certificate (
 			crypto.FILETYPE_PEM,
-			root_cert_string)
+			self.root_cert_string)
 
 		self.root_key = crypto.load_privatekey (
 			crypto.FILETYPE_PEM,
-			root_key_string)
+			self.root_key_string)
 
 		self.issue_serial = int (root_serial_string)
 
 	def issue (self, type, name, alt_names):
+
+		# check if it exists
+
+		if self.dnode_client.exists (
+			self.path + "/named/" + name):
+
+			return False, None, None
 
 		# check type
 
@@ -317,7 +324,7 @@ class Authority:
 			self.path + "/named/" + name,
 			str (issue_serial))
 
-		return issue_serial, issue_digest
+		return True, issue_serial, issue_digest
 
 	def get (self, issue_ref):
 
@@ -340,16 +347,21 @@ class Authority:
 			issue_serial,
 		)
 
-		issue_certificate_text = self.dnode_client.get_raw (
-			issue_path + "/certificate")
+		certificate_string = self.dnode_client.get_raw (
+				issue_path + "/certificate")
 
-		issue_key_text = self.dnode_client.get_raw (
+		key_string = self.dnode_client.get_raw (
 			issue_path + "/key")
 
 		return (
-			issue_certificate_text,
-			issue_key_text,
+			True,
+			certificate_string,
+			key_string,
 		)
+
+	def root_certificate (self):
+
+		return self.root_cert_string
 
 class Database:
 

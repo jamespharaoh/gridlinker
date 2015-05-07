@@ -1,13 +1,33 @@
 ---
 
 - include: "devbox-system.yml"
+  tags: "devbox-system"
+
 - include: "devbox-dnsmasq.yml"
+  tags: "devbox-dnsmasq"
+
 - include: "devbox-network.yml"
+  tags: "devbox-network"
+
 - include: "devbox-postfix.yml"
+  tags: "devbox-postfix"
+
 - include: "devbox-nfs.yml"
+  tags: "devbox-nfs"
+
 - include: "devbox-docker.yml"
+  tags: "devbox-docker"
+
 - include: "devbox-user.yml"
+  tags: "devbox-user"
+
+- include: "devbox-misc.yml"
+  tags: "devbox-misc"
+
 - include: "devbox-checkouts.yml"
+  tags: "devbox-checkouts"
+
 - include: "devbox-ssl.yml"
+  tags: "devbox-ssl"
 
 # ex: et ts=2 filetype=yaml

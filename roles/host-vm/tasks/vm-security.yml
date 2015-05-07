@@ -6,4 +6,18 @@
     src: "vm-authorized-keys"
     dest: "/home/ubuntu/.ssh/authorized_keys"
 
+- name: "create root ssh dir"
+  action:
+    module: "file"
+    path: "/root/.ssh"
+    state: "directory"
+  sudo: "yes"
+
+- name: "install root authorized keys"
+  action:
+    module: "template"
+    src: "vm-authorized-keys"
+    dest: "/root/.ssh/authorized_keys"
+  sudo: "yes"
+
 # ex: et ts=2 filetype=yaml
