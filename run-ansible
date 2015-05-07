@@ -101,6 +101,7 @@ if test "$#" != "0"; then
 	exec ansible-playbook \
 		--inventory-file "hosts" \
 		--extra-vars "@config" \
+		--extra-vars "@runtime-config" \
 		"${@}"
 fi
 

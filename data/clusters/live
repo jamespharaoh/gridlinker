@@ -25,6 +25,8 @@ app_external_communication_email_white_list:
  - jimmyxx@gmail.com
  - jimmy@rocketware.co.uk
  - jimmy@rocketware.org
- 
+
+full_ssl_domains:
+  - cdn.datingnode.com
 
 # ex: et ts=2 filetype=yaml

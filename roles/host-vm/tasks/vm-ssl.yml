@@ -10,7 +10,7 @@
     mode: "0755"
   sudo: "yes"
 
-- name: "create ssl certificates"
+- name: "create own ssl certificates"
   action:
     module: "copy"
     src: "../secret-plain/ssl/{{ item }}.cert"
@@ -19,7 +19,32 @@
     group: "root"
     mode: "0644"
   sudo: "yes"
-  with_items: "ssl_domains"
+  with_items: "own_ssl_domains"
+
+- name: "create own ssl keys"
+  action:
+    module: "copy"
+    src: "../secret-plain/ssl/{{ item }}.key"
+    dest: "/datingnode-ssl/{{ item }}.key"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  sudo: "yes"
+  with_items: "own_ssl_domains"
+
+- name: "create full ssl certificates"
+  action:
+    module: "copy"
+    content: "{{ [
+      lookup ('file', '../secret-plain/ssl/' + item + '.cert'),
+      lookup ('file', '../secret-plain/ssl/comodo.chain'),
+    ] | join ('\n') + '\n' }}"
+    dest: "/datingnode-ssl/{{ item }}.cert"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  sudo: "yes"
+  with_items: "full_ssl_domains"
 
 - name: "create ssl keys"
   action:
@@ -30,6 +55,6 @@
     group: "root"
     mode: "0600"
   sudo: "yes"
-  with_items: "ssl_domains"
+  with_items: "full_ssl_domains"
 
 # ex: et ts=2 filetype=yaml
