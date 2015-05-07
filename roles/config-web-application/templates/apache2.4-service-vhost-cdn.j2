@@ -11,8 +11,8 @@
 {% endfor %}
 
 {% for discreet_domain in discreet_cdn_domains %}
-	ServerAlias a{{ item.service_id }}.{{ discreet_domain }}
-	ServerAlias a{{ item.service_id }}.{{ discreet_domain }}.{{ cluster.domain_suffix }}
+	ServerAlias c{{ item.service_id }}.{{ discreet_domain }}
+	ServerAlias c{{ item.service_id }}.{{ discreet_domain }}.{{ cluster.domain_suffix }}
 {% endfor %}
 
 	ServerAdmin {{ server_admin_email }}

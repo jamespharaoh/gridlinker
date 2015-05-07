@@ -19,7 +19,7 @@
     #  type: "string"
 
     - question: "nullmailer/defaultdomain"
-      value: "rocketware.com"
+      value: "rocketware.co.uk"
       type: "string"
 
     - question: "nullmailer/adminaddr"
