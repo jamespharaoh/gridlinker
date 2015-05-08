@@ -10,88 +10,158 @@ import dnode.data
 
 def main ():
 
-	parser = argparse.ArgumentParser ()
+	parser = argparse.ArgumentParser (
+		description = """
+			This tool manages a database of certificates, along with their
+			corresponding certificate chains and private keys. It is also able
+			to generate certificate signing requests which are normally required
+			when working with third-party certificate authorities.
+		""")
+
 	sub_parsers = parser.add_subparsers ()
 
 	# ---------- create
 
-	parser_create = sub_parsers.add_parser ("create")
-	parser_create.set_defaults (func = do_create)
+	parser_create = sub_parsers.add_parser (
+		"create",
+		help = "create a new certificate database",
+		description = """
+			Create a new certificate database. This initialised the metadata for
+			the certificate database and is required before issuing any other
+			commands.
+		""")
+
+	parser_create.set_defaults (
+		func = do_create)
 
 	parser_create.add_argument (
 		"--database",
-		required = True)
+		required = True,
+		help = "name of certificate database to create")
 
 	# ---------- request
 
-	parser_request = sub_parsers.add_parser ("request")
-	parser_request.set_defaults (func = do_request)
+	parser_request = sub_parsers.add_parser (
+		"request",
+		help = "create a new certificate request",
+		description = """
+			Create a new certificate request. This creates a public/private
+			keypair and a corresponding certificate request, which should be
+			sent to a certificate authority to be signed. The certificate will
+			be in the "pending" state. Once the signed certificate is received,
+			use the "signed" command to import it and move it to the "current"
+			state. It is possible to have a "pending" certificate request and a
+			"current" signed certificate at the same time.
+		""")
+
+	parser_request.set_defaults (
+		func = do_request)
 
 	parser_request.add_argument (
 		"--database",
-		required = True)
+		required = True,
+		help = "name of certificate database to use")
 
 	parser_request.add_argument (
 		"--common-name",
-		required = True)
+		required = True,
+		help = "common name of certificate request to create")
 
 	# ---------- cancel
 
-	parser_cancel = sub_parsers.add_parser ("cancel")
-	parser_cancel.set_defaults (func = do_cancel)
+	parser_cancel = sub_parsers.add_parser (
+		"cancel",
+		help = "cancel a pending request",
+		description = """
+			Cancel a pending request. Use this if a certificate request which is
+			in the "pending" state is never going to be signed, for example if
+			the information is incorrect and it needs to be created again.
+		""")
+
+	parser_cancel.set_defaults (
+		func = do_cancel)
 
 	parser_cancel.add_argument (
 		"--database",
-		required = True)
+		required = True,
+		help = "name of certificate database to use")
 
 	parser_cancel.add_argument (
 		"--common-name",
-		required = True)
+		required = True,
+		help = "common name of pending certificate request to cancel")
 
 	# ---------- signed
 
-	parser_signed = sub_parsers.add_parser ("signed")
-	parser_signed.set_defaults (func = do_signed)
+	parser_signed = sub_parsers.add_parser (
+		"signed",
+		help = "import a signed certificate to complete a pending request",
+		description = """
+			Import a signed certificate, to complete a pending request. Use this
+			command following a "request" command, once the request has been
+			signed by a certificate authority, and the certificate has been
+			granted. This updates a certificate in the "pending" state and makes
+			it "current". You will need to repeat the --certificate option once
+			for every certificate in the chain, starting with the certificate
+			which matches the request, and ending with the self-signed root
+			certificate authority.
+		""")
+
+	parser_signed.set_defaults (
+		func = do_signed)
 
 	parser_signed.add_argument (
 		"--database",
-		required = True)
+		required = True,
+		help = "name of certificate database to use")
 
 	parser_signed.add_argument (
 		"--common-name",
-		required = True)
+		required = True,
+		help = "common name of pending certificate request to sign")
 
 	parser_signed.add_argument (
 		"--certificate",
 		action = "append",
-		required = True)
+		required = True,
+		help = "path to signed certificate file, specify once for each in chain")
 
 	parser_signed.add_argument (
 		"--ignore-subject-mismatch",
-		action = "store_true")
+		action = "store_true",
+		help = "unless set, the signed certificate subject must exactly match the request")
 
 	parser_signed.add_argument (
 		"--ignore-common-name-mismatch",
-		action = "store_true")
+		action = "store_true",
+		help = "unless set, the signed certificate common name must exactly match the request")
 
 	# ---------- export
 
-	parser_export = sub_parsers.add_parser ('export')
-	parser_export.set_defaults (func = do_export)
+	parser_export = sub_parsers.add_parser (
+		"export",
+		help = "export a certificate, chain, and/or key to the filesystem")
+
+	parser_export.set_defaults (
+		func = do_export)
 
 	parser_export.add_argument (
 		"--database",
-		required = True)
+		required = True,
+		help = "name of certificate database to use")
 
 	parser_export.add_argument (
 		"--common-name",
-		required = True)
+		required = True,
+		help = "common name of certificate request to export")
 
 	parser_export.add_argument (
-		"--full-certificate-chain")
+		"--full-certificate-chain",
+		help = "path to write full certificate chain to")
 
 	parser_export.add_argument (
-		"--private-key")
+		"--private-key",
+		help = "path to write private key to")
 
 	# ---------- etc
 
