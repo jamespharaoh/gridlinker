@@ -74,6 +74,25 @@ def main ():
 		"--ignore-common-name-mismatch",
 		action = "store_true")
 
+	# ---------- export
+
+	parser_export = sub_parsers.add_parser ('export')
+	parser_export.set_defaults (func = do_export)
+
+	parser_export.add_argument (
+		"--database",
+		required = True)
+
+	parser_export.add_argument (
+		"--common-name",
+		required = True)
+
+	parser_export.add_argument (
+		"--full-certificate-chain")
+
+	parser_export.add_argument (
+		"--private-key")
+
 	# ---------- etc
 
 	args = parser.parse_args ()
@@ -173,5 +192,44 @@ def do_cancel (args):
 		print "There is no request pending for " + args.common_name
 
 		sys.exit (1)
+
+def do_export (args):
+
+	dnode_client = dnode.get_client ()
+
+	database = dnode.certificate.Database (
+		dnode_client,
+		"/certificate/" + args.database,
+		dnode.certificate_data)
+
+	database.load ()
+
+	success, certificate_strings, key_string = database.get (
+		args.common_name)
+
+	if success:
+
+		if args.full_certificate_chain:
+
+			with open (args.full_certificate_chain, "w") as file_handle:
+
+				for certificate_string in certificate_strings:
+					file_handle.write (certificate_string)
+
+			print "Wrote full chain to %s" % (
+				args.full_certificate_chain)
+
+		if args.private_key:
+
+			with open (args.private_key, "w") as file_handle:
+
+				file_handle.write (key_string)
+
+			print "Wrote private key to %s" % (
+				args.private_key)
+
+	else:
+
+		print "failure"
 
 main ()

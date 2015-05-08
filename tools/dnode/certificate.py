@@ -658,3 +658,48 @@ class Database:
 
 		self.dnode_client.rmdir_raw (
 			request_path + "/pending")
+
+	def get (self, name):
+
+		entry_path = "%s/%s" % (
+			self.path,
+			name,
+		)
+
+		if not self.dnode_client.exists (
+			entry_path):
+
+			raise Exception (
+				"No certificate for " + name)
+
+		if not self.dnode_client.exists (
+			entry_path):
+
+			raise Exception (
+				"No current certificate for " + name)
+
+		certificate_strings = []
+		
+		certificate_strings.append (
+			self.dnode_client.get_raw (
+				entry_path + "/current/certificate"))
+
+		for chain_index in range (0, 999):
+
+			if not self.dnode_client.exists (
+				entry_path + "/current/chain/" + str (chain_index)):
+
+				break
+
+			certificate_strings.append (
+				self.dnode_client.get_raw (
+					entry_path + "/current/chain/" + str (chain_index)))
+
+		key_string = self.dnode_client.get_raw (
+			entry_path + "/current/key")
+
+		return (
+			True,
+			certificate_strings,
+			key_string,
+		)
