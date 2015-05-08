@@ -5,7 +5,7 @@ import itertools
 import sys
 
 import dnode
-import dnode.authority
+import dnode.certificate
 import dnode.data
 
 def main ():
