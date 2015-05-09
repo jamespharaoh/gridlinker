@@ -11,4 +11,6 @@ install_packages: "{{
   | union (rocket_hz_vm_install_packages)
 }}"
 
+postfix_helo_name: "{{ inventory_hostname }}.rocketware.co.uk"
+
 # ex: et ts=2 filetype=yaml
