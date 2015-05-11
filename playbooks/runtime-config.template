@@ -57,8 +57,11 @@ base_ssl_domains:
   - static.datingnode.com
   - origin.static.datingnode.com
   - control.datingnode.com
+  - secure.datingnode.com
   - cdn.datingnode.com
   - origin.cdn.datingnode.com
+  - control
+  - secure
 
   - angara.io
   - zenit.space

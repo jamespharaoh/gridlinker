@@ -57,7 +57,7 @@ if ! test -d "$DATA"; then
 
 			listen_addresses = '*'
 			port = 5432
-			max_connections = 150
+			max_connections = 1000
 
 			# replication
 
