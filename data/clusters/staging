@@ -1,6 +1,6 @@
 ---
 deployment: "{{ deployment_name }}"
-build: "jimmy-40"
+build: "jimmy-46"
 
 domain_suffix: "staging.datingnode.com"
 
@@ -25,7 +25,23 @@ app_external_communication_email_white_list:
  - jimmyxx@gmail.com
  - jimmy@rocketware.co.uk
  - jimmy@rocketware.org
-
+ - deepesh.baghela@finoit.co.in
+ - surbhifinoit146@gmail.com
+ - sharmashilpa2014@gmail.com
+ - imantique7@gmail.com
+ - developer@finoit.com
+ - vikas.dadheech@finoit.in
+ - finoittest007@gmail.com
+ - finoit@zoho.com
+ - abhilash.sharma@finoit.co.in
+ - manish.srivastav@finoit.co.in
+ - gaurav.kukreja@finoit.com
+ - satender.kumar@finoit.in
+ - sam.finoit@gmail.com
+ - sam.finoit2@gmail.com
+ - testfinoit03@gmail.com
+ - testfinoit04@gmail.com
+ - testfinoit05@gmail.com
 
 
 # ex: et ts=2 filetype=yaml
