@@ -44,4 +44,6 @@ app_external_communication_email_white_list:
  - testfinoit05@gmail.com
 
 
+whitelist_active: true
+
 # ex: et ts=2 filetype=yaml
