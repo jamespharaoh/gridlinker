@@ -34,4 +34,11 @@
     state: "restarted"
   sudo: "yes"
 
+- name: "restart cron"
+  action:
+    module: "service"
+    name: "cron"
+    state: "restarted"
+  sudo: "yes"
+
 # ex: et ts=2 filetype=yaml

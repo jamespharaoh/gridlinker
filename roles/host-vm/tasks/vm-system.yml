@@ -1,13 +1,5 @@
 ---
 
-- name: "update system packages"
-  action:
-    module: "apt"
-    upgrade: "yes"
-    update_cache: "yes"
-  sudo: "yes"
-  tags: "update"
-
 - name: "install system packages"
   action:
     module: "apt"
@@ -34,7 +26,7 @@
   sudo: "yes"
   tags: "network"
 
-- name: "configure gruib"
+- name: "configure grub"
   action:
     module: "template"
     src: "vm-grub-default"
@@ -42,6 +34,14 @@
   sudo: "yes"
   tags: "grub"
   notify: "update grub"
+
+- name: "configure cron"
+  action:
+    module: "template"
+    src: "vm-cron"
+    dest: "/etc/cron.d/datingnode"
+  sudo: "yes"
+  notify: "restart cron"
 
 - meta: "flush_handlers"
 
