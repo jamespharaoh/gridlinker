@@ -31,18 +31,26 @@
    - "deflate"
    - "env"
    - "fcgid"
+   - "mpm_event"
    - "proxy"
    - "proxy_fcgi"
    - "rewrite"
    - "ssl"
    - "headers"
 
-- name: "create apache php5 fpm config"
+- name: "create apache config"
   action:
     module: "template"
-    src: "apache-php5-fpm-config"
-    dest: "/etc/apache2/conf-available/php5-fpm.conf"
+    src: "{{ item.template }}"
+    dest: "{{ item.target }}"
   sudo: "yes"
+  with_items:
+
+    - template: "apache-php5-fpm-config"
+      target: "/etc/apache2/conf-available/php5-fpm.conf"
+
+    - template: "apache-mpm-event-config"
+      target: "/etc/apache2/mods-available/mpm_event.conf"
 
 - name: "enable apache php5 fpm config"
   command:
