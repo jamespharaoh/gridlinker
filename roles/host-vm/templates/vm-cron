@@ -8,12 +8,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 ] %}
 
 {% for script in [
-	{ when: '*    * * * *', what: 'https://localhost/cron/1_min/' },
-	{ when: '*/5  * * * *', what: 'https://localhost/cron/5_min/' },
-	{ when: '*/10 * * * *', what: 'https://localhost/cron/10_min/' },
-	{ when: '*/30 * * * *', what: 'https://localhost/cron/30_min/' },
-	{ when: '0    * * * *', what: 'https://localhost/cron/60_min/' },
-	{ when: '0    0 * * *', what: 'https://localhost/cron/daily/' },
+	{ 'when': '*    * * * *', 'what': 'https://localhost/cron/1_min/' },
+	{ 'when': '*/5  * * * *', 'what': 'https://localhost/cron/5_min/' },
+	{ 'when': '*/10 * * * *', 'what': 'https://localhost/cron/10_min/' },
+	{ 'when': '*/30 * * * *', 'what': 'https://localhost/cron/30_min/' },
+	{ 'when': '0    * * * *', 'what': 'https://localhost/cron/60_min/' },
+	{ 'when': '0    0 * * *', 'what': 'https://localhost/cron/daily/' },
 ] %}
 
 {{ script.when }} nobody curl {{ script.what }} -H 'Host: {{ host }}' -k
