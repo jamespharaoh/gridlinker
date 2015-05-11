@@ -16,6 +16,7 @@ start_ports:
 start_volumes_default:
   - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
   - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+  - "{{ data_dir }}/{{ inventory_hostname }}/data/temp:/tmp"
 
 start_volumes_instant:
   - "/home/vagrant/datingnode-super:/var/www/datingnode-super"
