@@ -239,6 +239,30 @@ function do_cluster_stop () {
 
 }
 
+function do_cluster_rolling () {
+
+	cluster="$1"
+	shift
+
+	for index in 1 2; do
+
+		ansible-playbook \
+			--extra-vars "@config" \
+			--extra-vars "@deploy-config" \
+			--extra-vars "@runtime-config" \
+			--extra-vars "cluster_name=$cluster" \
+			--limit "web-application-$index" \
+			--inventory "$cluster" \
+			playbooks/stop.yml \
+			playbooks/start.yml \
+			"$@"
+
+		sleep 120
+
+	done
+
+}
+
 function do_cluster_delete () {
 
 	cluster="$1"
@@ -367,6 +391,10 @@ case "$command" in
 (*-restart)
 	do_cluster_stop "${command%%-*}" "$@"
 	do_cluster_start "${command%%-*}" "$@"
+	;;
+
+(*-rolling)
+	do_cluster_rolling "${command%%-*}" "$@"
 	;;
 
 (local-delete)
