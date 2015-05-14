@@ -82,12 +82,19 @@
     - "memcached"
     - "php-fpm"
 
-- name: "create php5 fpm www config"
+- name: "configure php"
   action:
     module: "template"
-    src: "php5-fpm-www-config"
-    dest: "/etc/php5/fpm/pool.d/www.conf"
+    src: "{{ item.template }}"
+    dest: "{{ item.target }}"
   sudo: "yes"
+  with_items:
+
+    - template: "php5-fpm-www-config"
+      target: "/etc/php5/fpm/pool.d/www.conf"
+
+    - template: "php-ini"
+      target: "/etc/php5/fpm/php.ini"
 
 - name: "create datingnode config"
   action:
