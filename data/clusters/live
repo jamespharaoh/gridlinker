@@ -1,6 +1,6 @@
 ---
 deployment: "{{ deployment_name }}"
-build: "jimmy-46"
+build: "jimmy-63"
 
 domain_suffix: "live.datingnode.com"
 
@@ -26,6 +26,6 @@ app_external_communication_email_white_list:
  - jimmy@rocketware.co.uk
  - jimmy@rocketware.org
 
-whitelist_active: true
+whitelist_active: false
 
 # ex: et ts=2 filetype=yaml
