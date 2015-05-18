@@ -43,7 +43,8 @@ app_external_communication_email_white_list:
  - testfinoit04@gmail.com
  - testfinoit05@gmail.com
 
-
 whitelist_active: true
+
+master: "rocket-hz-vm-1"
 
 # ex: et ts=2 filetype=yaml

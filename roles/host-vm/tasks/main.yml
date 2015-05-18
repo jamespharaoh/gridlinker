@@ -18,6 +18,9 @@
 - include: "vm-nfs.yml"
   tags: "vm-nfs"
 
+- include: "vm-mounts.yml"
+  tags: "vm-mounts"
+
 - include: "vm-ssl.yml"
   tags: "vm-ssl"
 

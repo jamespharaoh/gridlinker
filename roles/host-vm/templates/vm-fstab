@@ -1,0 +1,66 @@
+{% macro local_mount (source, dest) %}
+{{ source }} {{ dest }} none bind 0 0
+{% endmacro %}
+
+{% macro remote_mount (remote, source, dest) %}
+{{ remote }}:{{ source }} {{ dest }} nfs async 0 0
+{% endmacro %}
+
+/dev/vda1 / ext4 errors=remount-ro 0 1
+
+{% for cluster_name, cluster in clusters.items ()
+	if 'master' in cluster %}
+
+{% if cluster_name == 'live' %}
+
+/dev/vdb /datingnode-live/database-{{ index }}/data ext4 defaults 0 2
+/dev/vdc /datingnode-live/web-application-{{ index }}/fast ext4 defaults 0 2
+/dev/vdd /datingnode-live/web-application-{{ index }}/big ext4 defaults 0 2
+
+{% elif cluster_name == 'staging' %}
+
+/dev/vde /datingnode-staging/database-{{ index }}/data ext4 defaults 0 2
+/dev/vdf /datingnode-staging/web-application-{{ index }}/fast ext4 defaults 0 2
+/dev/vdg /datingnode-staging/web-application-{{ index }}/big ext4 defaults 0 2
+
+{% endif %}
+
+{% set master = hostvars [cluster.master] %}
+
+{% set data_dir = '/datingnode-' + cluster_name %}
+{% set web_app_local = data_dir + '/web-application-' + index %}
+{% set web_app_remote = data_dir + '/web-application-' + master.index %}
+
+{% if inventory_hostname == cluster.master %}
+
+{{ local_mount (
+	source = web_app_local + '/fast/image-cache',
+	dest = web_app_local + '/data/assets/image-cache') }}
+
+{{ local_mount (
+	source = web_app_local + '/fast/temp',
+	dest = web_app_local + '/data/temp') }}
+
+{{ local_mount (
+	source = web_app_local + '/big/user-data',
+	dest = web_app_local + '/data/assets/user-data') }}
+
+{% else %}
+
+{{ local_mount (
+	source = web_app_local + '/fast/image-cache',
+	dest = web_app_local + '/data/assets/image-cache') }}
+
+{{ remote_mount (
+	remote = master.private_address,
+	source = web_app_remote + '/fast/temp',
+	dest = web_app_local + '/data/temp') }}
+
+{{ remote_mount (
+	remote = master.private_address,
+	source = web_app_remote + '/big/user-data',
+	dest = web_app_local + '/data/assets/user-data') }}
+
+{% endif %}
+
+{% endfor %}

@@ -1,0 +1,10 @@
+---
+
+- name: "write vm fstab"
+  action:
+    module: "template"
+    src: "vm-fstab"
+    dest: "/etc/fstab"
+  sudo: "yes"
+
+# ex: et ts=2 filetype=yaml
