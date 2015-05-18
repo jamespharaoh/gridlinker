@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# postgresql utilities
+
+DUMPALL="/usr/bin/pg_dumpall"
+PGDUMP="/usr/bin/pg_dump"
+PSQL="/usr/bin/psql"
+
+# runtime configuration
+
+YMD=$(date "+%Y-%m-%d")
+DIR="$BASE_DIR/$YMD"
+mkdir -p $DIR
+cd $DIR
+
+# get list of databases in system , exclude the tempate dbs
+
+DBS=$($PSQL -l -t | egrep -v 'template[01]' | awk '{print $1}')
+
+# first dump entire postgres database, including pg_shadow etc.
+
+$DUMPALL --column-inserts | gzip -9 > "$DIR/db.out.gz"
+
+# next dump globals (roles and tablespaces) only
+
+$DUMPALL --globals-only | gzip -9 > "$DIR/globals.gz"
+
+# now loop through each individual database and backup the schema and data separately
+
+for database in $DBS; do
+
+	SCHEMA=$DIR/$database.schema.gz
+	DATA=$DIR/$database.data.gz
+	DUMPFC=$DIR/$database.dump_fc.gz
+
+	# export data from postgres databases to plain text
+
+	$PGDUMP --clean --schema-only $database | gzip -9 > $SCHEMA
+
+	# dump data
+
+	$PGDUMP --data-only $database | gzip -9 > $DATA
+
+	# dump fc
+
+	$PGDUMP -Fc $database | gzip -9 > $DUMPFC
+
+done
+
+# delete backup files older than specified number of days
+
+OLD=$(find $BASE_DIR -type d -mtime +$KEEP_DAYS)
+
+if [ -n "$OLD" ] ; then
+	echo "deleting old backup files: $OLD"
+	echo $OLD | xargs rm -rfv
+fi

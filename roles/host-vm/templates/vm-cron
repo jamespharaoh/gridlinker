@@ -2,6 +2,20 @@ MAILTO=jimmy@rocketware.co.uk
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
+{% macro database_dump (schedule, config) %}
+{{ schedule }} root source {{ config }}; /usr/local/bin/database-backup-script
+{% endmacro %}
+
+{% macro rsync_pull (schedule, remote, source, dest) %}
+{{ schedule }} root rsync -a {{ remote }}:{{ source }}/ {{ dest }}/
+{% endmacro %}
+
+{% macro rsync_push (schedule, remote, source, dest) %}
+{{ schedule }} root rsync -a {{ source }}/ {{ remote }}:{{ dest }}/ 
+{% endmacro %}
+
+# ========== application crons
+
 {% for host in [
 	'secure.datingnode.com',
 	'secure.datingnode.com.staging.datingnode.com',
@@ -19,4 +33,76 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 {{ script.when }} nobody curl {{ script.what }} -H 'Host: {{ host }}' -k
 
 {% endfor %}
+{% endfor %}
+
+# ========== postgresql backups
+
+{% for cluster_name, cluster in clusters.items ()
+	if 'master' in cluster %}
+
+{% set master = hostvars [cluster.master] %}
+
+{% if cluster_name != 'live' %}
+
+# no database backups for {{ cluster_name }}
+
+{% elif inventory_hostname != cluster.master %}
+
+# no database backups for {{ cluster_name }} slave
+
+{% else %}
+
+# database backups for {{ cluster_name }} master
+{{ database_dump (
+	schedule = '30 1 * * *',
+	config = '/etc/database-backup-config') }}
+{{ rsync_push (
+	schedule = '30 2 * * *',
+	remote = '4474@usw-s004.rsync.net',
+	source = '/datingnode-live/backups',
+	dest = '/db_backup') }}
+
+{% endif %}
+
+{% endfor %}
+
+# ========== rsync backups
+
+{% for cluster_name, cluster in clusters.items ()
+	if 'master' in cluster %}
+
+{% set master = hostvars [cluster.master] %}
+
+{% set data_dir = '/datingnode-' + cluster_name %}
+{% set web_app_local = data_dir + '/web-application-' + index %}
+{% set web_app_remote = data_dir + '/web-application-' + master.index %}
+
+{% if inventory_hostname == cluster.master %}
+
+{% if cluster_name == 'live' %}
+
+# backup live to remote location
+{{ rsync_push (
+	schedule = '0 * * * *',
+	remote = '4474@usw-s004.rsync.net',
+	source = web_app_local + '/bin/user-data',
+	dest = '/datingnode/user_data') }}
+
+{% else %}
+
+# no backups for {{ cluster_name }}
+
+{% endif %}
+
+{% else %}
+
+# pull {{ cluster_name }} from master
+{{ rsync_pull (
+	schedule = '#* * * * *',
+	remote = cluster.master + '.vpn',
+	source = web_app_remote + '/big/user-data',
+	dest = web_app_local + '/big/user-data') }}
+
+{% endif %}
+
 {% endfor %}

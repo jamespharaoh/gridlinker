@@ -24,4 +24,7 @@
 - include: "vm-ssl.yml"
   tags: "vm-ssl"
 
+- include: "vm-cron.yml"
+  tags: "vm-cron"
+
 # ex: et ts=2 filetype=yaml

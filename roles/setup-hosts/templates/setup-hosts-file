@@ -1,0 +1,12 @@
+127.0.0.1 localhost
+127.0.1.1 {{ inventory_hostname }}.rocketware.co.uk {{ inventory_hostname }}
+
+::1 localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+{% for host_name in groups ['rocket-hz'] %}
+{% set host = hostvars [host_name] %}
+{{ host.private_address }} {{ host_name }}.vpn.rocketware.co.uk {{ host_name }}.vpn
+{{ host.public_address }} {{ host_name }}.rocketware.co.uk {{ host_name }}
+{% endfor %}

@@ -35,14 +35,6 @@
   tags: "grub"
   notify: "update grub"
 
-- name: "configure cron"
-  action:
-    module: "template"
-    src: "vm-cron"
-    dest: "/etc/cron.d/datingnode"
-  sudo: "yes"
-  notify: "restart cron"
-
 - meta: "flush_handlers"
 
 # ex: et ts=2 filetype=yaml

@@ -52,15 +52,17 @@
 	dest = web_app_local + '/data/assets/image-cache') }}
 
 {{ remote_mount (
-	remote = master.private_address,
+	remote = cluster.master + '.vpn',
 	source = web_app_remote + '/fast/temp',
 	dest = web_app_local + '/data/temp') }}
 
 {{ remote_mount (
-	remote = master.private_address,
+	remote = cluster.master + '.vpn',
 	source = web_app_remote + '/big/user-data',
 	dest = web_app_local + '/data/assets/user-data') }}
 
 {% endif %}
 
 {% endfor %}
+
+/dev/vdh /datingnode-live/backups ext4 defaults 0 2
