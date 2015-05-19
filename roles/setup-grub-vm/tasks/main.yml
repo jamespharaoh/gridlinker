@@ -1,0 +1,14 @@
+---
+
+- name: "configure grub"
+  action:
+    module: "template"
+    src: "grub-vm-default"
+    dest: "/etc/default/grub"
+  sudo: "yes"
+  tags: "grub"
+  notify: "update grub"
+
+- meta: "flush_handlers"
+
+# ex: et ts=2 filetype=yaml

@@ -4,6 +4,7 @@ vagrant
 [rocket-hz:children]
 rocket-hz-host
 rocket-hz-vm
+rocket-hz-lxc
 
 [container:children]
 rocket-hz-vhost-proxy
@@ -20,5 +21,5 @@ rocket-hz-vm-2           parent=rocket-hz-host-2
 rocket-hz-vhost-proxy-1  parent=rocket-hz-vm-1
 rocket-hz-vhost-proxy-2  parent=rocket-hz-vm-2
 
-[rocket-hz-beta]
-beta                     parent=rocket-hz-host-1
+[rocket-hz-lxc]
+rocket-hz-sites          parent=rocket-hz-vm-1

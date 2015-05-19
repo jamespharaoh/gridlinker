@@ -1,7 +1,0 @@
----
-
-- include: "host-system.yml"
-- include: "host-security.yml"
-- include: "host-kvm.yml"
-
-# ex: et ts=2 filetype=yaml

@@ -1,0 +1,19 @@
+---
+
+- name: "create ssh dir"
+  action:
+    module: "file"
+    path: "{{ authorized_keys_home }}/.ssh"
+    state: "directory"
+  sudo: "yes"
+  sudo_user: "{{ authorized_keys_user }}"
+
+- name: "install authorized keys"
+  action:
+    module: "template"
+    src: "setup-authorized-keys-file"
+    dest: "{{ authorized_keys_home }}/.ssh/authorized_keys"
+  sudo: "yes"
+  sudo_user: "{{ authorized_keys_user }}"
+
+# ex: et ts=2 filetype=yaml

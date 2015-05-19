@@ -13,4 +13,8 @@ install_packages: "{{
 
 postfix_helo_name: "{{ inventory_hostname }}.rocketware.co.uk"
 
+failover_addresses:
+  - "144.76.77.83"
+  - "144.76.88.97"
+
 # ex: et ts=2 filetype=yaml
