@@ -1,0 +1,125 @@
+---
+
+- name: "create lxc container"
+  delegate_to: "{{ parent }}"
+  args:
+    executable: "/bin/bash"
+    creates: "/var/lib/lxc/{{ inventory_hostname }}/create-flag"
+  sudo: "yes"
+  shell:
+
+    set -euf -o pipefail;
+
+    echo "--- preparing to create container ---" >&2;
+
+    lxc-stop --name {{ inventory_hostname }} || true;
+    rm -rf /var/lib/lxc/{{ inventory_hostname }};
+
+    echo "--- creating lxc container ---" >&2;
+
+    lxc-create
+      --template download
+      --name {{ inventory_hostname }}
+      --
+      --dist ubuntu
+      --release trusty
+      --arch amd64;
+
+    echo "--- configuring networking ---" >&2;
+
+    chroot /var/lib/lxc/{{ inventory_hostname }}/rootfs
+    apt-get purge -y resolvconf;
+
+    echo "nameserver {{ private_gateway }}"
+      > /var/lib/lxc/{{ inventory_hostname }}/rootfs/etc/resolv.conf;
+
+    (
+      echo "auto lo";
+      echo "iface lo inet loopback";
+    ) > /var/lib/lxc/{{ inventory_hostname }}/rootfs/etc/network/interfaces;
+
+    echo "--- configuring sudo ---" >&2;
+
+    (
+      echo 'Defaults env_reset';
+      echo 'Defaults mail_badpass';
+      echo 'Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"';
+      echo 'root ALL = (ALL) NOPASSWD:'' ALL';
+      echo '%admin ALL = (ALL) NOPASSWD:'' ALL';
+      echo '%sudo ALL = (ALL) NOPASSWD:'' ALL';
+    ) > /var/lib/lxc/{{ inventory_hostname }}/rootfs/etc/sudoers;
+
+    echo "--- updating package lists ---" >&2;
+
+    chroot /var/lib/lxc/{{ inventory_hostname }}/rootfs
+    apt-get update -y;
+
+    echo "--- upgrading packages ---" >&2;
+
+    chroot /var/lib/lxc/{{ inventory_hostname }}/rootfs
+    apt-get dist-upgrade -y;
+
+    echo "--- installing ssh server ---" >&2;
+
+    chroot /var/lib/lxc/{{ inventory_hostname }}/rootfs
+    apt-get install -y openssh-server;
+
+    echo "--- configuring ssh acccess ---" >&2;
+
+    mkdir /var/lib/lxc/{{ inventory_hostname }}/rootfs/home/ubuntu/.ssh;
+
+    cp $HOME/.ssh/authorized_keys
+      /var/lib/lxc/{{ inventory_hostname }}/rootfs/home/ubuntu/.ssh;
+
+    chown -R 1000:1000
+      /var/lib/lxc/{{ inventory_hostname }}/rootfs/home/ubuntu/.ssh;
+
+    echo "--- done ---" >&2;
+
+    touch /var/lib/lxc/{{ inventory_hostname }}/create-flag;
+
+- name: "create lxc configs"
+  delegate_to: "{{ parent }}"
+  action:
+    module: "template"
+    src: "lxc-config"
+    dest: "/var/lib/lxc/{{ inventory_hostname }}/config"
+  sudo: "yes"
+
+- name: "start lxc container"
+  delegate_to: "{{ parent }}"
+  args:
+    executable: "/bin/bash"
+  shell:
+
+    set -euf -o pipefail;
+
+    state=$(
+      lxc-info
+        --name {{ inventory_hostname }}
+        --state
+        --no-humanize
+      | head --lines 1
+    );
+
+    test "$state" = "RUNNING" && {
+      echo "UNCHANGED";
+      exit 0;
+    };
+
+    lxc-start
+      --name {{ inventory_hostname }}
+      --daemon;
+
+  sudo: "yes"
+  register: "start_result"
+  changed_when: "start_result.stdout != 'UNCHANGED'"
+
+- name: "wait for ssh"
+  delegate_to: "localhost"
+  wait_for:
+    host: "{{ private_address }}"
+    port: "22"
+    search_regex: "OpenSSH"
+
+# ex: et ts=2 filetype=yaml

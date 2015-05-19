@@ -1,0 +1,7 @@
+---
+
+- name: "update grub"
+  shell: "update-grub"
+  sudo: "yes"
+
+# ex: et ts=2 filetype=yaml

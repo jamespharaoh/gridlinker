@@ -1,5 +1,7 @@
 ---
 
+index: "2"
+
 public_address: "144.76.103.247"
 public_netmask: "255.255.255.224"
 public_network: "144.76.103.224"

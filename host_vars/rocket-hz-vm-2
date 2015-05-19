@@ -1,5 +1,7 @@
 ---
 
+index: "2"
+
 ansible_ssh_host: "{{ public_address }}"
 
 public_address: "144.76.103.248"

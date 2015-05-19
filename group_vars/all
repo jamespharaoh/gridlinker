@@ -94,4 +94,15 @@ ssh_user_keys:
       - "0BzVAt5/Uaqs5zrOpXtNawX8JDWyZKowd5btbhooNZ8B2Abukx7wxtgzoG5luvMqN9vbD2"
       - "VoEaFnusbRiXKvJlJCc1kd"
 
+  vm-root:
+
+    type: "ssh-rsa"
+    data:
+      - "AAAAB3NzaC1yc2EAAAADAQABAAABAQDwqXSygCYdN5z24pXyjjAddyPss/KiHiYPnKLLOL"
+      - "A1usQLnForQNnvFdIPCX8juPFXbzBK3YpHSmPWv8spcJ6D3uLvqJdjPlF50IH8XKwhAm47"
+      - "kSVC/Ur+M0e6hHotqEn3apBeiMnfl3s5T5L60ed99TokZmbtd7rWK9xQh4p/8RfsHkAkvP"
+      - "uPDWlulshBw7+vXZBbeHKsmW4iM7p84Dyny/g8dXfOMHVeYoB64JC4n6x6TUMOyxCYH/bo"
+      - "rhQe0NCCA22qt5jgYQ+eAi08buoQGBo6M14MLN78whWn9kS8daZ4/VDtyEWNiOlWy8lDIZ"
+      - "PcZprFihxgx/8Gqw0YoMrX"
+
 # ex: et ts=2 filetype=yaml

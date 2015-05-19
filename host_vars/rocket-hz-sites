@@ -1,0 +1,17 @@
+---
+
+index: "1"
+
+ansible_ssh_host: "{{ private_address }}"
+
+private_address: "10.69.128.6"
+private_netmask: "255.255.192.0"
+private_netmask_bits: "18"
+private_network: "10.69.128.0"
+private_broadcast: "10.69.131.255"
+private_gateway: "10.69.128.1"
+private_mac: "00:16:34:3d:aa:76"
+
+container_memory_limit: "8"
+
+# ex: et ts=2 filetype=yaml

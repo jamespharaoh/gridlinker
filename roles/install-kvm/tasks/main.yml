@@ -1,0 +1,62 @@
+---
+
+- name: "create config dir"
+  action:
+    module: "file"
+    path: "/etc/rocket"
+    state: "directory"
+  sudo: "yes"
+
+- name: "install kvm packages"
+  action:
+    module: "apt"
+    package: "{{ item }}"
+    state: "present"
+  sudo: "yes"
+  with_items:
+    - "libvirt-bin"
+    - "qemu"
+    - "virtinst"
+  tags: "kvm"
+
+- name: "create libvirt-network-public.xml"
+  action:
+    module: "template"
+    src: "install-kvm-network-public"
+    dest: "/etc/rocket/libvirt-network-public.xml"
+  sudo: "yes"
+  tags: "kvm"
+
+- name: "create libvirt-network-private.xml"
+  action:
+    module: "template"
+    src: "install-kvm-network-private"
+    dest: "/etc/rocket/libvirt-network-private.xml"
+  sudo: "yes"
+  tags: "kvm"
+
+- name: "configure libvirt network public"
+  shell: >
+    virsh net-define /etc/rocket/libvirt-network-public.xml;
+    virsh net-autostart public;
+    virsh net-start public
+  args:
+    creates: "/etc/libvirt/qemu/networks/public.xml"
+  tags: "kvm"
+
+- name: "configure libvirt network private"
+  shell: >
+    virsh net-define /etc/rocket/libvirt-network-private.xml;
+    virsh net-autostart private;
+    virsh net-start private
+  args:
+    creates: "/etc/libvirt/qemu/networks/private.xml"
+  tags: "kvm"
+
+- name: "configure libvirt network private"
+  shell: >
+    virsh net-destroy default;
+    virsh net-undefine default
+  args:
+    removes: "/etc/libvirt/qemu/networks/default.xml"
+  tags: "kvm"
