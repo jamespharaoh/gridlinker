@@ -1,0 +1,52 @@
+---
+
+- name: "install openvpn packages"
+  action:
+    module: "apt"
+    name: "{{ item }}"
+  sudo: "yes"
+  with_items:
+    - "openvpn"
+
+- name: "copy openvpn credentials"
+  action:
+    module: "copy"
+    dest: "{{ item.target }}"
+    content: "{{ lookup ('etcd', item.source) }}"
+    mode: "{{ item.mode }}"
+  sudo: "yes"
+  notify: "restart openvpn"
+  with_items:
+
+    - source: "{{ openvpn_ca_certificate }}"
+      target: "/etc/openvpn/rocket-ca.cert"
+      mode: "0644"
+
+    - source: "{{ openvpn_certificate }}"
+      target: "/etc/openvpn/{{ inventory_hostname }}.cert"
+      mode: "0644"
+
+    - source: "{{ openvpn_private_key }}"
+      target: "/etc/openvpn/{{ inventory_hostname }}.key"
+      mode: "0600"
+
+- name: "create openvpn config"
+  action:
+    module: "template"
+    dest: "{{ item.target }}"
+    src: "{{ item.template }}"
+  sudo: "yes"
+  notify: "restart openvpn"
+  with_items:
+  
+    - template: "openvpn-config"
+      target: "/etc/openvpn/{{ inventory_hostname }}.conf"
+
+- name: "create openvpn dhparams"
+  args:
+    creates: "/etc/openvpn/dh1024.pem"
+  shell: "openssl dhparam -out /etc/openvpn/dh1024.pem 1024"
+
+- meta: "flush_handlers"
+
+# ex: et ts=2 filetype=yaml

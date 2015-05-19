@@ -1,0 +1,22 @@
+---
+
+- name: "configure sysctl"
+  action:
+    module: "template"
+    src: "sysctl-config"
+    dest: "/etc/sysctl.d/99-rocket.conf"
+  sudo: "yes"
+  notify: "reload sysctl"
+
+- name: "remove unwanted sysctl"
+  action:
+    module: "file"
+    name: "{{ item }}"
+    state: "absent"
+  sudo: "yes"
+  with_items:
+    - "/etc/sysctl.d/99-hetzner.conf"
+
+- meta: "flush_handlers"
+
+# ex: et ts=2 filetype=yaml

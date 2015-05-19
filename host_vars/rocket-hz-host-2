@@ -9,8 +9,12 @@ public_broadcast: "144.76.103.255"
 public_gateway: "144.76.103.225"
 
 private_address: "10.69.128.4"
-private_netmask: "255.255.192.0"
+private_netmask: "255.255.252.0"
 private_network: "10.69.128.0"
 private_broadcast: "10.69.131.255"
+
+openvpn_certificate: "/authority/openvpn/issue/0/certificate"
+openvpn_private_key: "/authority/openvpn/issue/0/key"
+openvpn_network: "10.69.134"
 
 # ex: et ts=2 filetype=yaml

@@ -11,7 +11,7 @@ public_broadcast: "144.76.103.255"
 public_gateway: "144.76.103.225"
 
 private_address: "10.69.128.5"
-private_netmask: "255.255.192.0"
+private_netmask: "255.255.252.0"
 private_network: "10.69.128.0"
 private_broadcast: "10.69.131.255"
 

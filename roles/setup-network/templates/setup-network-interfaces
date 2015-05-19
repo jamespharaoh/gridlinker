@@ -3,6 +3,8 @@
 auto lo
 iface lo inet loopback
 
+	# firewall rules
+
 	up ! test -x /etc/network/firewall-rules || /etc/network/firewall-rules
 
 # public bridge
@@ -20,9 +22,15 @@ iface brpub0 inet static
 	bridge_maxwait 0
 	bridge_fd 0
 
+	# firewall routing
+
 	up ! test -x /etc/network/firewall-rules || /etc/network/firewall-rules
 
+	# use hetzner router even for local addresses
+
 	up route add -net {{ public_network }} netmask {{ public_netmask }} gw {{ public_gateway }} brpub0
+
+	# failover addresses
 
 {% for failover_address in failover_addresses | default ([]) %}
 	up ip addr add {{ failover_address }}/32 dev brpub0
@@ -42,7 +50,18 @@ iface brprv0 inet static
 	bridge_maxwait 0
 	bridge_fd 0
 
+	# firewall rules
+
 	up ! test -x /etc/network/firewall-rules || /etc/network/firewall-rules
+
+	# vpn routing
+
+{% for host_name in groups ['rocket-hz-host']
+	if host_name != inventory_hostname %}
+{% set host = hostvars [host_name] %}
+	up route add -net {{ host.openvpn_network }}.0/24 gw {{ host.private_address }} brprv0
+	down route del -net {{ host.openvpn_network }}.0/24 gw {{ host.private_address }} brprv0
+{% endfor %}
 
 # dummy for mail
 

@@ -1,0 +1,35 @@
+# server
+
+tls-server
+proto udp
+port 1194
+keepalive 5 20
+mode server
+persist-key
+persist-tun
+status {{ inventory_hostname }}.log
+
+# protocol
+
+comp-lzo adaptive
+
+push "comp-lzo adaptive"
+
+# network
+
+dev tun
+topology subnet
+ifconfig {{ openvpn_network }}.2 255.255.255.0
+ifconfig-pool {{ openvpn_network }}.3 {{ openvpn_network }}.254
+
+push "topology subnet"
+push "route-gateway {{ openvpn_network }}.2"
+push "route {{ private_network }} {{ private_netmask }} {{ openvpn_network }}.2"
+
+# security
+
+dh dh1024.pem
+client-to-client
+ca rocket-ca.cert
+cert {{ inventory_hostname }}.cert
+key {{ inventory_hostname }}.key

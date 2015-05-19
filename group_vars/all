@@ -105,4 +105,6 @@ ssh_user_keys:
       - "rhQe0NCCA22qt5jgYQ+eAi08buoQGBo6M14MLN78whWn9kS8daZ4/VDtyEWNiOlWy8lDIZ"
       - "PcZprFihxgx/8Gqw0YoMrX"
 
+openvpn_ca_certificate: "/authority/openvpn/certificate"
+
 # ex: et ts=2 filetype=yaml
