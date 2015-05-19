@@ -85,8 +85,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 {{ rsync_push (
 	schedule = '0 * * * *',
 	remote = '4474@usw-s004.rsync.net',
-	source = web_app_local + '/bin/user-data',
-	dest = '/datingnode/user_data') }}
+	source = web_app_local + '/big/user-data',
+	dest = 'datingnode/user_data') }}
 
 {% else %}
 
@@ -98,7 +98,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # pull {{ cluster_name }} from master
 {{ rsync_pull (
-	schedule = '#* * * * *',
+	schedule = cluster.rsync_schedule,
 	remote = cluster.master + '.vpn',
 	source = web_app_remote + '/big/user-data',
 	dest = web_app_local + '/big/user-data') }}

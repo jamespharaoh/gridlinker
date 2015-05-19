@@ -30,4 +30,6 @@ whitelist_active: false
 
 master: "rocket-hz-vm-1"
 
+rsync_schedule: "*/2 * * * *"
+
 # ex: et ts=2 filetype=yaml
