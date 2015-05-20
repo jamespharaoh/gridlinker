@@ -6,12 +6,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 {{ schedule }} root source {{ config }} && /usr/local/bin/database-backup-script
 {% endmacro %}
 
-{% macro rsync_pull (schedule, remote, source, dest) %}
-{{ schedule }} root rsync -a {{ remote }}:{{ source }}/ {{ dest }}/
+{% macro rsync_pull (schedule, remote, source, dest, options = '') %}
+{{ schedule }} root rsync -a {{ remote }}:{{ source }}/ {{ dest }}/ {{ options }}
 {% endmacro %}
 
-{% macro rsync_push (schedule, remote, source, dest) %}
-{{ schedule }} root rsync -a {{ source }}/ {{ remote }}:{{ dest }}/ 
+{% macro rsync_push (schedule, remote, source, dest, options = '') %}
+{{ schedule }} root rsync -a {{ source }}/ {{ remote }}:{{ dest }}/ {{ options }}
 {% endmacro %}
 
 # ========== application crons
@@ -46,11 +46,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # no database backups for {{ cluster_name }}
 
-{% elif inventory_hostname != cluster.master %}
-
-# no database backups for {{ cluster_name }} slave
-
-{% else %}
+{% elif inventory_hostname == cluster.master %}
 
 # database backups for {{ cluster_name }} master
 {{ database_dump (
@@ -61,6 +57,15 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 	remote = '4474@usw-s004.rsync.net',
 	source = '/datingnode-live/backups',
 	dest = '/db_backup') }}
+
+{% else %}
+
+# database backups sync to {{ cluster_name }} slave
+{{ rsync_pull (
+	schedule = '30 3 * * *',
+	remote = cluster.master + '.vpn',
+	source = '/datingnode-live/backups',
+	dest = '/datingnode-live/backups') }}
 
 {% endif %}
 
