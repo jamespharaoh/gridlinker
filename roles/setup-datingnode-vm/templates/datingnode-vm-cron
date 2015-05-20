@@ -1,9 +1,9 @@
 MAILTO=jimmy@rocketware.co.uk
-SHELL=/bin/sh
+SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 {% macro database_dump (schedule, config) %}
-{{ schedule }} root source {{ config }}; /usr/local/bin/database-backup-script
+{{ schedule }} root source {{ config }} && /usr/local/bin/database-backup-script
 {% endmacro %}
 
 {% macro rsync_pull (schedule, remote, source, dest) %}
@@ -83,7 +83,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # backup live to remote location
 {{ rsync_push (
-	schedule = '0 */4 * * *',
+	schedule = '0 */2 * * *',
 	remote = '4474@usw-s004.rsync.net',
 	source = web_app_local + '/big/user-data',
 	dest = 'datingnode/user_data') }}
