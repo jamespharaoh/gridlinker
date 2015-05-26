@@ -36,12 +36,14 @@ default_mimetype = "text/html"
 doc_root =
 user_dir =
 enable_dl = Off
-file_uploads = On
-upload_max_filesize = 16M
-max_file_uploads = 20
 allow_url_fopen = On
 allow_url_include = Off
 default_socket_timeout = 60
+
+file_uploads = On
+upload_max_filesize = 16M
+max_file_uploads = 20
+upload_tmp_dir = /data/temp
 
 [mail function]
 SMTP = localhost
