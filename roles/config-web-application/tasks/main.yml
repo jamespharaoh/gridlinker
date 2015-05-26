@@ -14,6 +14,7 @@
     - "/data/assets/image-cache"
     - "/data/assets/sitemaps"
     - "/data/assets/user-data"
+    - "/data/temp"
 
 - include: "site.yml"
   label: "control"

@@ -53,7 +53,7 @@ function build_image () {
 
 	# create temp dir
 
-	temp="$(pwd)/data/temp"
+	temp="$(pwd)/work/temp"
 	sudo rm -rf "$temp"
 	mkdir -p "$temp"
 	sudo chown root:root "$temp"

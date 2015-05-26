@@ -5,5 +5,5 @@
 /runtime-config
 /secret-plain
 /.Trash-*
-/data/temp
+/work
 *.pyc
