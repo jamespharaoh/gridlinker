@@ -1,0 +1,27 @@
+---
+
+- name: "install php packages"
+  action:
+    module: "apt"
+    name: "{{ item }}"
+  sudo: "yes"
+  with_items: "php_packages"
+
+- name: "configure php"
+  action:
+    module: "template"
+    src: "{{ item.template }}"
+    dest: "{{ item.target }}"
+  sudo: "yes"
+  notify: "restart php"
+  with_items:
+
+    - template: "install-php-ini"
+      target: "/etc/php5/fpm/php.ini"
+      type: "fpm"
+
+    - template: "install-php-ini"
+      target: "/etc/php5/cli/php.ini"
+      type: "cli"
+
+# ex: et ts=2 filetype=yaml
