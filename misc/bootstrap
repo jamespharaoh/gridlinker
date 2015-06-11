@@ -10,7 +10,14 @@ if test -f /etc/init/etcd.conf; then
 	exit 1
 fi
 
-# download etcd
+# check config file exists
+
+cd ~/datingnode-ansible
+if ! test -d config -a -f config/overrides.yml; then
+	echo "Please create config/overrides.yml first" >&2
+fi
+
+# setup temporary etcd
 
 cd /tmp
 if ! test -f etcd-v2.0.11-linux-amd64.tar.gz; then
@@ -30,6 +37,8 @@ etcd_pid=$!
 echo "Started as PID $etcd_pid" >&2
 sleep 1
 
+# main bootstrap process
+
 echo "Configuring temporary connection" >&2
 cd ~/datingnode-ansible
 cat >config/connections.yml <<-EOF
@@ -45,6 +54,8 @@ misc/create-resources
 
 echo "Configuring devbox" >&2
 ./datingnode-local ansible playbook -- playbooks/vagrant-devbox.yml
+
+# swap from temporary to permanent etcd
 
 echo "Exporting data from etcd" >&2
 ./datingnode-local etcd export --target work/etcd-bootstrap
@@ -64,6 +75,8 @@ EOF
 
 echo "Importing data to etcd" >&2
 ./datingnode-local etcd import --source work/etcd-bootstrap
+
+# done
 
 echo "Bootstrap complete" >&2
 
