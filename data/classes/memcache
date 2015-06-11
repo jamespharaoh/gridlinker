@@ -1,0 +1,39 @@
+---
+
+identity:
+
+  name: "memcache"
+  type: "class"
+
+class:
+
+  scope: "global"
+  virtual_groups: [ "containers" ]
+
+container:
+
+  type: "memcache"
+
+start:
+
+  label: "memcache"
+
+  registry: "{{ docker_registry }}"
+  image: "{{ docker_images.memcache }}:{{ cluster.build }}"
+
+  expose:
+    - "11211"
+
+  ports:
+    - "{{ parent.private_address }}:{{ cluster.ports.memcache }}:11211"
+
+  volumes:
+    - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
+    - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+
+  env: {}
+
+  wait:
+    - "{{ cluster.ports.memcache }}"
+
+# ex: et ts=2 filetype=yaml

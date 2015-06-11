@@ -1,0 +1,69 @@
+---
+
+global_install_packages:
+  - "aptitude"
+  - "bash-completion"
+  - "bridge-utils"
+  - "btrfs-tools"
+  - "colordiff"
+  - "command-not-found"
+  - "curl"
+  - "dnsutils"
+  - "git"
+  - "iotop"
+  - "man-db"
+  - "nano"
+  - "ngrep"
+  - "python-dev"
+  - "python-pip"
+  - "rsync"
+  - "super"
+  - "tcpdump"
+  - "telnet"
+  - "unzip"
+  - "wget"
+  - "whois"
+
+install_packages: "{{ global_install_packages }}"
+
+global_remove_packages:
+  - "resolvconf"
+
+remove_packages: "{{ global_remove_packages }}"
+
+docker_registry: "quay.io"
+
+docker_images:
+  base: "ubuntu:14.04"
+  database: "rocketware/datingnode-database"
+  web_application: "rocketware/datingnode-web-application"
+  vhost_proxy: "rocketware/datingnode-vhost-proxy"
+  storage: "rocketware/datingnode-storage"
+  memcache: "rocketware/datingnode-memcache"
+
+dns_servers:
+  primary: "8.8.8.8"
+  secondary: "8.8.4.4"
+
+data_dir: "/datingnode-{{ cluster_name }}"
+
+platform_super_branch: "apache2.4"
+platform_super_dir: "/var/www/datingnode-super"
+platform_log_dir: "/var/log/datingnode"
+platform_assets_dir: "/var/www/datingnode-assets"
+server_admin_email: "staging@rocketware.co.uk"
+
+apache_version: "2.4"
+deployment_user: "ubuntu"
+
+test_domain_extension: "dev"
+
+etcd_version: "2.0.11"
+
+container_name: "{{ cluster_name }}-{{ inventory_hostname }}"
+
+database_master: "{{ hostvars [groups ['database-master'].0] }}"
+database_master_parent: "{{ hostvars [database_master.identity_parent] }}"
+database_master_address: "{{ database_master_parent.private_address }}"
+
+# ex: et ts=2 filetype=yaml

@@ -1,6 +1,8 @@
 #!/bin/bash
 
-set -e
+set -euf -o pipefail
+
+export HOME="/root"
 
 cd /
 
@@ -66,12 +68,16 @@ rsync \
 	--verbose \
 	--delete \
 	--exclude ".git" \
-	--include "/build-inventory" \
+	--include "/config/build" \
+	--exclude "/config/*" \
 	--include "/config" \
 	--include "/data" \
-	--include "/datingnode-local" \
-	--include "/group_vars" \
 	--include "/misc" \
+	--include "/playbooks/build" \
+	--include "/playbooks/build.yml" \
+	--include "/playbooks/config" \
+	--include "/playbooks/config.yml" \
+	--exclude "/playbooks/*" \
 	--include "/playbooks" \
 	--include "/third-party" \
 	--exclude "/*" \
@@ -98,8 +104,13 @@ END
 
 heading "Applying ansible build $build_name"
 
+cp "config/build/$build_name-build" "config/build-config"
+
 ansible-playbook \
 	--connection "local" \
 	--inventory "build-inventory" \
+	--extra-vars "@config/build-config" \
 	--limit "$build_name-build" \
 	"playbooks/build.yml"
+
+# ex: noet ts=4 filetype=sh

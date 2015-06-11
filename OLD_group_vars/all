@@ -1,0 +1,40 @@
+---
+
+ssh_user_keys:
+
+  james:
+
+    type: "ssh-rsa"
+    data:
+      - "AAAAB3NzaC1yc2EAAAABIwAAAQEA7qs+esuF00DpzVYZSS87uHvBaTzijM4IFW3ToBbKKQ"
+      - "Dlhf10EoyZbD46BMHajUeORHzu6fCwDeCY+qiYTV6qOo/Hl7JekymR3K9H3maYuQuRn+WN"
+      - "YTX76CHybgJU39KDRIQeKSlPiML6cqIHDUgmLqQZgbteRB5KvxunouuBTCVxzvqbGlnVBc"
+      - "yQqJcILYB5HFzD7jHzoG3WUD/gXnEfaExm3BEhd7vyfUXCQcsK8povjDc0QG/RyX6RZ0mh"
+      - "RkdxrzrT8niZA5S6Us5VaWoIxqmXrLH5rfpgZzBWt68ymRKAbBKWHobCppBuKoQGlxubTs"
+      - "WM06PtMjP0iKqffLBzzw=="
+
+  jimmy:
+
+    type: "ssh-rsa"
+    data:
+      - "AAAAB3NzaC1yc2EAAAADAQABAAABAQDdlCZiEOipX7Pbhlwx23ELP5nYz1SjA7Ojd7X16i"
+      - "9qFiBeDrNoh3Z8MA11IahjCLAVXX1jpjj091J1Tpwa4xRCgiHerv/C3ZVbnfJXvX+zbZUr"
+      - "Wo09wn3hlYGbKzBCGo/KvVZrTY12UrUzUO3K5Ip7Utaxr6/TEM3nurYIuG7lNsvGH5HpyS"
+      - "+8gobi1Qamw6NrXgfXpE+GYGPnCpm9eXlcCaoIhsrWENYTcYUoAZU57uZj0xnn0Xzeo5ze"
+      - "0BzVAt5/Uaqs5zrOpXtNawX8JDWyZKowd5btbhooNZ8B2Abukx7wxtgzoG5luvMqN9vbD2"
+      - "VoEaFnusbRiXKvJlJCc1kd"
+
+  vm-root:
+
+    type: "ssh-rsa"
+    data:
+      - "AAAAB3NzaC1yc2EAAAADAQABAAABAQDwqXSygCYdN5z24pXyjjAddyPss/KiHiYPnKLLOL"
+      - "A1usQLnForQNnvFdIPCX8juPFXbzBK3YpHSmPWv8spcJ6D3uLvqJdjPlF50IH8XKwhAm47"
+      - "kSVC/Ur+M0e6hHotqEn3apBeiMnfl3s5T5L60ed99TokZmbtd7rWK9xQh4p/8RfsHkAkvP"
+      - "uPDWlulshBw7+vXZBbeHKsmW4iM7p84Dyny/g8dXfOMHVeYoB64JC4n6x6TUMOyxCYH/bo"
+      - "rhQe0NCCA22qt5jgYQ+eAi08buoQGBo6M14MLN78whWn9kS8daZ4/VDtyEWNiOlWy8lDIZ"
+      - "PcZprFihxgx/8Gqw0YoMrX"
+
+openvpn_ca_certificate: "/authority/openvpn/certificate"
+
+# ex: et ts=2 filetype=yaml

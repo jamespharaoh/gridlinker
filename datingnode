@@ -11,14 +11,10 @@ fi
 
 source "config/datingnode-config"
 
-local_script="./datingnode-local"
-local_ansible="$local_script ansible playbook --"
-
-master_script="./datingnode-master"
-master_ansible="$master_script ansible playbook --"
+script="./datingnode"
 
 if test "$#" != 0; then
-	$local_ansible playbooks/devops.yml
+	"$script-local" ansible playbook -- playbooks/devops.yml
 fi
 
 function do_hosts () {
@@ -213,20 +209,21 @@ function do_image_push () {
 
 function do_cluster_start () {
 
-	cluster="$1"
+	local cluster="$1"
 	shift
 
-	if test "$cluster" = "test"; then
-		ansible="$local_ansible"
+	local this_script
+
+	if test "$cluster" = "local"; then
+		this_script="$script-local"
 	else
-		ansible="$master_ansible"
+		this_script="$script-master"
 	fi
 
-	$ansible \
+	$this_script ansible playbook -- \
 		--extra-vars "@config/deploy-config" \
 		--extra-vars "@config/runtime-config" \
 		--extra-vars "cluster_name=$cluster" \
-		--inventory "$cluster" \
 		playbooks/start.yml \
 		"$@"
 
@@ -234,20 +231,21 @@ function do_cluster_start () {
 
 function do_cluster_stop () {
 
-	cluster="$1"
+	local cluster="$1"
 	shift
 
-	if test "$cluster" = "test"; then
-		ansible="$local_ansible"
+	local this_script
+
+	if test "$cluster" = "local"; then
+		this_script="$script-local"
 	else
-		ansible="$master_ansible"
+		this_script="$script-master"
 	fi
 
-	$ansible \
+	$this_script ansible playbook -- \
 		--extra-vars "@config/deploy-config" \
 		--extra-vars "@config/runtime-config" \
 		--extra-vars "cluster_name=$cluster" \
-		--inventory "$cluster" \
 		playbooks/stop.yml \
 		"$@"
 
@@ -284,20 +282,21 @@ function do_cluster_rolling () {
 
 function do_cluster_delete () {
 
-	cluster="$1"
+	local cluster="$1"
 	shift
 
-	if test "$cluster" = "test"; then
-		ansible="$local_ansible"
+	local this_script
+
+	if test "$cluster" = "local"; then
+		this_script="$script-local"
 	else
-		ansible="$master_ansible"
+		this_script="$script-master"
 	fi
 
-	$ansible \
+	$this_script ansible playbook -- \
 		--extra-vars "@config/deploy-config" \
 		--extra-vars "@config/runtime-config" \
 		--extra-vars "cluster_name=$cluster" \
-		--inventory "$cluster" \
 		playbooks/delete.yml \
 		"$@"
 

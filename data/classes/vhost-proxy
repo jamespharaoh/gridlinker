@@ -1,0 +1,41 @@
+---
+
+identity:
+
+  name: "vhost-proxy"
+  type: "class"
+
+class:
+
+  scope: "global"
+  virtual_groups: [ "containers" ]
+
+container:
+
+  type: "vhost-proxy"
+
+start:
+
+  registry: "{{ docker_registry }}"
+  image: "{{ docker_images.vhost_proxy }}:{{ cluster.build }}"
+
+  expose:
+    - "80"
+    - "443"
+
+  ports:
+    - "{{ cluster.ports.vhost_proxy }}:80"
+    - "{{ cluster.ports.vhost_proxy_ssl }}:443"
+
+  volumes:
+    - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
+    - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+    - "/datingnode-ssl:/config/ssl"
+
+  env: {}
+
+  wait:
+    - "80"
+    - "443"
+
+# ex: et ts=2 filetype=yaml# ex: et ts=2 filetype=yaml

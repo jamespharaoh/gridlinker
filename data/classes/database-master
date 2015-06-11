@@ -1,0 +1,40 @@
+---
+
+identity:
+
+  name: "database-master"
+  type: "class"
+
+class:
+
+  scope: "global"
+  virtual_groups: [ "containers" ]
+
+container:
+
+  type: "database-master"
+
+start:
+
+  label: "database master"
+
+  registry: "{{ docker_registry }}"
+  image: "{{ docker_images.database }}:{{ cluster.build }}"
+
+  expose:
+    - "5432"
+
+  ports:
+    - "{{ parent.private_address }}:{{ cluster.ports.database_master }}:5432"
+
+  volumes:
+    - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
+    - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+
+  env:
+    DATABASE_MODE: "master"
+
+  wait:
+    - "{{ cluster.ports.database_master }}"
+
+# ex: et ts=2 filetype=yaml

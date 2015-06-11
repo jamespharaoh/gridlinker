@@ -1,0 +1,45 @@
+---
+
+identity:
+
+  name: "web-application"
+  type: "class"
+
+class:
+
+  scope: "global"
+  virtual_groups: [ "containers" ]
+
+container:
+
+  type: "web-application"
+
+start:
+
+  label: "web application"
+
+  registry: "{{ docker_registry }}"
+  image: "{{ docker_images.web_application }}:{{ cluster.build }}"
+
+  expose:
+    - "80"
+
+  ports:
+    - "{{ parent.private_address }}:{{ cluster.ports.web_application }}:80"
+
+  volumes_default:
+    - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
+    - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+
+  volumes_instant:
+    - "/home/vagrant/datingnode-super:/var/www/datingnode-super"
+
+  volumes_all: "{{ start_volumes_default + start_volumes_instant }}"
+  volumes: "{{ start_volumes_all if instant_deploy == 'yes' else start_volumes_default }}"
+
+  env: {}
+
+  wait:
+    - "{{ cluster.ports.web_application }}"
+
+# ex: et ts=2 filetype=yaml

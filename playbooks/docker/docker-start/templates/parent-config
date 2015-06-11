@@ -2,7 +2,7 @@
 
 cluster_name: "{{ cluster_name }}"
 
-parent_address: "{{ hostvars [parent].private_address }}"
+parent_address: "{{ parent.private_address }}"
 
 database_master_address: "{{ database_master_address }}"
 database_master_port: "{{ cluster.ports.database_master }}"
@@ -10,7 +10,7 @@ database_master_port: "{{ cluster.ports.database_master }}"
 memcache_nodes:
 {% for memcache_name in groups.memcache %}
 {% set memcache = hostvars [memcache_name] %}
-{% set memcache_parent = hostvars [memcache.parent] %}
+{% set memcache_parent = hostvars [memcache.identity_parent] %}
   - name: "{{ memcache_parent.private_address }}"
     port: "{{ cluster.ports.memcache }}"
 {% endfor %}

@@ -5,8 +5,6 @@
     module: "template"
     src: "overrides"
     dest: "{{ HOME }}/config/overrides.yml"
-  sudo: "yes"
-  sudo_user: "vagrant"
 
 - include_vars: "{{ HOME }}/config/overrides.yml"
 
@@ -15,12 +13,29 @@
     module: "template"
     src: "{{ item }}"
     dest: "{{ HOME }}/config/{{ item }}"
-  sudo: "yes"
-  sudo_user: "vagrant"
   with_items:
 
     - "datingnode-config"
     - "deploy-config"
     - "runtime-config"
+
+- name: "create build directory"
+  action:
+    module: "file"
+    dest: "{{ HOME }}/config/build"
+    state: "directory"
+
+- name: "create build configs"
+  action:
+    module: "template"
+    dest: "{{ HOME }}/config/build/{{ item }}-build"
+    src: "build-config"
+  with_items:
+    - "base"
+    - "database"
+    - "web-server"
+    - "web-application"
+    - "vhost-proxy"
+    - "memcache"
 
 # ex: et ts=2 filetype=yaml

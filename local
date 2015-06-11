@@ -1,13 +1,13 @@
-# live
+# local
 
 [local:children]
-hosts
+devbox
 containers
 
 # hosts
 
-[hosts]
-localhost
+[vagrant-devbox]
+datingnode-devbox
 
 # containers
 

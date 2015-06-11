@@ -1,0 +1,6 @@
+{%- print '---\n\n' -%}
+
+{%- set global_data = lookup ('file', HOME + '/data/globals') | from_yaml -%}
+{%- for key, value in global_data.items () -%}
+	{%- print key, ': ', value | to_json, '\n' -%}
+{%- endfor -%}

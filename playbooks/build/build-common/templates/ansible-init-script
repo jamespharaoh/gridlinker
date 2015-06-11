@@ -2,17 +2,35 @@
 
 set -e
 
-cd /root/datingnode-ansible
+export HOME="/root"
+PROJECT="$HOME/datingnode-ansible"
 
-source ansible/hacking/env-setup
+cd "$PROJECT"
 
-cp /config/runtime-config .
-cp /config/parent-config .
-cp /config/inventory .
+export ANSIBLE_HOME="$PROJECT/third-party/ansible"
+export ANSIBLE_CONFIG="$PROJECT/work/ansible.cfg"
+
+export PATH="$ANSIBLE_HOME/bin:$PATH"
+export PYTHONPATH="$ANSIBLE_HOME/lib"
+
+mkdir -p work
+
+cat >work/ansible.cfg <<-END
+	[defaults]
+	library = $PROJECT/third-party/ansible-modules-core:$PROJECT/third-party/ansible-modules-extras
+	roles_path = $PROJECT/playbooks/config
+END
+
+cp /config/runtime-config config/runtime-config
+cp /config/parent-config config/parent-config
+cp /config/inventory config/inventory
 
 ansible-playbook \
 	--connection "local" \
-	--inventory "inventory" \
-	--extra-vars "@runtime-config" \
-	--extra-vars "@parent-config" \
-	misc/config.yml
+	--inventory "config/inventory" \
+	--extra-vars "@config/build-config" \
+	--extra-vars "@config/runtime-config" \
+	--extra-vars "@config/parent-config" \
+	"playbooks/config.yml"
+
+# ex: noet ts=4 filetype=sh

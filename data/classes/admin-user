@@ -1,0 +1,12 @@
+---
+
+identity:
+
+  name: "admin-user"
+  type: "class"
+
+class:
+
+  scope: "class"
+
+# ex: et ts=2 filetype=yaml

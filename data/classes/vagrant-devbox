@@ -1,0 +1,16 @@
+---
+
+identity:
+
+  name: "vagrant-devbox"
+  type: "class"
+
+class:
+
+  scope: "global"
+
+ansible:
+
+  connection: "local"
+
+# ex: et ts=2 filetype=yaml

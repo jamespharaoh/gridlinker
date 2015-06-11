@@ -1,0 +1,10 @@
+---
+
+- hosts: "vagrant-devbox"
+  roles:
+
+    - "install-etcd"
+    - "setup-etcd"
+    - "start-etcd"
+
+# ex: et ts=2 filetype=yaml
