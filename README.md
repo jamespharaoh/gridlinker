@@ -1,17 +1,16 @@
-# {{ metadata.project.title }}
+# Datingnode Ansible
 
 Main website:
 
-* {{ metadata.project.website }}
+* https://bitbucket.org/jimmyff/datingnode-ansible
 
 Developers:
 
-{% for developer in metadata.developers %}
-* {{ developer.name }} <{{ developer.email }}>
-{% endfor %}
+* Jimmy Forrester-Fellows <jimmy@rocketware.co.uk>
+* James Pharaoh <james@wellbehavedsoftware.com>
 
 This project contains a self-contained automated system for setting up and
-managing {{ metadata.project.subject }}.
+managing Datingnode's server infrastructure.
 
 It is based on [gridlinker](https://github.com/wellbehavedsoftware/gridlinker),
 which provides tools to manage data and a collection of general purpose
@@ -44,8 +43,8 @@ configuration. If this is the case, you should be able to run commands directly,
 and discover options via the built-in help.
 
 ```sh
-cd {{ metadata.project.name }}
-./{{ metadata.project.script }} --help
+cd datingnode-ansible
+./datingnode-ansible --help
 ```
 
 To set up a connection to an existing database, create `config/connections.yml`,
@@ -54,11 +53,11 @@ using the following template:
 ```yaml
 ---
 
-{{ metadata.project.name }}:
+datingnode-ansible:
 
-  etcd_servers: [ "{{ metadata.etcd.default_servers | join ('", "') }}" ]
-  etcd_secure: "{{ metadata.etcd.default_secure }}"
-  etcd_prefix: "{{ metadata.etcd.default_prefix }}"
+  etcd_servers: [ "admin-1.vpn.datingnode.co.uk", "admin-2.vpn.datingnode.co.uk", "admin-3.vpn.datingnode.co.uk" ]
+  etcd_secure: "yes"
+  etcd_prefix: "/datingnode-ansible"
 
 # ex: et ts=2 filetype=yaml
 ```
@@ -67,9 +66,9 @@ You also need to obtain a valid certificate, along with its private key, and the
 ca certificate, from the administrator. These should be placed in the following
 places:
 
-* `config/{{ metadata.project.name }}-ca.cert`
-* `config/{{ metadata.project.name }}.cert`
-* `config/{{ metadata.project.name }}.key`
+* `config/datingnode-ansible-ca.cert`
+* `config/datingnode-ansible.cert`
+* `config/datingnode-ansible.key`
 
 To use a local etcd server, for example during development or testing or when
 you are working online, use the following configuration:
@@ -77,11 +76,11 @@ you are working online, use the following configuration:
 ```yaml
 ---
 
-{{ metadata.project.name }}:
+datingnode-ansible:
 
   etcd_servers: [ "localhost" ]
   etcd_secure: "no"
-  etcd_prefix: "{{ metadata.etcd.default_prefix }}"
+  etcd_prefix: "/datingnode-ansible"
 
 # ex: et ts=2 filetype=yaml
 ```

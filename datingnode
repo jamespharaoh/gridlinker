@@ -1,27 +1,31 @@
 #!/bin/bash
 
-set -e
+set -euf -o pipefail
 
 cd "$(dirname "$0")"
 
-if ! test -f datingnode-config; then
-	echo "Please create datingnode-config file" >&2
-	echo "There is an example in datingnode-config.template" >&2
+if ! test -f config/datingnode-config; then
+	echo "Please create config/datingnode-config file" >&2
 	exit 1
 fi
 
-source "datingnode-config"
-source ansible/hacking/env-setup &>/dev/null
+source "config/datingnode-config"
+
+local_script="./datingnode-local"
+local_ansible="$local_script ansible playbook --"
+
+master_script="./datingnode-master"
+master_ansible="$master_script ansible playbook --"
 
 if test "$#" != 0; then
-	./run-ansible
+	$local_ansible playbooks/devops.yml
 fi
 
 function do_hosts () {
 
-	ansible-playbook \
-		--extra-vars "@deploy-config" \
-		--extra-vars "@runtime-config" \
+	$master_ansible \
+		--extra-vars "@config/deploy-config" \
+		--extra-vars "@config/runtime-config" \
 		--extra-vars "cluster_name=shared" \
 		--inventory "hosts" \
 		"playbooks/hosts.yml" \
@@ -212,10 +216,15 @@ function do_cluster_start () {
 	cluster="$1"
 	shift
 
-	ansible-playbook \
-		--extra-vars "@config" \
-		--extra-vars "@deploy-config" \
-		--extra-vars "@runtime-config" \
+	if test "$cluster" = "test"; then
+		ansible="$local_ansible"
+	else
+		ansible="$master_ansible"
+	fi
+
+	$ansible \
+		--extra-vars "@config/deploy-config" \
+		--extra-vars "@config/runtime-config" \
 		--extra-vars "cluster_name=$cluster" \
 		--inventory "$cluster" \
 		playbooks/start.yml \
@@ -228,10 +237,15 @@ function do_cluster_stop () {
 	cluster="$1"
 	shift
 
-	ansible-playbook \
-		--extra-vars "@config" \
-		--extra-vars "@deploy-config" \
-		--extra-vars "@runtime-config" \
+	if test "$cluster" = "test"; then
+		ansible="$local_ansible"
+	else
+		ansible="$master_ansible"
+	fi
+
+	$ansible \
+		--extra-vars "@config/deploy-config" \
+		--extra-vars "@config/runtime-config" \
 		--extra-vars "cluster_name=$cluster" \
 		--inventory "$cluster" \
 		playbooks/stop.yml \
@@ -244,12 +258,17 @@ function do_cluster_rolling () {
 	cluster="$1"
 	shift
 
+	if test "$cluster" = "test"; then
+		ansible="$local_ansible"
+	else
+		ansible="$master_ansible"
+	fi
+
 	for index in 1 2; do
 
-		ansible-playbook \
-			--extra-vars "@config" \
-			--extra-vars "@deploy-config" \
-			--extra-vars "@runtime-config" \
+		$ansible \
+			--extra-vars "@config/deploy-config" \
+			--extra-vars "@config/runtime-config" \
 			--extra-vars "cluster_name=$cluster" \
 			--limit "web-application-$index" \
 			--inventory "$cluster" \
@@ -268,10 +287,15 @@ function do_cluster_delete () {
 	cluster="$1"
 	shift
 
-	ansible-playbook \
-		--extra-vars "@config" \
-		--extra-vars "@deploy-config" \
-		--extra-vars "@runtime-config" \
+	if test "$cluster" = "test"; then
+		ansible="$local_ansible"
+	else
+		ansible="$master_ansible"
+	fi
+
+	$ansible \
+		--extra-vars "@config/deploy-config" \
+		--extra-vars "@config/runtime-config" \
 		--extra-vars "cluster_name=$cluster" \
 		--inventory "$cluster" \
 		playbooks/delete.yml \

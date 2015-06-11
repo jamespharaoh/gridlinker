@@ -1,0 +1,12 @@
+---
+
+identity:
+
+  name: "rocket-hz-vm"
+  type: "class"
+
+class:
+
+  scope: "global"
+
+# ex: et ts=2 filetype=yaml

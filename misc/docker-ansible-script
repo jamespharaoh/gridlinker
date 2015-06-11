@@ -18,7 +18,7 @@ if test "$build_name" = "base"; then
 
 		heading "Updating system packages"
 
-		source /datingnode-ansible/datingnode-config
+		source /datingnode-ansible/config/datingnode-config
 
 		cat <<-EOF >/etc/apt/sources.list
 
@@ -44,8 +44,13 @@ if test "$build_name" = "base"; then
 
 		heading "Installing required packages for ansible"
 
-		apt-get install --yes aptitude python-dev python-pip rsync
-		pip install paramiko PyYAML jinja2 httplib2
+		apt-get install --yes aptitude python-dev python-pip rsync libffi-dev libssl-dev
+
+		pip install --upgrade pip
+
+		hash -d pip
+
+		pip install paramiko pyyaml jinja2 httplib2 pyopenssl
 
 		touch /etc/dnode-ansible-flag
 
@@ -61,27 +66,35 @@ rsync \
 	--verbose \
 	--delete \
 	--exclude ".git" \
-	--include "/ansible" \
-	--include "/ansible-modules" \
-	--include "/ansible.cfg" \
-	--include "/group_vars" \
-	--include "/host_vars" \
 	--include "/build-inventory" \
+	--include "/config" \
+	--include "/data" \
+	--include "/datingnode-local" \
+	--include "/group_vars" \
 	--include "/misc" \
-	--include "/roles" \
+	--include "/playbooks" \
+	--include "/third-party" \
 	--exclude "/*" \
 	"/datingnode-ansible/" \
 	"$HOME/datingnode-ansible/"
 
-cd "$HOME/datingnode-ansible"
+PROJECT="$HOME/datingnode-ansible"
 
-if ! test "$ANSIBLE_HOME"; then
+cd "$PROJECT"
 
-	heading "Initialising ansible environment"
+export ANSIBLE_HOME="$PROJECT/third-party/ansible"
+export ANSIBLE_CONFIG="$PROJECT/work/ansible.cfg"
 
-	source ansible/hacking/env-setup
+export PATH="$ANSIBLE_HOME/bin:$PATH"
+export PYTHONPATH="$ANSIBLE_HOME/lib"
 
-fi
+mkdir -p work
+
+cat >work/ansible.cfg <<-END
+	[defaults]
+	library = $PROJECT/third-party/ansible-modules-core:$PROJECT/third-party/ansible-modules-extras
+	roles_path = $PROJECT/playbooks/build
+END
 
 heading "Applying ansible build $build_name"
 
@@ -89,4 +102,4 @@ ansible-playbook \
 	--connection "local" \
 	--inventory "build-inventory" \
 	--limit "$build_name-build" \
-	"misc/build.yml"
+	"playbooks/build.yml"

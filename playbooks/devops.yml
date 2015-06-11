@@ -1,0 +1,6 @@
+---
+
+- hosts: "localhost"
+  roles: [ "write-devops-config" ]
+
+# ex: et ts=2 filetype=yaml

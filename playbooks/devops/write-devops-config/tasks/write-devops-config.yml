@@ -1,0 +1,26 @@
+---
+
+- name: "create main config"
+  action:
+    module: "template"
+    src: "overrides"
+    dest: "{{ HOME }}/config/overrides.yml"
+  sudo: "yes"
+  sudo_user: "vagrant"
+
+- include_vars: "{{ HOME }}/config/overrides.yml"
+
+- name: "create dependent configs"
+  action:
+    module: "template"
+    src: "{{ item }}"
+    dest: "{{ HOME }}/config/{{ item }}"
+  sudo: "yes"
+  sudo_user: "vagrant"
+  with_items:
+
+    - "datingnode-config"
+    - "deploy-config"
+    - "runtime-config"
+
+# ex: et ts=2 filetype=yaml

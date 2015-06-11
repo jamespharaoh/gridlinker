@@ -1,0 +1,50 @@
+---
+
+project:
+
+  name: "datingnode-ansible"
+  script: "datingnode-ansible"
+  title: "Datingnode Ansible"
+  subject: "Datingnode's server infrastructure"
+
+  website: "https://bitbucket.org/jimmyff/datingnode-ansible"
+
+environment:
+
+  devops_home_path: "DATINGNODE_ANSIBLE_HOME"
+  devops_script: "DATINGNODE_ANSIBLE_SCRIPT"
+  devops_connection_name: "DATINGNODE_ANSIBLE_CONNECTION"
+
+etcd:
+
+  default_servers:
+    - "admin-1.vpn.datingnode.co.uk"
+    - "admin-2.vpn.datingnode.co.uk"
+    - "admin-3.vpn.datingnode.co.uk"
+  default_secure: "yes"
+  default_prefix: "/datingnode-ansible"
+
+certificate_data:
+
+  country: "GB"
+  locality: "Leeds"
+  organization: "Rocketware Limited"
+
+data:
+
+  metadata: "project"
+  clusters: "clusters"
+  services: "services"
+
+  trusted_ips: "trusted-ips"
+  whitelist_ips: "whitelist-ips"
+
+developers:
+
+  - name: "Jimmy Forrester-Fellows"
+    email: "jimmy@rocketware.co.uk"
+
+  - name: "James Pharaoh"
+    email: "james@wellbehavedsoftware.com"
+
+# ex: et ts=2 filetype=yaml

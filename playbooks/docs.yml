@@ -1,0 +1,6 @@
+---
+
+- hosts: "localhost"
+  roles: [ "project-documentation" ]
+
+# ex: et ts=2 filetype=yaml
