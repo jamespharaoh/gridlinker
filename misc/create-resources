@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -euf -o pipefail
+
+# create devbox
+
+./datingnode-local resource create \
+	--update-existing \
+	--class "vagrant-devbox" \
+	--name "datingnode-devbox" \
+	--set "private.address" "172.28.128.5"
+
+# create containers
+
+./datingnode-local resource create \
+	--update-existing \
+	--class "database-master" \
+	--name "database-master-0" \
+	--parent "datingnode-devbox"
+
+./datingnode-local resource create \
+	--update-existing \
+	--class "web-application" \
+	--name "web-application-0" \
+	--parent "datingnode-devbox"
+
+./datingnode-local resource create \
+	--update-existing \
+	--class "vhost-proxy" \
+	--name "vhost-proxy-0" \
+	--parent "datingnode-devbox"
+
+./datingnode-local resource create \
+	--update-existing \
+	--class "memcache" \
+	--name "memcache-0" \
+	--parent "datingnode-devbox"
+
+# ex: noet ts=4 filetype=sh
