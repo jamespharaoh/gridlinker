@@ -58,8 +58,6 @@ deployment_user: "ubuntu"
 
 test_domain_extension: "dev"
 
-etcd_version: "2.0.11"
-
 container_name: "{{ cluster_name }}-{{ inventory_hostname }}"
 
 database_master: "{{ hostvars [groups ['database-master'].0] }}"

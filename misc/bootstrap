@@ -17,6 +17,12 @@ if ! test -d config -a -f config/overrides.yml; then
 	echo "Please create config/overrides.yml first" >&2
 fi
 
+# update all packages
+
+echo "Updating packages" >&2
+sudo apt-get update
+sudo apt-get dist-upgrade -y
+
 # setup temporary etcd
 
 cd /tmp
