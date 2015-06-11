@@ -1,6 +1,0 @@
----
-
-ansible_ssh_host: "{{ public_address }}"
-ansible_ssh_user: "root"
-
-# ex: et ts=2 filetype=yaml

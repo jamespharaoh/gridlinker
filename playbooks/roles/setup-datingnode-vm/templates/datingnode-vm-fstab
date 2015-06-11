@@ -13,23 +13,23 @@
 
 {% if cluster_name == 'live' %}
 
-/dev/vdb /datingnode-live/database-{{ index }}/data ext4 defaults 0 2
-/dev/vdc /datingnode-live/web-application-{{ index }}/fast ext4 defaults 0 2
-/dev/vdd /datingnode-live/web-application-{{ index }}/big ext4 defaults 0 2
+/dev/vdb /datingnode-live/database-{{ identity_index }}/data ext4 defaults 0 2
+/dev/vdc /datingnode-live/web-application-{{ identity_index }}/fast ext4 defaults 0 2
+/dev/vdd /datingnode-live/web-application-{{ identity_index }}/big ext4 defaults 0 2
 
 {% elif cluster_name == 'staging' %}
 
-/dev/vde /datingnode-staging/database-{{ index }}/data ext4 defaults 0 2
-/dev/vdf /datingnode-staging/web-application-{{ index }}/fast ext4 defaults 0 2
-/dev/vdg /datingnode-staging/web-application-{{ index }}/big ext4 defaults 0 2
+/dev/vde /datingnode-staging/database-{{ identity_index }}/data ext4 defaults 0 2
+/dev/vdf /datingnode-staging/web-application-{{ identity_index }}/fast ext4 defaults 0 2
+/dev/vdg /datingnode-staging/web-application-{{ identity_index }}/big ext4 defaults 0 2
 
 {% endif %}
 
 {% set master = hostvars [cluster.master] %}
 
 {% set data_dir = '/datingnode-' + cluster_name %}
-{% set web_app_local = data_dir + '/web-application-' + index %}
-{% set web_app_remote = data_dir + '/web-application-' + master.index %}
+{% set web_app_local = data_dir + '/web-application-' + identity_index %}
+{% set web_app_remote = data_dir + '/web-application-' + master.identity_index %}
 
 {% if inventory_hostname == cluster.master %}
 

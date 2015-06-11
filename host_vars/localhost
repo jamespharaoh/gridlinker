@@ -1,7 +1,0 @@
----
-
-ansible_connection: "local"
-
-private_address: "{{ devbox_private }}"
-
-# ex: et ts=2 filetype=yaml

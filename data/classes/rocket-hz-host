@@ -1,0 +1,29 @@
+---
+
+identity:
+
+  name: "rocket-hz-host"
+  type: "class"
+
+class:
+
+  scope: "global"
+  virtual_groups: [ "rocket-hz" ]
+
+ansible:
+
+  ssh_host: "{{ public_address }}"
+  ssh_user: "root"
+
+ssh:
+
+  hostnames:
+    - "{{ inventory_hostname }}"
+    - "{{ public_address }}"
+    - "{{ private_address }}"
+
+openvpn:
+
+  ca_certificate: "/authority/openvpn/certificate"
+
+# ex: et ts=2 filetype=yaml

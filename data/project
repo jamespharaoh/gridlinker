@@ -39,6 +39,9 @@ data:
   trusted_ips: "trusted-ips"
   whitelist_ips: "whitelist-ips"
 
+  ssh_user_keys: "ssh-user-keys"
+  ssh_host_keys: "ssh-host-keys"
+
 developers:
 
   - name: "Jimmy Forrester-Fellows"

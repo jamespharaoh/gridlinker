@@ -79,8 +79,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 {% set master = hostvars [cluster.master] %}
 
 {% set data_dir = '/datingnode-' + cluster_name %}
-{% set web_app_local = data_dir + '/web-application-' + index %}
-{% set web_app_remote = data_dir + '/web-application-' + master.index %}
+{% set web_app_local = data_dir + '/web-application-' + identity_index %}
+{% set web_app_remote = data_dir + '/web-application-' + master.identity_index %}
 
 {% if inventory_hostname == cluster.master %}
 

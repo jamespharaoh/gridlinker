@@ -1,4 +1,0 @@
----
-
-ansible_ssh_host: "148.251.241.188"
-ansible_ssh_user: "ubuntu"
