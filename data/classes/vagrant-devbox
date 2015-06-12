@@ -35,4 +35,7 @@ python:
     - name: "jinja2"
       version: "2.7.3"
 
+    - name: "docker-py"
+      version: "1.2.2"
+
 # ex: et ts=2 filetype=yaml

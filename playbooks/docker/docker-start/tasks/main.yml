@@ -12,7 +12,7 @@
   delegate_to: "{{ identity_parent }}"
   action:
     module: "copy"
-    src: "../runtime-config"
+    src: "{{ HOME }}/config/runtime-config"
     dest: "{{ data_dir }}/{{ inventory_hostname }}/config"
   sudo: "yes"
 

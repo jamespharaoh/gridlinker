@@ -9,12 +9,16 @@ clusters:
 
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
+{% if groups ['rocket-hz-vm'] %}
 vm_addresses:
 
 {% for vm_name in groups ['rocket-hz-vm'] %}
 {% set vm = hostvars [vm_name] %}
   - "{{ vm.private_address }}"
 {% endfor %}
+{% else %}
+vm_addresses: []
+{% endif %}
 
 vhost_proxy_build: "{{ deployment_name }}"
 
