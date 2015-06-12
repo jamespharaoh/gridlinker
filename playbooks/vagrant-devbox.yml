@@ -7,6 +7,8 @@
     - "setup-etcd"
     - "start-etcd"
 
+    - "setup-hosts"
+
     - "build-python"
     - "setup-python-alternatives"
     - "install-python-pip"

@@ -1,0 +1,24 @@
+---
+
+identity:
+
+  name: "rocket-hz-sites"
+  type: "class"
+
+class:
+
+  scope: "global"
+  virtual_groups: [ "rocket-hz" ]
+
+ansible:
+
+  ssh_host: "{{ private_address }}"
+  ssh_user: "ubuntu"
+
+ssh:
+
+  hostnames:
+    - "{{ inventory_hostname }}"
+    - "{{ private_address }}"
+
+# ex: et ts=2 filetype=yaml

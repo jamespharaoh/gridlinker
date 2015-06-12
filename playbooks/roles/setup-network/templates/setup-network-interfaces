@@ -6,6 +6,7 @@ iface lo inet loopback
 	# firewall rules
 
 	up ! test -x /etc/network/firewall-rules || /etc/network/firewall-rules
+	up ! test -x /etc/network/bridge-rules || /etc/network/bridge-rules
 
 # public bridge
 
@@ -22,16 +23,16 @@ iface brpub0 inet static
 	bridge_maxwait 0
 	bridge_fd 0
 
-	# firewall routing
+	# firewall rules
 
 	up ! test -x /etc/network/firewall-rules || /etc/network/firewall-rules
+	up ! test -x /etc/network/bridge-rules || /etc/network/bridge-rules
 
 	# use hetzner router even for local addresses
 
 	up route add -net {{ public_network }} netmask {{ public_netmask }} gw {{ public_gateway }} brpub0
 
 {% if failover is defined %}
-
 	# failover addresses
 
 {% for failover_address in []
@@ -59,6 +60,7 @@ iface brprv0 inet static
 	# firewall rules
 
 	up ! test -x /etc/network/firewall-rules || /etc/network/firewall-rules
+	up ! test -x /etc/network/bridge-rules || /etc/network/bridge-rules
 
 	# vpn routing
 

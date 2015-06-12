@@ -1,7 +1,7 @@
 ---
 
 - name: "create lxc container"
-  delegate_to: "{{ parent }}"
+  delegate_to: "{{ identity_parent }}"
   args:
     executable: "/bin/bash"
     creates: "/var/lib/lxc/{{ inventory_hostname }}/create-flag"
@@ -79,7 +79,7 @@
     touch /var/lib/lxc/{{ inventory_hostname }}/create-flag;
 
 - name: "create lxc configs"
-  delegate_to: "{{ parent }}"
+  delegate_to: "{{ identity_parent }}"
   action:
     module: "template"
     src: "lxc-config"
@@ -87,7 +87,7 @@
   sudo: "yes"
 
 - name: "start lxc container"
-  delegate_to: "{{ parent }}"
+  delegate_to: "{{ identity_parent }}"
   args:
     executable: "/bin/bash"
   shell:

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# initialise nat tables
+
+	iptables --table "nat" --flush
+	iptables --table "nat" --delete-chain
+
+	iptables --table "nat" --policy "PREROUTING" "ACCEPT"
+	iptables --table "nat" --policy "INPUT" "ACCEPT"
+	iptables --table "nat" --policy "OUTPUT" "ACCEPT"
+	iptables --table "nat" --policy "POSTROUTING" "ACCEPT"
+
+# masquerade outbound traffic from private net
+
+	iptables \
+		--table "nat" \
+		--append "POSTROUTING" \
+		--source "{{ private.network }}/{{ private.netbits }}" \
+		--out-interface "brpub0" \
+		--jump MASQUERADE
+
+# ex: noet ts=4 filetype=bash

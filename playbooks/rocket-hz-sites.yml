@@ -1,0 +1,14 @@
+---
+
+- hosts: "rocket-hz-sites"
+  roles:
+
+    - "create-lxc-container"
+
+    - "wait-for-ssh"
+    - "scan-ssh-key"
+
+    - "install-system-packages"
+    - "setup-hosts"
+
+# ex: et ts=2 filetype=yaml

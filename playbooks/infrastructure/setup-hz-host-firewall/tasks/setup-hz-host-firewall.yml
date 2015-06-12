@@ -7,5 +7,25 @@
     src: "hz-host-bridge-rules"
     mode: "0755"
   sudo: "yes"
+  register: "install_bridge_rules_result"
+
+- name: "reload bridge rules"
+  shell: "/etc/network/bridge-rules"
+  sudo: "yes"
+  when: "install_bridge_rules_result | changed"
+
+- name: "install firewall rules"
+  action:
+    module: "template"
+    dest: "/etc/network/firewall-rules"
+    src: "hz-host-firewall-rules"
+    mode: "0755"
+  sudo: "yes"
+  register: "install_firewall_rules_result"
+
+- name: "reload firewall rules"
+  shell: "/etc/network/firewall-rules"
+  sudo: "yes"
+  when: "install_firewall_rules_result | changed"
 
 # ex: et ts=2 filetype=yaml
