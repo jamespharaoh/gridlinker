@@ -30,11 +30,17 @@ iface brpub0 inet static
 
 	up route add -net {{ public_network }} netmask {{ public_netmask }} gw {{ public_gateway }} brpub0
 
+{% if failover is defined %}
+
 	# failover addresses
 
-{% for failover_address in failover_addresses | default ([]) %}
+{% for failover_address in []
+	| union (failover.primary | default ([]))
+	| union (failover.backup | default ([]))
+%}
 	up ip addr add {{ failover_address }}/32 dev brpub0
 {% endfor %}
+{% endif %}
 
 # private bridge
 

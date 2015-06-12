@@ -1,0 +1,11 @@
+---
+
+- name: "install bridge rules"
+  action:
+    module: "template"
+    dest: "/etc/network/bridge-rules"
+    src: "hz-host-bridge-rules"
+    mode: "0755"
+  sudo: "yes"
+
+# ex: et ts=2 filetype=yaml

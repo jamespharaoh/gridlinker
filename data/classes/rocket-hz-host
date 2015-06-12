@@ -26,4 +26,18 @@ openvpn:
 
   ca_certificate: "/authority/openvpn/certificate"
 
+etcd:
+
+  version: "2.0.11"
+  secured: "yes"
+  clustered: "yes"
+  peer_ca_certificate: "/authority/rocket-etcd-peer/certificate"
+  client_ca_certificate: "/authority/rocket-etcd-client/certificate"
+  hostname: "{{ inventory_hostname }}.rocketware.co.uk"
+  initial_cluster_state: "new"
+  initial_cluster: "{{ [
+    'rocket-hz-host-1=https://rocket-hz-host-1.rocketware.co.uk:2380',
+    'rocket-hz-host-2=https://rocket-hz-host-2.rocketware.co.uk:2380',
+  ] | join (',') }}"
+
 # ex: et ts=2 filetype=yaml
