@@ -367,7 +367,7 @@ case "$command" in
 	build="$(cat build)"
 	let build="build + 1"
 	echo "$build" > build
-	./run-ansible
+	"$script-local" ansible playbook -- playbooks/devops.yml
 	;;
 
 (image-build-all)
