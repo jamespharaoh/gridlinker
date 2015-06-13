@@ -5,19 +5,19 @@
 	ServerName cdn.datingnode.com
 	ServerAlias img.datingnode.com
 	ServerAlias origin.cdn.datingnode.com
-	ServerAlias cdn.{{ cluster.domain_suffix }}
-	ServerAlias origin.cdn.{{ cluster.domain_suffix }}
-	ServerAlias img.{{ cluster.domain_suffix }}
+	ServerAlias cdn.{{ cluster.cluster.domain_suffix }}
+	ServerAlias origin.cdn.{{ cluster.cluster.domain_suffix }}
+	ServerAlias img.{{ cluster.cluster.domain_suffix }}
 
 {% for discreet_domain in discreet_cdn_domains %}
 	ServerAlias cdn.{{ discreet_domain }}
-	ServerAlias cdn.{{ discreet_domain }}.{{ cluster.domain_suffix }}
+	ServerAlias cdn.{{ discreet_domain }}.{{ cluster.cluster.domain_suffix }}
 	ServerAlias origin.cdn.{{ discreet_domain }}
-	ServerAlias origin.cdn.{{ discreet_domain }}.{{ cluster.domain_suffix }}
+	ServerAlias origin.cdn.{{ discreet_domain }}.{{ cluster.cluster.domain_suffix }}
 	ServerAlias c.{{ discreet_domain }}
-	ServerAlias c.{{ discreet_domain }}.{{ cluster.domain_suffix }}
+	ServerAlias c.{{ discreet_domain }}.{{ cluster.cluster.domain_suffix }}
 	ServerAlias origin.c.{{ discreet_domain }}
-	ServerAlias origin.c.{{ discreet_domain }}.{{ cluster.domain_suffix }}
+	ServerAlias origin.c.{{ discreet_domain }}.{{ cluster.cluster.domain_suffix }}
 {% endfor %}
 
 	ServerAdmin {{ server_admin_email }}

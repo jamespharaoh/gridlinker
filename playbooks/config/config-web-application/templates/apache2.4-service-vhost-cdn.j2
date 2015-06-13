@@ -3,16 +3,16 @@
 <VirtualHost *:80>
 
 	ServerName {{ item.cdn_domain }}
-	ServerAlias {{ item.cdn_domain }}.{{ cluster.domain_suffix }}
+	ServerAlias {{ item.cdn_domain }}.{{ cluster.cluster.domain_suffix }}
 
 {% for alias in item.cdn_alias %}
 	ServerAlias {{ alias }}
-	ServerAlias {{ alias }}.{{ cluster.domain_suffix }}
+	ServerAlias {{ alias }}.{{ cluster.cluster.domain_suffix }}
 {% endfor %}
 
 {% for discreet_domain in discreet_cdn_domains %}
 	ServerAlias c{{ item.service_id }}.{{ discreet_domain }}
-	ServerAlias c{{ item.service_id }}.{{ discreet_domain }}.{{ cluster.domain_suffix }}
+	ServerAlias c{{ item.service_id }}.{{ discreet_domain }}.{{ cluster.cluster.domain_suffix }}
 {% endfor %}
 
 	ServerAdmin {{ server_admin_email }}

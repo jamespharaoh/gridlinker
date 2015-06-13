@@ -12,13 +12,13 @@ class:
 
 ansible:
 
-  ssh_host: "{{ private_address }}"
+  ssh_host: "{{ private.address }}"
   ssh_user: "ubuntu"
 
 ssh:
 
   hostnames:
-    - "{{ inventory_hostname }}"
-    - "{{ private_address }}"
+    - "{{ identity.name }}"
+    - "{{ private.address }}"
 
 # ex: et ts=2 filetype=yaml

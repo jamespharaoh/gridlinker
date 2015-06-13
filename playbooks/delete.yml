@@ -1,5 +1,4 @@
 ---
-- include: "destroy.yml"
 
 - name: "delete all data"
   gather_facts: "no"
@@ -13,3 +12,5 @@
         path: "{{ data_dir }}/{{ cluster_name }}-{{ inventory_hostname }}"
         state: "absent"
       sudo: "yes"
+
+# ex: et ts=2 filetype=yaml

@@ -2,10 +2,9 @@
 
 - name: "stop docker containers"
   hosts: "containers"
-  gather_facts: "no"
-  roles: [ "docker-stop" ]
+  roles:
 
-- name: "destroy docker containers"
-  hosts: "containers"
-  gather_facts: "no"
-  roles: [ "docker-destroy" ]
+    - "docker-stop"
+    - "docker-destroy"
+
+# ex: et ts=2 filetype=yaml

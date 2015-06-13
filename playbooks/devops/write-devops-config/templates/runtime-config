@@ -1,24 +1,7 @@
 ---
 
-clusters:
-
-  shared: {{ clusters.shared | to_json }}
-  local: {{ clusters.local | to_json }}
-  live: {{ clusters.live | to_json }}
-  staging: {{ clusters.staging | to_json }}
-
+clusters: {{ clusters | to_json }}
 cluster: "{{ '{{ clusters [cluster_name] }}' }}"
-
-{% if groups ['rocket-hz-vm'] %}
-vm_addresses:
-
-{% for vm_name in groups ['rocket-hz-vm'] %}
-{% set vm = hostvars [vm_name] %}
-  - "{{ vm.private_address }}"
-{% endfor %}
-{% else %}
-vm_addresses: []
-{% endif %}
 
 vhost_proxy_build: "{{ deployment_name }}"
 

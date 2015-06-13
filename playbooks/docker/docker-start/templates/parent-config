@@ -1,8 +1,8 @@
 ---
 
-cluster_name: "{{ cluster_name }}"
+cluster_name: "{{ identity.cluster }}"
 
-parent_address: "{{ parent.private_address }}"
+parent_address: "{{ parent.private.address }}"
 
 database_master_address: "{{ database_master_address }}"
 database_master_port: "{{ cluster.ports.database_master }}"
@@ -10,9 +10,19 @@ database_master_port: "{{ cluster.ports.database_master }}"
 memcache_nodes:
 {% for memcache_name in groups.memcache %}
 {% set memcache = hostvars [memcache_name] %}
-{% set memcache_parent = hostvars [memcache.identity_parent] %}
-  - name: "{{ memcache_parent.private_address }}"
+{% set memcache_parent = hostvars [memcache.identity.parent] %}
+  - name: "{{ memcache_parent.private.address }}"
     port: "{{ cluster.ports.memcache }}"
 {% endfor %}
+
+vm_addresses:
+
+{% for vm_name in []
+  | union (groups ['rocket-hz-vm'])
+  | union (groups ['vagrant-devbox'])
+%}
+  - "{{ hostvars [vm_name].private.address }}"
+{% endfor %}
+
 
 # ex: et ts=2 filetype=yaml

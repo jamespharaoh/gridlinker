@@ -13,11 +13,26 @@ source "config/datingnode-config"
 
 script="./datingnode"
 
-if test "$#" != 0; then
-	"$script-local" ansible playbook -- playbooks/devops.yml
-fi
+done_devops=""
+
+function do_devops () {
+
+	if test "$done_devops"; then
+		return
+	fi
+
+	"$script-local" ansible playbook -- \
+		"playbooks/devops.yml"
+
+	sleep 0.5
+
+	done_devops="yes"
+
+}
 
 function do_hosts () {
+
+	do_devops
 
 	$master_ansible \
 		--extra-vars "@config/deploy-config" \
@@ -35,6 +50,8 @@ function build_image () {
 	image_name="$2"
 	container_name="$3"
 	build_name="$4"
+
+	do_devops
 
 	# kill and remove existing container
 
@@ -205,103 +222,6 @@ function do_image_push () {
 
 }
 
-# ---------- cluster control
-
-function do_cluster_start () {
-
-	local cluster="$1"
-	shift
-
-	local this_script
-
-	if test "$cluster" = "local"; then
-		this_script="$script-local"
-	else
-		this_script="$script-master"
-	fi
-
-	$this_script ansible playbook -- \
-		--extra-vars "@config/deploy-config" \
-		--extra-vars "@config/runtime-config" \
-		--extra-vars "cluster_name=$cluster" \
-		playbooks/start.yml \
-		"$@"
-
-}
-
-function do_cluster_stop () {
-
-	local cluster="$1"
-	shift
-
-	local this_script
-
-	if test "$cluster" = "local"; then
-		this_script="$script-local"
-	else
-		this_script="$script-master"
-	fi
-
-	$this_script ansible playbook -- \
-		--extra-vars "@config/deploy-config" \
-		--extra-vars "@config/runtime-config" \
-		--extra-vars "cluster_name=$cluster" \
-		playbooks/stop.yml \
-		"$@"
-
-}
-
-function do_cluster_rolling () {
-
-	cluster="$1"
-	shift
-
-	if test "$cluster" = "test"; then
-		ansible="$local_ansible"
-	else
-		ansible="$master_ansible"
-	fi
-
-	for index in 1 2; do
-
-		$ansible \
-			--extra-vars "@config/deploy-config" \
-			--extra-vars "@config/runtime-config" \
-			--extra-vars "cluster_name=$cluster" \
-			--limit "web-application-$index" \
-			--inventory "$cluster" \
-			playbooks/stop.yml \
-			playbooks/start.yml \
-			"$@"
-
-		sleep 120
-
-	done
-
-}
-
-function do_cluster_delete () {
-
-	local cluster="$1"
-	shift
-
-	local this_script
-
-	if test "$cluster" = "local"; then
-		this_script="$script-local"
-	else
-		this_script="$script-master"
-	fi
-
-	$this_script ansible playbook -- \
-		--extra-vars "@config/deploy-config" \
-		--extra-vars "@config/runtime-config" \
-		--extra-vars "cluster_name=$cluster" \
-		playbooks/delete.yml \
-		"$@"
-
-}
-
 # --------- help
 
 if test "$#" = 0; then
@@ -316,35 +236,13 @@ if test "$#" = 0; then
 
 		Available commands:
 
-		   Manager server infrastructure:
-		      hosts              Configure servers
-
 		   Manage docker images:
 		      image-clean        Delete all images
 		      image-build-inc    Increment build number
 		      image-build-all    Build all images
 		      image-build-IMAGE  Build specified image
 		      image-push-all     Push all images
-		      image-push-IMAGe   Push specified image (TODO)
-
-		   Manage cluster:
-		      CLUSTER-start      Start all containers
-		      CLUSTER-stop       Stop all containers
-		      CLUSTER-restart    Stop and start all containers
-		      CLUSTER-delete     Destroy and delete data (local only)
-
-		Available targets:
-
-		   Main images:
-		      database           PostgreSQL database server
-		      memcache           Memcache
-		      vhost-proxy        Virtual host proxy
-		      web-application    Web server and main app
-
-		   Clusters:
-		      local              Local dev deployment
-		      live               Production deployment
-		      staging            Staging deployment
+		      image-push-IMAGE   Push specified image (TODO)
 
 	EOF
 
@@ -364,10 +262,18 @@ case "$command" in
 	;;
 
 (image-build-inc)
-	build="$(cat build)"
-	let build="build + 1"
-	echo "$build" > build
-	"$script-local" ansible playbook -- playbooks/devops.yml
+
+	let BUILD_VERSION="BUILD_VERSION + 1"
+	echo "$BUILD_VERSION" >config/build-counter
+
+	"$script-local" resource update \
+		--class "cluster" \
+		--name "$CLUSTER_NAME" \
+		--set "cluster.build" "$CLUSTER_NAME-$BUILD_VERSION"
+
+	"$script-local" ansible playbook -- \
+		"playbooks/devops.yml"
+
 	;;
 
 (image-build-all)
@@ -397,31 +303,6 @@ case "$command" in
 	image="${command##image-push-}"
 	image_var="IMAGE_$(echo $image | tr '-' '_' | tr 'a-z' 'A-Z')"
 	do_image_push "${!image_var}"
-	;;
-
-(hosts)
-	do_hosts "$@"
-	;;
-
-(*-start)
-	do_cluster_start "${command%%-*}" "$@"
-	;;
-
-(*-stop)
-	do_cluster_stop "${command%%-*}" "$@"
-	;;
-
-(*-restart)
-	do_cluster_stop "${command%%-*}" "$@"
-	do_cluster_start "${command%%-*}" "$@"
-	;;
-
-(*-rolling)
-	do_cluster_rolling "${command%%-*}" "$@"
-	;;
-
-(local-delete)
-	do_cluster_delete "${command%%-*}" "$@"
 	;;
 
 (*)

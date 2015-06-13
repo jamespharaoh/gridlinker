@@ -1,0 +1,16 @@
+---
+
+identity:
+
+  name: "cluster"
+  type: "class"
+
+class:
+
+  scope: "class"
+
+cluster:
+
+  external_communications_email_white_list: []
+
+# ex: et ts=2 filetype=yaml

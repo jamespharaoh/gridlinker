@@ -2,6 +2,13 @@
 
 set -euf -o pipefail
 
+if test "$#" != "1"; then
+	echo "Syntax: $0 CLUSTER" >&2
+	exit 1
+fi
+
+cluster="$1"
+
 # create devbox
 
 ./datingnode-local resource create \
@@ -10,30 +17,64 @@ set -euf -o pipefail
 	--name "datingnode-devbox" \
 	--set "private.address" "172.28.128.5"
 
+# create cluster
+
+./datingnode-local resource create \
+	--update-existing \
+	--class "cluster" \
+	--name "$cluster" \
+	\
+	--set "cluster.database_master" "database-1" \
+	--set "cluster.domain_suffix" "$cluster.datingnode.com" \
+	--set "cluster.whitelist_active" "no" \
+	\
+	--set "ports.vhost_proxy" "80" \
+	--set "ports.vhost_proxy_ssl" "443" \
+	--set "ports.database_master" "5001" \
+	--set "ports.database_slave" "5002" \
+	--set "ports.web_application" "5003" \
+	--set "ports.storage" "5004" \
+	--set "ports.memcache" "5005" \
+	\
+	--set "app.debug_visible" "yes" \
+	--set "app.show_adverts" "no" \
+	--set "app.log_api" "yes" \
+	--set "app.send_external_communications" "no" \
+	--add "app.external_communication_email_white_list" "dummy" \
+	--remove "app.external_communication_email_white_list" "dummy"
+
 # create containers
 
 ./datingnode-local resource create \
 	--update-existing \
 	--class "database-master" \
-	--name "database-master-0" \
-	--parent "datingnode-devbox"
+	--name "$cluster-database-1" \
+	--parent "datingnode-devbox" \
+	--index "1" \
+	--set "identity.cluster" "$cluster"
 
 ./datingnode-local resource create \
 	--update-existing \
 	--class "web-application" \
-	--name "web-application-0" \
-	--parent "datingnode-devbox"
+	--name "$cluster-web-application-1" \
+	--parent "datingnode-devbox" \
+	--index "1" \
+	--set "identity.cluster" "$cluster"
 
 ./datingnode-local resource create \
 	--update-existing \
 	--class "vhost-proxy" \
-	--name "vhost-proxy-0" \
-	--parent "datingnode-devbox"
+	--name "$cluster-vhost-proxy-1" \
+	--parent "datingnode-devbox" \
+	--index "1" \
+	--set "identity.cluster" "$cluster"
 
 ./datingnode-local resource create \
 	--update-existing \
 	--class "memcache" \
-	--name "memcache-0" \
-	--parent "datingnode-devbox"
+	--name "$cluster-memcache-1" \
+	--parent "datingnode-devbox" \
+	--index "1" \
+	--set "identity.cluster" "$cluster"
 
 # ex: noet ts=4 filetype=sh

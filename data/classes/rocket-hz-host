@@ -12,15 +12,15 @@ class:
 
 ansible:
 
-  ssh_host: "{{ public_address }}"
+  ssh_host: "{{ public.address }}"
   ssh_user: "root"
 
 ssh:
 
   hostnames:
-    - "{{ inventory_hostname }}"
-    - "{{ public_address }}"
-    - "{{ private_address }}"
+    - "{{ identity.name }}"
+    - "{{ public.address }}"
+    - "{{ private.address }}"
 
 openvpn:
 
@@ -33,7 +33,7 @@ etcd:
   clustered: "yes"
   peer_ca_certificate: "/authority/rocket-etcd-peer/certificate"
   client_ca_certificate: "/authority/rocket-etcd-client/certificate"
-  hostname: "{{ inventory_hostname }}.rocketware.co.uk"
+  hostname: "{{ identity.name }}.rocketware.co.uk"
   initial_cluster_state: "new"
   initial_cluster: "{{ [
     'rocket-hz-host-1=https://rocket-hz-host-1.rocketware.co.uk:2380',

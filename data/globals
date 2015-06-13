@@ -1,5 +1,7 @@
 ---
 
+cluster: "{{ clusters [identity.cluster] }}"
+
 global_install_packages:
   - "aptitude"
   - "bash-completion"
@@ -45,7 +47,7 @@ dns_servers:
   primary: "8.8.8.8"
   secondary: "8.8.4.4"
 
-data_dir: "/datingnode-{{ cluster_name }}"
+data_dir: "/datingnode-{{ identity.cluster }}"
 
 platform_super_branch: "apache2.4"
 platform_super_dir: "/var/www/datingnode-super"
@@ -58,10 +60,14 @@ deployment_user: "ubuntu"
 
 test_domain_extension: "dev"
 
-container_name: "{{ cluster_name }}-{{ inventory_hostname }}"
-
 database_master: "{{ hostvars [groups ['database-master'].0] }}"
-database_master_parent: "{{ hostvars [database_master.identity_parent] }}"
-database_master_address: "{{ database_master_parent.private_address }}"
+database_master_parent: "{{ hostvars [database_master.identity.parent] }}"
+database_master_address: "{{ database_master_parent.private.address }}"
+
+cluster_name: "{{ identity.cluster }}"
+
+php_bool:
+  "yes": "true"
+  "no": "false"
 
 # ex: et ts=2 filetype=yaml

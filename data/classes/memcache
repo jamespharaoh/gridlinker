@@ -16,20 +16,19 @@ container:
 
 start:
 
-  label: "memcache"
-
+  name: "{{ identity.name }}"
   registry: "{{ docker_registry }}"
-  image: "{{ docker_images.memcache }}:{{ cluster.build }}"
+  image: "{{ docker_images.memcache }}:{{ cluster.cluster.build }}"
 
   expose:
     - "11211"
 
   ports:
-    - "{{ parent.private_address }}:{{ cluster.ports.memcache }}:11211"
+    - "{{ parent.private.address }}:{{ cluster.ports.memcache }}:11211"
 
   volumes:
-    - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
-    - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+    - "{{ data_dir }}/{{ identity.name }}/config:/config"
+    - "{{ data_dir }}/{{ identity.name }}/data:/data"
 
   env: {}
 

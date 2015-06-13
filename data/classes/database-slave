@@ -16,22 +16,23 @@ container:
 
 start:
 
+  name: "{{ identity.name }}"
   registry: "{{ docker_registry }}"
-  image: "{{ docker_images.database }}:{{ cluster.build }}"
+  image: "{{ docker_images.database }}:{{ cluster.cluster.build }}"
 
   expose:
     - "5432"
 
   ports:
-    - "{{ parent.private_address }}:{{ cluster.ports.database_slave }}:5432"
+    - "{{ parent.private.address }}:{{ cluster.ports.database_slave }}:5432"
 
   volumes:
-    - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
-    - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+    - "{{ data_dir }}/{{ identity.name }}/config:/config"
+    - "{{ data_dir }}/{{ identity.name }}/data:/data"
 
   env:
     DATABASE_MODE: "slave"
-    DATABASE_MASTER_HOSTNAME: "{{ database_master_parent.private_address }}"
+    DATABASE_MASTER_HOSTNAME: "{{ database_master_parent.private.address }}"
     DATABASE_MASTER_PORT: "{{ cluster.ports.database_master }}"
 
   wait:

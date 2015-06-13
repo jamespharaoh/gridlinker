@@ -16,16 +16,15 @@ container:
 
 start:
 
-  label: "web application"
-
+  name: "{{ identity.name }}"
   registry: "{{ docker_registry }}"
-  image: "{{ docker_images.web_application }}:{{ cluster.build }}"
+  image: "{{ docker_images.web_application }}:{{ cluster.cluster.build }}"
 
   expose:
     - "80"
 
   ports:
-    - "{{ parent.private_address }}:{{ cluster.ports.web_application }}:80"
+    - "{{ parent.private.address }}:{{ cluster.ports.web_application }}:80"
 
   volumes_default:
     - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"

@@ -6,12 +6,12 @@ ff02::2 ip6-allrouters
 
 {% for host_name in groups ['rocket-hz'] %}
 {% set host = hostvars [host_name] %}
-{{ host.private_address }} {{ host_name }}.vpn.rocketware.co.uk {{ host_name }}.vpn
+{{ host.private.address }} {{ host_name }}.vpn.rocketware.co.uk {{ host_name }}.vpn
 {% endfor %}
 
 {% for host_name in groups ['rocket-hz'] %}
 {% set host = hostvars [host_name] %}
-{% if host.public_address is defined %}
-{{ host.public_address }} {{ host_name }}.rocketware.co.uk {{ host_name }}
+{% if host.public.address is defined %}
+{{ host.public.address }} {{ host_name }}.rocketware.co.uk {{ host_name }}
 {% endif %}
 {% endfor %}

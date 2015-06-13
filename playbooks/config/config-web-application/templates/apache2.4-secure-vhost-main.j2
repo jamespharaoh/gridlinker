@@ -3,17 +3,13 @@
 <VirtualHost *:80>
 
 	ServerName secure.datingnode.com
-	ServerAlias secure.{{ cluster.domain_suffix }}
+	ServerAlias secure.{{ cluster.cluster.domain_suffix }}
 
 	ServerAdmin {{ server_admin_email }}
 
 	DocumentRoot {{ platform_super_dir }}
 
 	SetEnv DATINGNODE_ENVIRONMENT_CONFIG /var/www/datingnode-config.json
-
-
-
-
 
 	<Directory {{ platform_super_dir }}/>
 

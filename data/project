@@ -33,7 +33,6 @@ certificate_data:
 data:
 
   metadata: "project"
-  clusters: "clusters"
   services: "services"
 
   trusted_ips: "trusted-ips"
@@ -41,6 +40,10 @@ data:
 
   ssh_user_keys: "ssh-user-keys"
   ssh_host_keys: "ssh-host-keys"
+
+resource_data:
+
+  clusters: "cluster"
 
 developers:
 

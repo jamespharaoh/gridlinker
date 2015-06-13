@@ -1,10 +1,10 @@
 ---
 
 - name: "stop docker container"
-  delegate_to: "{{ identity_parent }}"
+  delegate_to: "{{ identity.parent }}"
   action:
     module: "docker"
-    name: "{{ cluster_name }}-{{ inventory_hostname }}"
+    name: "{{ identity.name }}"
     image: "whatever"
     state: "stopped"
 

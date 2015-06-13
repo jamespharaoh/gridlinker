@@ -1,5 +1,6 @@
+CLUSTER_NAME="{{ deployment_name }}"
 BUILD_NAME="{{ deployment_name }}"
-BUILD_VERSION="{{ lookup ('file', '../build') }}"
+BUILD_VERSION="{{ lookup ('file', HOME + '/config/build-counter') }}"
 BUILD_ID="${BUILD_NAME}-${BUILD_VERSION}"
 
 DNS_PRIMARY="8.8.8.8"

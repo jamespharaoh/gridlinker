@@ -74,7 +74,7 @@ rsync \
 	--include "/data" \
 	--include "/misc" \
 	--include "/playbooks/build" \
-	--include "/playbooks/build.yml" \
+	--include "/playbooks/build-internal.yml" \
 	--include "/playbooks/config" \
 	--include "/playbooks/config.yml" \
 	--exclude "/playbooks/*" \
@@ -108,9 +108,9 @@ cp "config/build/$build_name-build" "config/build-config"
 
 ansible-playbook \
 	--connection "local" \
-	--inventory "build-inventory" \
+	--inventory "misc/build-inventory" \
 	--extra-vars "@config/build-config" \
 	--limit "$build_name-build" \
-	"playbooks/build.yml"
+	"playbooks/build-internal.yml"
 
 # ex: noet ts=4 filetype=sh

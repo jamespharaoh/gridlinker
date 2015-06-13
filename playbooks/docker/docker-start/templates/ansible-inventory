@@ -1,2 +1,2 @@
-[{{ container_type }}]
+[{{ container.type }}]
 {{ inventory_hostname }}

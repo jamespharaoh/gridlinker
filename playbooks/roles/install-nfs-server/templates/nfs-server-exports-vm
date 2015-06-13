@@ -1,9 +1,9 @@
 {% for cluster in 'live', 'staging' %}
-{% for vm_name in groups ['rocket-hz-vm'] if vm_name != inventory_hostname %}
+{% for vm_name in groups ['rocket-hz-vm'] if vm_name != identity.name %}
 {% set vm = hostvars [vm_name] %}
 {% for idx in [1, 2] %}
-/datingnode-{{ cluster }}/web-application-{{ idx }}/fast {{ vm.private_address }}(rw,async,no_subtree_check)
-/datingnode-{{ cluster }}/web-application-{{ idx }}/big {{ vm.private_address }}(rw,async,no_subtree_check)
+/datingnode-{{ cluster }}/web-application-{{ idx }}/fast {{ vm.private.address }}(rw,async,no_subtree_check)
+/datingnode-{{ cluster }}/web-application-{{ idx }}/big {{ vm.private.address }}(rw,async,no_subtree_check)
 {% endfor %}
 {% endfor %}
 {% endfor %}

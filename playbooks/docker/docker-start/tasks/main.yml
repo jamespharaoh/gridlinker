@@ -1,63 +1,63 @@
 ---
 
 - name: "create config dir"
-  delegate_to: "{{ identity_parent }}"
+  delegate_to: "{{ identity.parent }}"
   action:
     module: "file"
-    path: "{{ data_dir }}/{{ inventory_hostname }}/config"
+    path: "{{ data_dir }}/{{ identity.name }}/config"
     state: "directory"
   sudo: "yes"
 
 - name: "create runtime config"
-  delegate_to: "{{ identity_parent }}"
+  delegate_to: "{{ identity.parent }}"
   action:
     module: "copy"
     src: "{{ HOME }}/config/runtime-config"
-    dest: "{{ data_dir }}/{{ inventory_hostname }}/config"
+    dest: "{{ data_dir }}/{{ identity.name }}/config"
   sudo: "yes"
 
 - name: "create parent config"
-  delegate_to: "{{ identity_parent }}"
+  delegate_to: "{{ identity.parent }}"
   action:
     module: "template"
     src: "parent-config"
-    dest: "{{ data_dir }}/{{ inventory_hostname }}/config/parent-config"
+    dest: "{{ data_dir }}/{{ identity.name }}/config/parent-config"
   sudo: "yes"
 
 - name: "create inventory"
-  delegate_to: "{{ identity_parent }}"
+  delegate_to: "{{ identity.parent }}"
   action:
     module: "template"
     src: "ansible-inventory"
-    dest: "{{ data_dir }}/{{ inventory_hostname }}/config/inventory"
+    dest: "{{ data_dir }}/{{ identity.name }}/config/inventory"
   sudo: "yes"
 
 - name: "start container"
-  delegate_to: "{{ identity_parent }}"
+  delegate_to: "{{ identity.parent }}"
   action:
     module: "docker"
-    name: "{{ container_name }}"
+    name: "{{ start.name }}"
     state: "running"
-    image: "{{ start_registry }}/{{ start_image }}"
-    registry: "{{ start_registry }}"
+    image: "{{ start.registry }}/{{ start.image }}"
+    registry: "{{ start.registry }}"
     command: "/sbin/my_init"
     dns:
-      - "{{ parent.private_address }}"
-    expose: "{{ start_expose }}"
-    ports: "{{ start_ports }}"
+      - "{{ parent.private.address }}"
+    expose: "{{ start.expose }}"
+    ports: "{{ start.ports }}"
     tty: "True"
     stdin_open: "True"
-    volumes: "{{ start_volumes }}"
-    env: "{{ start_env }}"
+    volumes: "{{ start.volumes }}"
+    env: "{{ start.env }}"
 
 #- name: "wait for connection"
-#  delegate_to: "{{ identity_parent }}"
+#  delegate_to: "{{ identity.parent }}"
 #  action:
 #    module: "wait_for"
-#    host: "{{ hostvars [parent].private_address }}"
+#    host: "{{ hostvars [parent].private.address }}"
 #    port: "{{ item }}"
 #    state: "started"
 #    timeout: "10"
-#  with_items: "start_wait"
+#  with_items: "start.wait"
 
 # ex: et ts=2 filetype=yaml

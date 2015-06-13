@@ -13,10 +13,10 @@ iface lo inet loopback
 auto brpub0
 iface brpub0 inet static
 
-	address {{ public_address }}
-	netmask {{ public_netmask }}
-	broadcast {{ public_broadcast }}
-	gateway {{ public_gateway }}
+	address {{ public.address }}
+	netmask {{ public.netmask }}
+	broadcast {{ public.broadcast }}
+	gateway {{ public.gateway }}
 
 	bridge_ports eth0
 	bridge_stp off
@@ -30,7 +30,7 @@ iface brpub0 inet static
 
 	# use hetzner router even for local addresses
 
-	up route add -net {{ public_network }} netmask {{ public_netmask }} gw {{ public_gateway }} brpub0
+	up route add -net {{ public.network }} netmask {{ public.netmask }} gw {{ public.gateway }} brpub0
 
 {% if failover is defined %}
 	# failover addresses
@@ -48,9 +48,9 @@ iface brpub0 inet static
 auto brprv0
 iface brprv0 inet static
 
-	address {{ private_address }}
-	netmask {{ private_netmask }}
-	broadcast {{ private_broadcast }}
+	address {{ private.address }}
+	netmask {{ private.netmask }}
+	broadcast {{ private.broadcast }}
 
 	bridge_ports eth1
 	bridge_stp off
@@ -65,10 +65,10 @@ iface brprv0 inet static
 	# vpn routing
 
 {% for host_name in groups ['rocket-hz-host']
-	if host_name != inventory_hostname %}
+	if host_name != identity.name %}
 {% set host = hostvars [host_name] %}
-	up route add -net {{ host.openvpn_network }}.0/24 gw {{ host.private_address }} brprv0
-	down route del -net {{ host.openvpn_network }}.0/24 gw {{ host.private_address }} brprv0
+	up route add -net {{ host.openvpn.network }}.0/24 gw {{ host.private.address }} brprv0
+	down route del -net {{ host.openvpn.network }}.0/24 gw {{ host.private.address }} brprv0
 {% endfor %}
 
 # dummy for mail

@@ -16,8 +16,9 @@ container:
 
 start:
 
+  name: "{{ identity.name }}"
   registry: "{{ docker_registry }}"
-  image: "{{ docker_images.vhost_proxy }}:{{ cluster.build }}"
+  image: "{{ docker_images.vhost_proxy }}:{{ cluster.cluster.build }}"
 
   expose:
     - "80"
