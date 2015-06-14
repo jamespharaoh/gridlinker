@@ -82,25 +82,4 @@ ubuntu:
     - name: "whois"
       state: "present"
 
-python:
-
-  version: "2.7.10"
-
-  packages:
-
-    - name: "pyyaml"
-      version: "3.11"
-
-    - name: "pyopenssl"
-      version: "0.15.1"
-
-    - name: "paramiko"
-      version: "1.15.2"
-
-    - name: "jinja2"
-      version: "2.7.3"
-
-    - name: "docker-py"
-      version: "1.2.2"
-
 # ex: et ts=2 filetype=yaml

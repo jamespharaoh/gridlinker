@@ -9,15 +9,6 @@
     - "nfs-common"
     - "nfs-kernel-server"
 
-- name: "create exports"
-  action:
-    module: "template"
-    src: "nfs-server-exports-vm"
-    dest: "/etc/exports"
-  sudo: "yes"
-  sudo_user: "root"
-  notify: "reload nfs server"
-
 - meta: "flush_handlers"
 
 # ex: et ts=2 filetype=yaml

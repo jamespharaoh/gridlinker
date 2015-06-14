@@ -11,9 +11,9 @@
 - name: "create runtime config"
   delegate_to: "{{ identity.parent }}"
   action:
-    module: "copy"
-    src: "{{ HOME }}/config/runtime-config"
-    dest: "{{ data_dir }}/{{ identity.name }}/config"
+    module: "template"
+    dest: "{{ data_dir }}/{{ identity.name }}/config/runtime-config"
+    src: "runtime-config"
   sudo: "yes"
 
 - name: "create parent config"

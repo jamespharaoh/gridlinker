@@ -1,37 +1,7 @@
 ---
 
-cluster: "{{ clusters [identity.cluster] }}"
-
-global_install_packages:
-  - "aptitude"
-  - "bash-completion"
-  - "bridge-utils"
-  - "btrfs-tools"
-  - "colordiff"
-  - "command-not-found"
-  - "curl"
-  - "dnsutils"
-  - "git"
-  - "iotop"
-  - "man-db"
-  - "nano"
-  - "ngrep"
-  - "python-dev"
-  - "python-pip"
-  - "rsync"
-  - "super"
-  - "tcpdump"
-  - "telnet"
-  - "unzip"
-  - "wget"
-  - "whois"
-
-install_packages: "{{ global_install_packages }}"
-
-global_remove_packages:
-  - "resolvconf"
-
-remove_packages: "{{ global_remove_packages }}"
+cluster_name: "{{ identity.cluster }}"
+cluster: "{{ clusters [cluster_name] }}"
 
 docker_registry: "quay.io"
 
@@ -60,17 +30,30 @@ deployment_user: "ubuntu"
 
 test_domain_extension: "dev"
 
-database_master: "{{ hostvars [groups ['database-master'].0] }}"
-database_master_parent: "{{ hostvars [database_master.identity.parent] }}"
-database_master_address: "{{ database_master_parent.private.address }}"
-
-cluster_name: "{{ identity.cluster }}"
-
 php_bool:
   "yes": "true"
   "no": "false"
 
 wbs_dist: "https://dist.wellbehavedsoftware.com"
+
+python_version: "2.7.10"
+
+python_packages:
+
+  - name: "pyyaml"
+    version: "3.11"
+
+  - name: "pyopenssl"
+    version: "0.15.1"
+
+  - name: "paramiko"
+    version: "1.15.2"
+
+  - name: "jinja2"
+    version: "2.7.3"
+
+  - name: "docker-py"
+    version: "1.2.2"
 
 python_apt_version: "0.9.3-1"
 python_apt_mirror: "{{ wbs_dist }}/python-apt"

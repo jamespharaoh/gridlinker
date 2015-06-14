@@ -7,43 +7,31 @@
     - "scan-ssh-key"
 
     - role: "setup-authorized-keys"
-      tags: "setup-authorized-keys"
       authorized_keys_user: "root"
       authorized_keys_home: "/root"
 
     - role: "setup-authorized-keys"
-      tags: "setup-authorized-keys"
       authorized_keys_user: "ubuntu"
       authorized_keys_home: "/home/ubuntu"
 
-    - role: "install-system-packages"
-      tags: "install-system-packages"
+    - "install-system-packages"
+    - "setup-grub-vm"
+    - "setup-network"
+    - "setup-hosts"
+    - "install-dnsmasq"
+    - "install-postfix"
+    - "install-nfs-server"
 
-    - role: "setup-grub-vm"
-      tags: "setup-grub-vm"
+    - "build-python"
+    - "setup-python-alternatives"
+    - "install-python-pip"
+    - "setup-python-pip-alternatives"
+    - "build-python-apt"
+    - "install-python-packages"
 
-    - role: "setup-network"
-      tags: "setup-network"
+    - "install-docker"
+    - "install-lxc"
 
-    - role: "setup-hosts"
-      tags: "setup-hosts"
-
-    - role: "install-dnsmasq"
-      tags: "install-dnsmasq"
-
-    - role: "install-postfix"
-      tags: "install-postfix"
-
-    - role: "install-docker"
-      tags: "install-docker"
-
-    - role: "install-lxc"
-      tags: "install-lxc"
-
-    - role: "install-nfs-server"
-      tags: "install-nfs-server"
-
-    - role: "setup-datingnode-vm"
-      tags: "setup-datingnode-vm"
+    - "setup-datingnode-vm"
 
 # ex: et ts=2 filetype=yaml

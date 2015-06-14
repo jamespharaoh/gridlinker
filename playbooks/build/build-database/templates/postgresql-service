@@ -12,7 +12,7 @@ postgresql_pid=$!
 
 if test \
 	! -f "{{ postgresql_data }}/recovery.conf" \
-	-a ! -f "{{ postgresql_data }}/user-flag"
+	-a ! -f "/data/postgresql-user-flag"
 then
 
 	echo "-- sleeping"
@@ -54,7 +54,7 @@ then
 
 		"
 
-	touch "{{ postgresql_data }}/user-flag";
+	touch "/data/postgresql-user-flag";
 
 fi
 

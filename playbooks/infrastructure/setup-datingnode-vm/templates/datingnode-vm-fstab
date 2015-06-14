@@ -8,30 +8,29 @@
 
 /dev/vda1 / ext4 errors=remount-ro 0 1
 
-{% for cluster_name, cluster in clusters.items ()
-	if 'master' in cluster %}
+{% for cluster_name, cluster in clusters.items () %}
 
 {% if cluster_name == 'live' %}
 
-/dev/vdb /datingnode-live/database-{{ identity_index }}/data ext4 defaults 0 2
-/dev/vdc /datingnode-live/web-application-{{ identity_index }}/fast ext4 defaults 0 2
-/dev/vdd /datingnode-live/web-application-{{ identity_index }}/big ext4 defaults 0 2
+/dev/vdb /datingnode-live/live-database-{{ identity_index }}/data ext4 defaults 0 2
+/dev/vdc /datingnode-live/live-web-application-{{ identity_index }}/fast ext4 defaults 0 2
+/dev/vdd /datingnode-live/live-web-application-{{ identity_index }}/big ext4 defaults 0 2
 
 {% elif cluster_name == 'staging' %}
 
-/dev/vde /datingnode-staging/database-{{ identity_index }}/data ext4 defaults 0 2
-/dev/vdf /datingnode-staging/web-application-{{ identity_index }}/fast ext4 defaults 0 2
-/dev/vdg /datingnode-staging/web-application-{{ identity_index }}/big ext4 defaults 0 2
+/dev/vde /datingnode-staging/staging-database-{{ identity_index }}/data ext4 defaults 0 2
+/dev/vdf /datingnode-staging/staging-web-application-{{ identity_index }}/fast ext4 defaults 0 2
+/dev/vdg /datingnode-staging/staging-web-application-{{ identity_index }}/big ext4 defaults 0 2
 
 {% endif %}
 
-{% set master = hostvars [cluster.master] %}
+{% set master = hostvars [cluster.cluster.vm_master] %}
 
 {% set data_dir = '/datingnode-' + cluster_name %}
-{% set web_app_local = data_dir + '/web-application-' + identity_index %}
-{% set web_app_remote = data_dir + '/web-application-' + master.identity_index %}
+{% set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index %}
+{% set web_app_remote = data_dir + '/' + cluster_name + '-web-application-' + master.identity_index %}
 
-{% if inventory_hostname == cluster.master %}
+{% if inventory_hostname == cluster.cluster.vm_master %}
 
 {{ local_mount (
 	source = web_app_local + '/fast/image-cache',
@@ -52,12 +51,12 @@
 	dest = web_app_local + '/data/assets/image-cache') }}
 
 {{ remote_mount (
-	remote = cluster.master + '.vpn',
+	remote = cluster.cluster.vm_master + '.vpn',
 	source = web_app_remote + '/fast/temp',
 	dest = web_app_local + '/data/temp') }}
 
 {{ remote_mount (
-	remote = cluster.master + '.vpn',
+	remote = cluster.cluster.vm_master + '.vpn',
 	source = web_app_remote + '/big/user-data',
 	dest = web_app_local + '/data/assets/user-data') }}
 

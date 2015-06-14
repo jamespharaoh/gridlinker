@@ -2,17 +2,17 @@
 
 identity:
 
-  name: "database-master"
+  name: "database"
   type: "class"
 
 class:
 
   scope: "global"
-  virtual_groups: [ "containers", "database" ]
+  virtual_groups: [ "containers" ]
 
 container:
 
-  type: "database-master"
+  type: "database"
 
 start:
 
@@ -26,13 +26,13 @@ start:
     - "5432"
 
   ports:
-    - "{{ parent.private.address }}:{{ cluster.ports.database_master }}:5432"
+    - "{{ parent.private.address }}:{{ cluster.ports.database }}:5432"
 
   volumes:
     - "{{ data_dir }}/{{ identity.name }}/config:/config"
     - "{{ data_dir }}/{{ identity.name }}/data:/data"
 
   wait:
-    - "{{ cluster.ports.database_master }}"
+    - "{{ cluster.ports.database }}"
 
 # ex: et ts=2 filetype=yaml

@@ -7,33 +7,28 @@
     - "scan-ssh-key"
 
     - role: "setup-authorized-keys"
-      tags: "setup-authorized-keys"
       authorized_keys_user: "root"
       authorized_keys_home: "/root"
 
-    - role: "install-system-packages"
-      tags: "install-system-packages"
+    - "install-system-packages"
+    - "setup-network"
+    - "setup-hz-host-firewall"
+    - "setup-hosts"
+    - "setup-sysctl"
+    - "install-dnsmasq"
+
+    - "build-python"
+    - "setup-python-alternatives"
+    - "install-python-pip"
+    - "setup-python-pip-alternatives"
+    - "build-python-apt"
+    - "install-python-packages"
 
     - "install-etcd"
     - "setup-etcd"
     - "start-etcd"
 
-    - "setup-network"
-    - "setup-hz-host-firewall"
-
-    - role: "setup-hosts"
-      tags: "setup-hosts"
-
-    - role: "setup-sysctl"
-      tags: "setup-sysctl"
-
-    - role: "install-dnsmasq"
-      tags: "install-dnsmasq"
-
-    - role: "install-kvm"
-      tags: "install-kvm"
-
-    - role: "install-openvpn"
-      tags: "install-openvpn"
+    - "install-kvm"
+    - "install-openvpn"
 
 # ex: et ts=2 filetype=yaml

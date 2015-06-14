@@ -1,0 +1,14 @@
+{% for cluster in 'live', 'staging' %}
+{% for vm_name in groups ['rocket-hz-vm'] if vm_name != identity.name %}
+{% set vm = hostvars [vm_name] %}
+{% for node_name in groups ['containers'] %}
+{% set node = hostvars [node_name] %}
+{% if node.identity.parent == identity.name and node.identity.cluster == cluster %}
+{% if node.container.type == 'web-application' %}
+/datingnode-{{ cluster }}/{{ node_name }}/fast/temp {{ vm_name }}.vpn(rw,async,no_root_squash,no_subtree_check)
+/datingnode-{{ cluster }}/{{ node_name }}/big/user-data {{ vm_name }}.vpn(rw,async,no_root_squash,no_subtree_check)
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% endfor %}

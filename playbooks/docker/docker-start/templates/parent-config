@@ -4,8 +4,11 @@ cluster_name: "{{ identity.cluster }}"
 
 parent_address: "{{ parent.private.address }}"
 
-database_master_address: "{{ database_master_address }}"
-database_master_port: "{{ cluster.ports.database_master }}"
+{% set database_master = hostvars [cluster.cluster.database_master] %}
+{% set database_master_parent = hostvars [database_master.identity.parent] %}
+
+database_master_address: "{{ database_master_parent.private_address }}"
+database_master_port: "{{ cluster.ports.database }}"
 
 {% if inventory_hostname in groups.database | default ([]) %}
 {% if inventory_hostname == cluster.cluster.database_master %}
@@ -19,8 +22,10 @@ memcache_nodes:
 {% for memcache_name in groups.memcache %}
 {% set memcache = hostvars [memcache_name] %}
 {% set memcache_parent = hostvars [memcache.identity.parent] %}
+{% if memcache.identity.cluster == identity.cluster %}
   - name: "{{ memcache_parent.private.address }}"
     port: "{{ cluster.ports.memcache }}"
+{% endif %}
 {% endfor %}
 
 vm_addresses:

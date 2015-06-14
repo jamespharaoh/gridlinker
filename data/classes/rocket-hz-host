@@ -18,9 +18,85 @@ ansible:
 ssh:
 
   hostnames:
+
     - "{{ identity.name }}"
     - "{{ public.address }}"
     - "{{ private.address }}"
+
+ubuntu:
+
+  system_packages:
+
+    # remove
+  
+    - name: "python-dev"
+      state: "absent"
+
+    - name: "python-pip"
+      state: "absent"
+
+    - name: "resolvconf"
+      state: "absent"
+
+    # install
+  
+    - name: "aptitude"
+      state: "present"
+
+    - name: "bash-completion"
+      state: "present"
+
+    - name: "bridge-utils"
+      state: "present"
+
+    - name: "colordiff"
+      state: "present"
+
+    - name: "command-not-found"
+      state: "present"
+
+    - name: "curl"
+      state: "present"
+
+    - name: "dnsutils"
+      state: "present"
+
+    - name: "git"
+      state: "present"
+
+    - name: "iotop"
+      state: "present"
+
+    - name: "man-db"
+      state: "present"
+
+    - name: "nano"
+      state: "present"
+
+    - name: "ngrep"
+      state: "present"
+
+    - name: "rsync"
+      state: "present"
+
+    - name: "super"
+      state: "present"
+
+    - name: "tcpdump"
+      state: "present"
+
+    - name: "telnet"
+      state: "present"
+
+
+    - name: "unzip"
+      state: "present"
+
+    - name: "wget"
+      state: "present"
+
+    - name: "whois"
+      state: "present"
 
 openvpn:
 
@@ -29,11 +105,14 @@ openvpn:
 etcd:
 
   version: "2.0.11"
+  hostname: "{{ identity.name }}.rocketware.co.uk"
+
   secured: "yes"
   clustered: "yes"
+
   peer_ca_certificate: "/authority/rocket-etcd-peer/certificate"
   client_ca_certificate: "/authority/rocket-etcd-client/certificate"
-  hostname: "{{ identity.name }}.rocketware.co.uk"
+
   initial_cluster_state: "new"
   initial_cluster: "{{ [
     'rocket-hz-host-1=https://rocket-hz-host-1.rocketware.co.uk:2380',

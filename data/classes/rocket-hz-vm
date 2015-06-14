@@ -18,30 +18,93 @@ ansible:
 ssh:
 
   hostnames:
+
     - "{{ identity.name }}"
     - "{{ public.address }}"
     - "{{ private.address }}"
 
-rocket_hz_vm:
+ubuntu:
 
-  install_packages:
-    - "postgresql-client-9.3"
+  system_packages:
 
-install:
+    # remove
+  
+    - name: "python-dev"
+      state: "absent"
 
-  packages: "{{
-    global_install_packages
-    | union (rocket_hz_vm_install_packages)
-  }}"
+    - name: "python-pip"
+      state: "absent"
+
+    - name: "resolvconf"
+      state: "absent"
+
+    # install
+  
+    - name: "aptitude"
+      state: "present"
+
+    - name: "bash-completion"
+      state: "present"
+
+    - name: "bridge-utils"
+      state: "present"
+
+    - name: "btrfs-tools"
+      state: "present"
+
+    - name: "colordiff"
+      state: "present"
+
+    - name: "command-not-found"
+      state: "present"
+
+    - name: "curl"
+      state: "present"
+
+    - name: "dnsutils"
+      state: "present"
+
+    - name: "git"
+      state: "present"
+
+    - name: "iotop"
+      state: "present"
+
+    - name: "man-db"
+      state: "present"
+
+    - name: "nano"
+      state: "present"
+
+    - name: "ngrep"
+      state: "present"
+
+    - name: "postgresql-client-9.3"
+      state: "present"
+
+    - name: "rsync"
+      state: "present"
+
+    - name: "super"
+      state: "present"
+
+    - name: "tcpdump"
+      state: "present"
+
+    - name: "telnet"
+      state: "present"
+
+    - name: "unzip"
+      state: "present"
+
+    - name: "wget"
+      state: "present"
+
+    - name: "whois"
+      state: "present"
 
 postfix:
 
   helo_name: "{{ identity.name }}.rocketware.co.uk"
-
-failover:
-  
-  addresses:
-    - "144.76.77.83"
-    - "144.76.88.97"
 
 # ex: et ts=2 filetype=yaml

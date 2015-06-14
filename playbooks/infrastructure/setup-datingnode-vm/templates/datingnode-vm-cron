@@ -37,16 +37,16 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # ========== postgresql backups
 
-{% for cluster_name, cluster in clusters.items ()
-	if 'master' in cluster %}
+{% for cluster_name, cluster in clusters.items () %}
 
-{% set master = hostvars [cluster.master] %}
+{% set master_name = cluster.cluster.vm_master %}
+{% set master = hostvars [master_name] %}
 
 {% if cluster_name != 'live' %}
 
 # no database backups for {{ cluster_name }}
 
-{% elif inventory_hostname == cluster.master %}
+{% elif inventory_hostname == master_name %}
 
 # database backups for {{ cluster_name }} master
 {{ database_dump (
@@ -63,7 +63,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # database backups sync to {{ cluster_name }} slave
 {{ rsync_pull (
 	schedule = '30 3 * * *',
-	remote = cluster.master + '.vpn',
+	remote = master_name + '.vpn',
 	source = '/datingnode-live/backups',
 	dest = '/datingnode-live/backups') }}
 
@@ -73,16 +73,16 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # ========== rsync backups
 
-{% for cluster_name, cluster in clusters.items ()
-	if 'master' in cluster %}
+{% for cluster_name, cluster in clusters.items () %}
 
-{% set master = hostvars [cluster.master] %}
+{% set master_name = cluster.cluster.vm_master %}
+{% set master = hostvars [master_name] %}
 
 {% set data_dir = '/datingnode-' + cluster_name %}
-{% set web_app_local = data_dir + '/web-application-' + identity_index %}
-{% set web_app_remote = data_dir + '/web-application-' + master.identity_index %}
+{% set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index %}
+{% set web_app_remote = data_dir + '/' + cluster_name + '-web-application-' + master.identity_index %}
 
-{% if inventory_hostname == cluster.master %}
+{% if inventory_hostname == master_name %}
 
 {% if cluster_name == 'live' %}
 
@@ -103,8 +103,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # pull {{ cluster_name }} from master
 {{ rsync_pull (
-	schedule = cluster.rsync_schedule,
-	remote = cluster.master + '.vpn',
+	schedule = cluster.cluster.rsync_schedule,
+	remote = master_name + '.vpn',
 	source = web_app_remote + '/big/user-data',
 	dest = web_app_local + '/big/user-data') }}
 

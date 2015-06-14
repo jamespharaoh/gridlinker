@@ -24,14 +24,13 @@ cluster="$1"
 	--class "cluster" \
 	--name "$cluster" \
 	\
-	--set "cluster.database_master" "database-1" \
+	--set "cluster.database_master" "$cluster-database-1" \
 	--set "cluster.domain_suffix" "$cluster.datingnode.com" \
 	--set "cluster.whitelist_active" "no" \
 	\
 	--set "ports.vhost_proxy" "80" \
 	--set "ports.vhost_proxy_ssl" "443" \
-	--set "ports.database_master" "5001" \
-	--set "ports.database_slave" "5002" \
+	--set "ports.database" "5001" \
 	--set "ports.web_application" "5003" \
 	--set "ports.storage" "5004" \
 	--set "ports.memcache" "5005" \
@@ -47,7 +46,7 @@ cluster="$1"
 
 ./datingnode-local resource create \
 	--update-existing \
-	--class "database-master" \
+	--class "database" \
 	--name "$cluster-database-1" \
 	--parent "datingnode-devbox" \
 	--index "1" \

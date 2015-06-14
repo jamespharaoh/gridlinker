@@ -18,7 +18,7 @@ start:
 
   name: "{{ identity.name }}"
   registry: "{{ docker_registry }}"
-  image: "{{ docker_images.memcache }}:{{ cluster.cluster.build }}"
+  image: "{{ docker_images.memcache }}:{{ cluster.build.memcache }}"
 
   expose:
     - "11211"
