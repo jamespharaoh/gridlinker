@@ -18,7 +18,7 @@ start:
 
   name: "{{ identity.name }}"
   registry: "{{ docker_registry }}"
-  image: "{{ docker_images.web_application }}:{{ cluster.cluster.build }}"
+  image: "{{ docker_images.web_application }}:{{ cluster.build.web_application }}"
 
   expose:
     - "80"

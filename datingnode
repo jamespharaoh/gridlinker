@@ -269,7 +269,10 @@ case "$command" in
 	"$script-local" resource update \
 		--class "cluster" \
 		--name "$CLUSTER_NAME" \
-		--set "cluster.build" "$CLUSTER_NAME-$BUILD_VERSION"
+		--set "build.vhost_proxy" "$CLUSTER_NAME-$BUILD_VERSION" \
+		--set "build.database" "$CLUSTER_NAME-$BUILD_VERSION" \
+		--set "build.web_application" "$CLUSTER_NAME-$BUILD_VERSION" \
+		--set "build.memcache" "$CLUSTER_NAME-$BUILD_VERSION"
 
 	"$script-local" ansible playbook -- \
 		"playbooks/devops.yml"

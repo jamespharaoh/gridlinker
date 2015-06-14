@@ -17,6 +17,71 @@ etcd:
 
   version: "2.0.11"
 
+ubuntu:
+
+  system_packages:
+
+    # remove
+
+    - name: "chef"
+      state: "absent"
+
+    - name: "chef-zero"
+      state: "absent"
+
+    - name: "cloud-init"
+      state: "absent"
+
+    - name: "puppet"
+      state: "absent"
+
+    - name: "puppet-common"
+      state: "absent"
+
+    - name: "python-pip"
+      state: "absent"
+
+    # install
+
+    - name: "btrfs-tools"
+      state: "present"
+
+    - name: "colordiff"
+      state: "present"
+
+    - name: "dkms"
+      state: "present"
+
+    - name: "encfs"
+      state: "present"
+
+    - name: "git"
+      state: "present"
+
+    - name: "libffi-dev"
+      state: "present"
+
+    - name: "libssl-dev"
+      state: "present"
+
+    - name: "linux-generic-lts-vivid"
+      state: "present"
+
+    - name: "nfs-kernel-server"
+      state: "present"
+
+    - name: "ngrep"
+      state: "present"
+
+    - name: "postgresql-client-9.3"
+      state: "present"
+
+    - name: "samba"
+      state: "present"
+
+    - name: "whois"
+      state: "present"
+
 python:
 
   version: "2.7.10"

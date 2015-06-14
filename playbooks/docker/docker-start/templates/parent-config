@@ -7,6 +7,14 @@ parent_address: "{{ parent.private.address }}"
 database_master_address: "{{ database_master_address }}"
 database_master_port: "{{ cluster.ports.database_master }}"
 
+{% if inventory_hostname in groups.database | default ([]) %}
+{% if inventory_hostname == cluster.cluster.database_master %}
+database_mode: "master"
+{% else %}
+database_mode: "slave"
+{% endif %}
+{% endif %}
+
 memcache_nodes:
 {% for memcache_name in groups.memcache %}
 {% set memcache = hostvars [memcache_name] %}
@@ -18,11 +26,26 @@ memcache_nodes:
 vm_addresses:
 
 {% for vm_name in []
-  | union (groups ['rocket-hz-vm'])
-  | union (groups ['vagrant-devbox'])
+  | union (groups ['rocket-hz-vm'] | default ([]))
+  | union (groups ['vagrant-devbox'] | default ([]))
 %}
   - "{{ hostvars [vm_name].private.address }}"
 {% endfor %}
 
+{% if cluster_name in [ 'staging', 'production' ] %}
+postgresql_shared_buffers: "8GB"
+postgresql_temp_buffers: "32MB"
+postgresql_work_mem: "95MB"
+postgresql_maintenance_work_mem: "2GB"
+postgresql_wal_buffers: "16MB"
+postgresql_effective_cache_size: "22GB"
+{% else %}
+postgresql_shared_buffers: "128MB"
+postgresql_temp_buffers: "32MB"
+postgresql_work_mem: "16MB"
+postgresql_maintenance_work_mem: "256MB"
+postgresql_wal_buffers: "16MB"
+postgresql_effective_cache_size: "256MB"
+{% endif %}
 
 # ex: et ts=2 filetype=yaml

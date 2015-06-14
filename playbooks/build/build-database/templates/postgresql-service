@@ -1,145 +1,23 @@
 #!/bin/bash
 
-set -e
-
-VERSION=9.3
-POSTGRES=/usr/lib/postgresql/$VERSION
-USER=postgres
-DATA=/data/postgresql
-
-if ! test -d "$DATA"; then
-
-	echo "-- initialising $DATA"
-
-	mkdir -p $DATA
-
-	chown $USER:$USER $DATA
-	chmod 0700 $DATA
-
-	case "$DATABASE_MODE" in
-
-	(master)
-
-		umask=$(umask)
-		umask 0077
-		echo "topsecret" > /tmp/pwfile
-		chown $USER:$USER /tmp/pwfile
-		ls -l /tmp/pwfile
-
-		HOME=$DATA \
-		setuid postgres \
-		$POSTGRES/bin/initdb \
-			--pgdata $DATA \
-			--pwfile /tmp/pwfile \
-			--username postgres \
-			--encoding unicode \
-			--auth trust \
-			--auth-local trust \
-			--auth-host md5
-
-		cat >$DATA/pg_hba.conf <<-EOF
-
-			# trust connections from localhost
-			local all all trust
-			host all all 127.0.0.1/32 trust
-
-			# md5 password from network
-			host all all 0.0.0.0/0 md5
-
-			# md5 password for replication
-			host replication rep 0.0.0.0/0 md5
-
-		EOF
-
-		cat >$DATA/postgresql.conf <<-EOF
-
-			# connection
-
-			listen_addresses = '*'
-			port = 5432
-			max_connections = 1000
-
-			# replication
-
-			wal_level = 'hot_standby'
-			archive_mode = on
-			archive_command = 'cd .'
-			max_wal_senders = 1
-			hot_standby = on
-
-			# checkpoints
-
-			checkpoint_segments = 10
-			checkpoint_completion_target = 0.9
-
-			# resources
-
-			shared_buffers = 8GB
-			temp_buffers = 32MB
-			work_mem = 95MB
-			maintenance_work_mem = 2GB
-			wal_buffers = 16MB
-
-			# planner
-
-			seq_page_cost = 1.0
-			random_page_cost = 2.0
-			cpu_tuple_cost = 0.1
-			effective_cache_size = 22GB
-
-			# misc
-
-			log_timezone = 'UTC'
-			datestyle = 'iso, mdy'
-			timezone = 'UTC'
-			lc_messages = 'C'
-			lc_monetary = 'C'
-			lc_numeric = 'C'
-			lc_time = 'C'
-			default_text_search_config = 'pg_catalog.english'
-
-		EOF
-
-		FIRST_RUN="yes"
-
-		;;
-
-	(slave)
-
-		sleep 5
-
-		PGUSER=rep \
-		PGPASSWORD=topsecret \
-		setuid postgres \
-		pg_basebackup \
-			--write-recovery-conf \
-			--pgdata "$DATA" \
-			--host "$DATABASE_MASTER_HOSTNAME" \
-			--port "$DATABASE_MASTER_PORT"
-
-		;;
-
-	(*)
-
-		;;
-
-	esac
-
-fi
+set -euf -o pipefail
 
 echo "-- starting postgres"
 
 setuid postgres \
-$POSTGRES/bin/postgres \
-	-D $DATA &
+"{{ postgresql_lib }}/bin/postgres" \
+	-D "{{ postgresql_data }}" &
 
-POSTGRESQL_PID=$!
+postgresql_pid=$!
 
-if test "$DATABASE_MODE" = "master" -a "$FIRST_RUN"; then
+if test \
+	! -f "{{ postgresql_data }}/recovery.conf" \
+	-a ! -f "{{ postgresql_data }}/user-flag"
+then
 
 	echo "-- sleeping"
 
-	sleep 2
+	sleep 5
 
 	echo "-- creating replication user"
 
@@ -147,12 +25,12 @@ if test "$DATABASE_MODE" = "master" -a "$FIRST_RUN"; then
 	psql \
 		-c "
 
-			CREATE USER rep
+			CREATE USER {{ postgresql_replication_user }}
 			REPLICATION LOGIN
-			ENCRYPTED PASSWORD 'topsecret';
+			ENCRYPTED PASSWORD '{{ postgresql_replication_password }}';
 
 			ALTER USER postgres
-			ENCRYPTED PASSWORD 'topsecret';
+			ENCRYPTED PASSWORD '{{ postgresql_master_password }}';
 
 		"
 
@@ -167,7 +45,7 @@ if test "$DATABASE_MODE" = "master" -a "$FIRST_RUN"; then
 			TO \"\$user\",public,gis;
 
 			CREATE USER jimmy
-			ENCRYPTED PASSWORD 'topsecret'
+			ENCRYPTED PASSWORD '{{ postgresql_user_password }}'
 			SUPERUSER;
 
 			ALTER ROLE jimmy
@@ -176,6 +54,8 @@ if test "$DATABASE_MODE" = "master" -a "$FIRST_RUN"; then
 
 		"
 
+	touch "{{ postgresql_data }}/user-flag";
+
 fi
 
-wait $POSTGRESQL_PID
+wait $postgresql_pid

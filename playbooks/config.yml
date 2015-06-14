@@ -1,7 +1,18 @@
 ---
 
+- hosts: [ "database-master", "database-slave" ]
+  roles:
+
+    - "config-database"
+
 - hosts: "web-application"
-  roles: [ "config-web-application" ]
+  roles:
+
+    - "config-web-application"
 
 - hosts: "vhost-proxy"
-  roles: [ "config-vhost-proxy" ]
+  roles:
+
+    - "config-vhost-proxy"
+
+# ex: et ts=2 filetype=yaml

@@ -3,16 +3,18 @@
 - hosts: "vagrant-devbox"
   roles:
 
+    - "setup-hosts"
+    - "install-system-packages"
+
     - "install-etcd"
     - "setup-etcd"
     - "start-etcd"
-
-    - "setup-hosts"
 
     - "build-python"
     - "setup-python-alternatives"
     - "install-python-pip"
     - "setup-python-pip-alternatives"
+    - "build-python-apt"
     - "install-python-packages"
 
 # ex: et ts=2 filetype=yaml

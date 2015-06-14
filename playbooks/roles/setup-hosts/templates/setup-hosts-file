@@ -4,6 +4,11 @@
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 
+{% for host_name in groups ['vagrant-devbox'] %}
+{% set host = hostvars [host_name] %}
+{{ host.private.address }} {{ host_name }}
+{% endfor %}
+
 {% for host_name in groups ['rocket-hz'] %}
 {% set host = hostvars [host_name] %}
 {{ host.private.address }} {{ host_name }}.vpn.rocketware.co.uk {{ host_name }}.vpn

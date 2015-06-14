@@ -1,0 +1,45 @@
+# connection
+
+listen_addresses = '*'
+port = 5432
+max_connections = 1000
+
+# replication
+
+wal_level = 'hot_standby'
+archive_mode = on
+archive_command = 'cd .'
+max_wal_senders = 1
+hot_standby = on
+wal_keep_segments = 32
+
+# checkpoints
+
+checkpoint_segments = 10
+checkpoint_completion_target = 0.9
+
+# resources
+
+shared_buffers = {{ postgresql_shared_buffers }}
+temp_buffers = {{ postgresql_temp_buffers }}
+work_mem = {{ postgresql_work_mem }}
+maintenance_work_mem = {{ postgresql_maintenance_work_mem }}
+wal_buffers = {{ postgresql_wal_buffers }}
+
+# planner
+
+seq_page_cost = 1.0
+random_page_cost = 2.0
+cpu_tuple_cost = 0.1
+effective_cache_size = {{ postgresql_effective_cache_size }}
+
+# misc
+
+log_timezone = 'UTC'
+datestyle = 'iso, mdy'
+timezone = 'UTC'
+lc_messages = 'C'
+lc_monetary = 'C'
+lc_numeric = 'C'
+lc_time = 'C'
+default_text_search_config = 'pg_catalog.english'

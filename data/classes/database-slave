@@ -8,7 +8,7 @@ identity:
 class:
 
   scope: "global"
-  virtual_groups: [ "containers" ]
+  virtual_groups: [ "containers", "database" ]
 
 container:
 
@@ -18,7 +18,9 @@ start:
 
   name: "{{ identity.name }}"
   registry: "{{ docker_registry }}"
-  image: "{{ docker_images.database }}:{{ cluster.cluster.build }}"
+  image: "{{ docker_images.database }}:{{ cluster.build.database }}"
+
+  env: {}
 
   expose:
     - "5432"
@@ -29,11 +31,6 @@ start:
   volumes:
     - "{{ data_dir }}/{{ identity.name }}/config:/config"
     - "{{ data_dir }}/{{ identity.name }}/data:/data"
-
-  env:
-    DATABASE_MODE: "slave"
-    DATABASE_MASTER_HOSTNAME: "{{ database_master_parent.private.address }}"
-    DATABASE_MASTER_PORT: "{{ cluster.ports.database_master }}"
 
   wait:
     - "{{ cluster.ports.database_slave }}"
