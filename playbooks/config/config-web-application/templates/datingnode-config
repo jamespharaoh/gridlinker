@@ -3,7 +3,7 @@
 	"datingnode": {
 
 		"deployment" 	: "{{ cluster.identity.name }}",
-		"build" 		: "{{ cluster.cluster.build }}",
+		"build" 		: "{{ cluster.build.web_application }}",
 		"dir" 			: "{{ platform_super_dir }}",
 		
 		"debug-visible" 		: {{ php_bool [cluster.app.debug_visible] }},
