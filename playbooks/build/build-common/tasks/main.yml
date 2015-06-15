@@ -1,6 +1,5 @@
 ---
 
-- include: "common-system.yml"
 - include: "common-ssh.yml"
 - include: "common-ansible.yml"
 - include: "common-nullmailer.yml"

@@ -99,7 +99,7 @@ mkdir -p work
 cat >work/ansible.cfg <<-END
 	[defaults]
 	library = $PROJECT/third-party/ansible-modules-core:$PROJECT/third-party/ansible-modules-extras
-	roles_path = $PROJECT/playbooks/build
+	roles_path = $PROJECT/playbooks/build:$PROJECT/third-party/gridlinker/roles/system
 END
 
 heading "Applying ansible build $build_name"

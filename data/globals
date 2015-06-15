@@ -70,4 +70,76 @@ postgresql_user_password: "topsecret"
 postgresql_replication_user: "rep"
 postgresql_replication_password: "topsecret"
 
+ubuntu_system_packages:
+
+  # remove
+
+  - name: "python-dev"
+    state: "absent"
+
+  - name: "python-pip"
+    state: "absent"
+
+  - name: "resolvconf"
+    state: "absent"
+
+  # install
+
+  - name: "aptitude"
+    state: "present"
+
+  - name: "bash-completion"
+    state: "present"
+
+  - name: "bridge-utils"
+    state: "present"
+
+  - name: "colordiff"
+    state: "present"
+
+  - name: "command-not-found"
+    state: "present"
+
+  - name: "curl"
+    state: "present"
+
+  - name: "dnsutils"
+    state: "present"
+
+  - name: "git"
+    state: "present"
+
+  - name: "iotop"
+    state: "present"
+
+  - name: "man-db"
+    state: "present"
+
+  - name: "nano"
+    state: "present"
+
+  - name: "ngrep"
+    state: "present"
+
+  - name: "rsync"
+    state: "present"
+
+  - name: "super"
+    state: "present"
+
+  - name: "tcpdump"
+    state: "present"
+
+  - name: "telnet"
+    state: "present"
+
+  - name: "unzip"
+    state: "present"
+
+  - name: "wget"
+    state: "present"
+
+  - name: "whois"
+    state: "present"
+
 # ex: et ts=2 filetype=yaml
