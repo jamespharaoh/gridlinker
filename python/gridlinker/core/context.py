@@ -262,15 +262,20 @@ class GenericContext (object):
 		return {
 
 			"defaults": {
+
+				"display_skipped_hosts": "False",
 				"force_color": "True",
 				"gathering": "explicit",
+
 				"library": ":".join (self.ansible_library),
+				"roles_path": ":".join (self.ansible_roles_path),
+
 				"action_plugins": ":".join (self.ansible_action_plugins),
 				"connection_plugins": ":".join (self.ansible_connection_plugins),
 				"filter_plugins": ":".join (self.ansible_filter_plugins),
 				"lookup_plugins": ":".join (self.ansible_lookup_plugins),
 				"callback_plugins": ":".join (self.ansible_callback_plugins),
-				"roles_path": ":".join (self.ansible_roles_path),
+
 			},
 
 			"ssh_connection": {
@@ -421,41 +426,28 @@ class GenericContext (object):
 
 					class_data = self.local_data ["classes"] [class_name]
 
-					if "ssh" in class_data \
-					and "hostnames" in class_data ["ssh"]:
+					if not "ssh" in class_data \
+					or not "hostnames" in class_data ["ssh"]:
 
-						try:
-
-							addresses = map (
-
-								lambda value: self.map_resource (
-									resource_name,
-									resource_data,
-									value),
-
-								class_data ["ssh"] ["hostnames"])
-
-						except Exception as exception:
-
-							raise Exception (
-								"Error mapping ssh hostnames for %s: %s" % (
-									resource_name,
-									exception))
-
-					else:
-
-						addresses = [ resource_name ] + sorted (set (filter (None, [
-							resource_data.get ("private", {}).get ("address", None),
-							resource_data.get ("public", {}).get ("address", None),
-							resource_data.get ("amazon", {}).get ("public_ip", None),
-							resource_data.get ("amazon", {}).get ("public_dns_name", None),
-							resource_data.get ("amazon", {}).get ("private_ip", None),
-							resource_data.get ("amazon", {}).get ("private_dns_name", None),
-							resource_data.get ("ansible", {}).get ("ssh_host", None),
-						])))
-
-					if not addresses:
 						continue
+
+					try:
+
+						addresses = map (
+
+							lambda value: self.map_resource (
+								resource_name,
+								resource_data,
+								value),
+
+							class_data ["ssh"] ["hostnames"])
+
+					except Exception as exception:
+
+						raise Exception (
+							"Error mapping ssh hostnames for %s: %s" % (
+								resource_name,
+								exception))
 
 					for key_type in [ "rsa", "ecdsa" ]:
 
@@ -521,25 +513,16 @@ class GenericContext (object):
 
 	def map_resource_variable (self, resource_name, resource_data, name):
 
-		if name == "identity.name":
-			return resource_name
+		current = resource_data
 
-		elif name == "private.address":
+		for part in name.split ("."):
 
-			if "private" in resource_data \
-			and "address" in resource_data ["private"]:
+			if not part in current:
+				raise Exception (name)
 
-				return resource_data ["private"] ["address"]
+			current = current [part]
 
-			else:
-
-				return None
-
-		elif name == "public.address":
-			return resource_data.get ("public", {}).get ("address", None)
-
-		else:
-			raise Exception (name)
+		return current
 
 	@lazy_property
 	def classes (self):
