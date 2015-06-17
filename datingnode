@@ -73,7 +73,9 @@ function build_image () {
 	temp="$(pwd)/work/temp"
 	sudo rm -rf "$temp"
 	mkdir -p "$temp"
-	sudo chown root:root "$temp"
+	mkdir -p "$temp/apt-lists"
+	mkdir -p "$temp/apt-cache"
+	sudo chown -R root:root "$temp"
 	sudo chmod 1777 "$temp"
 
 	# run the ansible scripts in a container
@@ -83,6 +85,8 @@ function build_image () {
 		--volume "$(pwd):/datingnode-ansible" \
 		--volume "$DATINGNODE_SUPER:/datingnode-super" \
 		--volume "$temp:/tmp" \
+		--volume "$temp/apt-lists:/var/lib/apt/lists" \
+		--volume "$temp/apt-cache:/var/cache/apt" \
 		--dns "$DNS_PRIMARY" \
 		--dns "$DNS_SECONDARY" \
 		--interactive \

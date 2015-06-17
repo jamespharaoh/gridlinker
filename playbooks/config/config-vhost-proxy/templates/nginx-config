@@ -157,4 +157,43 @@ if 'ports' in cluster %}
 
 {% endfor %}
 
+{% for other_vhost_server in other_vhost_servers | default ([]) %}
+{% for domain in other_vhost_server.domains %}
+
+	server {
+
+		listen 80;
+
+		server_name {{ domain }};
+		server_name www.{{ domain }};
+
+		return 301 https://{{ domain }}$request_uri;
+
+		add_header Strict-Transport-Security "max-age={{ 60 * 60 * 24 * 365 }}";
+
+	}
+
+	server {
+
+		listen 443 ssl;
+
+		server_name {{ domain }};
+		server_name www.{{ domain }};
+
+		ssl on;
+		ssl_certificate /config/ssl/{{ domain }}.cert;
+		ssl_certificate_key /config/ssl/{{ domain }}.key;
+
+		add_header Strict-Transport-Security "max-age={{ 60 * 60 * 24 * 365 }}";
+
+		location / {
+			proxy_pass http://{{ other_vhost_server.name }}.vpn;
+			proxy_set_header Host $host;
+		}
+		
+	}
+
+{% endfor %}
+{% endfor %}
+
 }

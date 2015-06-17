@@ -8,7 +8,10 @@ identity:
 class:
 
   scope: "global"
-  virtual_groups: [ "containers" ]
+
+  groups:
+
+    - "containers"
 
 container:
 

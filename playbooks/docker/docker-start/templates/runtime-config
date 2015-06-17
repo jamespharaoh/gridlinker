@@ -92,4 +92,17 @@ ssl_domain_suffixes:
   - ".jonny.datingnode.com"
   - ".james.datingnode.com"
 
+other_vhost_servers:
+
+  - name: "dummy"
+    domains: []
+
+{% for host_name in groups ['rocket-hz-sites'] %}
+{% set host = hostvars [host_name] %}
+
+  - name: "{{ host_name }}"
+    domains: {{ host.vhost_domains | default ([]) | to_json }}
+
+{% endfor %}
+
 # ex: et ts=2 filetype=yaml

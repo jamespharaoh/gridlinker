@@ -142,4 +142,12 @@ ubuntu_system_packages:
   - name: "whois"
     state: "present"
 
+extra_ssl_domains:
+
+  - "atsumi.org"
+  - "datingnode.com"
+  - "rocketware.co.uk"
+  - "letterbubbles.com"
+  - "articlizer.com"
+
 # ex: et ts=2 filetype=yaml

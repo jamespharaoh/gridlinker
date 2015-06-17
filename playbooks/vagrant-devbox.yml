@@ -17,4 +17,6 @@
     - "build-python-apt"
     - "install-python-packages"
 
+    - "devbox"
+
 # ex: et ts=2 filetype=yaml

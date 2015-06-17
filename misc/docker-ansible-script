@@ -66,7 +66,7 @@ rsync \
 	--archive \
 	--times \
 	--verbose \
-	--delete \
+	--delete-excluded \
 	--exclude ".git" \
 	--include "/config/build" \
 	--exclude "/config/*" \

@@ -27,7 +27,4 @@
 - include: "devbox-checkouts.yml"
   tags: "devbox-checkouts"
 
-- include: "devbox-ssl.yml"
-  tags: "devbox-ssl"
-
 # ex: et ts=2 filetype=yaml
