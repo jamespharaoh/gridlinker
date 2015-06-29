@@ -7,6 +7,6 @@ identity:
 
 class:
 
-  scope: "class"
+  namespace: "admin-user"
 
 # ex: et ts=2 filetype=yaml

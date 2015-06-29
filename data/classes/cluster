@@ -7,7 +7,7 @@ identity:
 
 class:
 
-  scope: "class"
+  namespace: "cluster"
 
 cluster:
 

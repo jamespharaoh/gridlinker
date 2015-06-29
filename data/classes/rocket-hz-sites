@@ -7,7 +7,7 @@ identity:
 
 class:
 
-  scope: "global"
+  namespace: "host"
 
   groups:
 
