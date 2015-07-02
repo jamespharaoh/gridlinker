@@ -6,17 +6,21 @@ ff02::2 ip6-allrouters
 
 {% for host_name in groups ['vagrant-devbox'] %}
 {% set host = hostvars [host_name] %}
-{{ host.private.address }} {{ host_name }}
+{{ host.private.address }} {{ host.identity_name }}
 {% endfor %}
+
+{% if 'rocket-hz' in groups %}
 
 {% for host_name in groups ['rocket-hz'] %}
 {% set host = hostvars [host_name] %}
-{{ host.private.address }} {{ host_name }}.vpn.rocketware.co.uk {{ host_name }}.vpn
+{{ host.private.address }} {{ host.identity_name }}.vpn.rocketware.co.uk {{ host_name }}.vpn
 {% endfor %}
 
 {% for host_name in groups ['rocket-hz'] %}
 {% set host = hostvars [host_name] %}
 {% if host.public_address is defined %}
-{{ host.public_address }} {{ host_name }}.rocketware.co.uk {{ host_name }}
+{{ host.public_address }} {{ host.identity_name }}.rocketware.co.uk {{ host.identity_name }}
 {% endif %}
 {% endfor %}
+
+{% endif %}
