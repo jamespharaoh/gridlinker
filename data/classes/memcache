@@ -20,7 +20,7 @@ container:
 
 start:
 
-  name: "{{ identity.name }}"
+  name: "{{ identity_name }}"
   registry: "{{ docker_registry }}"
   image: "{{ docker_images.memcache }}:{{ cluster.build.memcache }}"
 
@@ -31,8 +31,8 @@ start:
     - "{{ parent.private.address }}:{{ cluster.ports.memcache }}:11211"
 
   volumes:
-    - "{{ data_dir }}/{{ identity.name }}/config:/config"
-    - "{{ data_dir }}/{{ identity.name }}/data:/data"
+    - "{{ data_dir }}/{{ identity_name }}/config:/config"
+    - "{{ data_dir }}/{{ identity_name }}/data:/data"
 
   env: {}
 

@@ -4,14 +4,14 @@ cluster_name: "{{ identity.cluster }}"
 
 parent_address: "{{ parent.private.address }}"
 
-{% set database_master = hostvars [cluster.cluster.database_master] %}
-{% set database_master_parent = hostvars [database_master.identity.parent] %}
+{% set database_master = hostvars ['host/' + cluster.cluster.database_master] %}
+{% set database_master_parent = hostvars ['host/' + database_master.identity.parent] %}
 
 database_master_address: "{{ database_master_parent.private_address }}"
 database_master_port: "{{ cluster.ports.database }}"
 
 {% if inventory_hostname in groups.database | default ([]) %}
-{% if inventory_hostname == cluster.cluster.database_master %}
+{% if identity_name == cluster.cluster.database_master %}
 database_mode: "master"
 {% else %}
 database_mode: "slave"
@@ -21,7 +21,7 @@ database_mode: "slave"
 memcache_nodes:
 {% for memcache_name in groups.memcache %}
 {% set memcache = hostvars [memcache_name] %}
-{% set memcache_parent = hostvars [memcache.identity.parent] %}
+{% set memcache_parent = hostvars ['host/' + memcache.identity.parent] %}
 {% if memcache.identity.cluster == identity.cluster %}
   - name: "{{ memcache_parent.private.address }}"
     port: "{{ cluster.ports.memcache }}"
@@ -37,6 +37,7 @@ vm_addresses:
   - "{{ hostvars [vm_name].private.address }}"
 {% endfor %}
 
+{% if inventory_hostname in groups.database | default ([]) %}
 {% if cluster_name in [ 'staging', 'production' ] %}
 postgresql_shared_buffers: "8GB"
 postgresql_temp_buffers: "32MB"
@@ -51,6 +52,7 @@ postgresql_work_mem: "16MB"
 postgresql_maintenance_work_mem: "256MB"
 postgresql_wal_buffers: "16MB"
 postgresql_effective_cache_size: "256MB"
+{% endif %}
 {% endif %}
 
 # ex: et ts=2 filetype=yaml

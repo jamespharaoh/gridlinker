@@ -1,7 +1,7 @@
 ---
 
 - name: "stop docker container"
-  delegate_to: "{{ identity.parent }}"
+  delegate_to: "host/{{ identity.parent }}"
   action:
     module: "docker"
     name: "{{ identity.name }}"

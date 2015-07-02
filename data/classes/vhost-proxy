@@ -20,7 +20,7 @@ container:
 
 start:
 
-  name: "{{ identity.name }}"
+  name: "{{ identity_name }}"
   registry: "{{ docker_registry }}"
   image: "{{ docker_images.vhost_proxy }}:{{ cluster.build.vhost_proxy }}"
 
@@ -33,8 +33,8 @@ start:
     - "{{ cluster.ports.vhost_proxy_ssl }}:443"
 
   volumes:
-    - "{{ data_dir }}/{{ inventory_hostname }}/config:/config"
-    - "{{ data_dir }}/{{ inventory_hostname }}/data:/data"
+    - "{{ data_dir }}/{{ identity_name }}/config:/config"
+    - "{{ data_dir }}/{{ identity_name }}/data:/data"
     - "/datingnode-ssl:/config/ssl"
 
   env: {}

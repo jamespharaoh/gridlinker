@@ -20,7 +20,7 @@ container:
 
 start:
 
-  name: "{{ identity.name }}"
+  name: "{{ identity_name }}"
   registry: "{{ docker_registry }}"
   image: "{{ docker_images.database }}:{{ cluster.build.database }}"
 
@@ -33,8 +33,8 @@ start:
     - "{{ parent.private.address }}:{{ cluster.ports.database }}:5432"
 
   volumes:
-    - "{{ data_dir }}/{{ identity.name }}/config:/config"
-    - "{{ data_dir }}/{{ identity.name }}/data:/data"
+    - "{{ data_dir }}/{{ identity_name }}/config:/config"
+    - "{{ data_dir }}/{{ identity_name }}/data:/data"
 
   wait:
     - "{{ cluster.ports.database }}"
