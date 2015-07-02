@@ -8,6 +8,7 @@ identity:
 class:
 
   namespace: "host"
+  parent_namespace: "host"
 
   groups:
 

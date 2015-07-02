@@ -2,6 +2,7 @@
 
 - name: "create main config"
   action:
+
     module: "template"
     src: "overrides"
     dest: "{{ HOME }}/config/overrides.yml"
@@ -9,33 +10,39 @@
 - include_vars: "{{ HOME }}/config/overrides.yml"
 
 - name: "create dependent configs"
-  action:
-    module: "template"
-    src: "{{ item }}"
-    dest: "{{ HOME }}/config/{{ item }}"
   with_items:
 
     - "datingnode-config"
     - "deploy-config"
     - "runtime-config"
 
+  action:
+
+    module: "template"
+    src: "{{ item }}"
+    dest: "{{ HOME }}/config/{{ item }}"
+
 - name: "create build directory"
   action:
+
     module: "file"
     dest: "{{ HOME }}/config/build"
     state: "directory"
 
 - name: "create build configs"
-  action:
-    module: "template"
-    dest: "{{ HOME }}/config/build/{{ item }}-build"
-    src: "build-config"
   with_items:
+
     - "base"
     - "database"
     - "web-server"
     - "web-application"
     - "vhost-proxy"
     - "memcache"
+
+  action:
+
+    module: "template"
+    dest: "{{ HOME }}/config/build/{{ item }}-build"
+    src: "build-config"
 
 # ex: et ts=2 filetype=yaml

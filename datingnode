@@ -271,8 +271,7 @@ case "$command" in
 	echo "$BUILD_VERSION" >config/build-counter
 
 	"$script-local" resource update \
-		--class "cluster" \
-		--name "$CLUSTER_NAME" \
+		--name "cluster/$CLUSTER_NAME" \
 		--set "build.vhost_proxy" "$CLUSTER_NAME-$BUILD_VERSION" \
 		--set "build.database" "$CLUSTER_NAME-$BUILD_VERSION" \
 		--set "build.web_application" "$CLUSTER_NAME-$BUILD_VERSION" \

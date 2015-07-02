@@ -3,11 +3,14 @@
 project:
 
   name: "datingnode-ansible"
-  script: "datingnode-ansible"
   title: "Datingnode Ansible"
   subject: "Datingnode's server infrastructure"
 
+  short_name: "datingnode"
+  short_title: "Datingnode"
+
   website: "https://bitbucket.org/jimmyff/datingnode-ansible"
+  script: "datingnode-ansible"
 
 environment:
 
@@ -30,7 +33,7 @@ certificate_data:
   locality: "Leeds"
   organization: "Rocketware Limited"
 
-data:
+project_data:
 
   metadata: "project"
   services: "services"

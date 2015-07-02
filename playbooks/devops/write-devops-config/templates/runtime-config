@@ -71,7 +71,7 @@ base_ssl_domains:
   - a90.{{ root }}
 {% endfor %}
 
-{% for service in lookup ('file', '../data/services') | from_yaml %}
+{% for service in services %}
   - {{ service.main_domain }}
   - api.{{ service.root_domain }}
   - cdn.{{ service.root_domain }}
