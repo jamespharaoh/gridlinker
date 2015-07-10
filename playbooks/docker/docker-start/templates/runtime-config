@@ -100,7 +100,7 @@ other_vhost_servers:
 {% for host_name in groups ['rocket-hz-sites'] %}
 {% set host = hostvars [host_name] %}
 
-  - name: "{{ host_name }}"
+  - name: "{{ host.identity_name }}"
     domains: {{ host.vhost_domains | default ([]) | to_json }}
 
 {% endfor %}
