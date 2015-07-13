@@ -1,5 +1,12 @@
 # Datingnode Ansible
 
+
+### setup
+
+misc/create-resources jimmy
+This creates the resource in etcd
+
+
 Main website:
 
 * https://bitbucket.org/jimmyff/datingnode-ansible

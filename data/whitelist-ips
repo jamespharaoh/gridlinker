@@ -42,7 +42,6 @@
 - "122.160.79.70"
 - "122.177.235.162"
 
-
 # Finoit iOS developer home
 - "182.69.227.118"
 
@@ -51,10 +50,14 @@
 - "5.148.154.0/24"
 
 # jimmy home (BT - changes)
-- "86.169.8.189"
+- "86.169.8.0/24"
 
 # jimmy folks
 - "82.20.90.53"
+
+# jimmy france (orange - changes)
+- "2.6.49.0/24"
+- "92.156.59.0/24"
 
 
 # james office barcelona
