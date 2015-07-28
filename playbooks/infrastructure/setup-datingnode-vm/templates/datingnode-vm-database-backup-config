@@ -1,6 +1,6 @@
 # database config
 
-export PGHOST="{{ inventory_hostname }}.vpn"
+export PGHOST="{{ identity_name }}.vpn"
 export PGPORT="5101"
 export PGUSER="jimmy"
 export PGPASSWORD="topsecret"

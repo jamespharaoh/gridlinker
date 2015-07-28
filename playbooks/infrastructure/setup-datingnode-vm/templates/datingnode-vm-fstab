@@ -24,13 +24,13 @@
 
 {% endif %}
 
-{% set master = hostvars [cluster.cluster.vm_master] %}
+{% set master = hostvars ['host/' + cluster.cluster.vm_master] %}
 
 {% set data_dir = '/datingnode-' + cluster_name %}
 {% set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index %}
 {% set web_app_remote = data_dir + '/' + cluster_name + '-web-application-' + master.identity_index %}
 
-{% if inventory_hostname == cluster.cluster.vm_master %}
+{% if identity_name == cluster.cluster.vm_master %}
 
 {{ local_mount (
 	source = web_app_local + '/fast/image-cache',

@@ -37,43 +37,43 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # ==================== disk space recovery
 
-{% for cluster_name, cluster in clusters.items () %}
+{%	for cluster_name, cluster in clusters.items () %}
 
-{% set master_name = cluster.cluster.vm_master %}
-{% set master = hostvars [master_name] %}
+{%		set master_name = cluster.cluster.vm_master %}
+{%		set master = hostvars ['host/' + master_name] %}
 
-{% if inventory_hostname == master_name %}
+{%		if identity_name == master_name %}
 
-{% set data_dir = '/datingnode-' + cluster_name %}
-{% set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index %}
+{%			set data_dir = '/datingnode-' + cluster_name %}
+{%			set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index %}
 
 # temp files for {{ cluster_name }} on master
-5 3 * * * root cd {{ web_app_local }}/fast/temp; find -mtime +2 -delete
+5 3 * * * root cd {{ web_app_local }}/fast/temp; find -mtime +1 -delete
 
 # image cache for {{ cluster_name }} on master
-10 3 * * * root cd {{ web_app_local }}/fast/image-cache; find -atime +60 -delete
+10 3 * * * root cd {{ web_app_local }}/fast/image-cache; find -atime +30 -delete
 15 3 * * * root cd {{ web_app_local }}/fast/image-cache; find -type d -empty -delete
 
-{% else %}
+{%		else %}
 
 # no disk space recovery for {{ cluster_name }} on slave
 
-{% endif %}
+{%		endif %}
 
-{% endif %}
+{% 	endfor %}
 
 # ========== postgresql backups
 
 {% for cluster_name, cluster in clusters.items () %}
 
 {% set master_name = cluster.cluster.vm_master %}
-{% set master = hostvars [master_name] %}
+{% set master = hostvars ['host/' + master_name] %}
 
 {% if cluster_name != 'live' %}
 
 # no database backups for {{ cluster_name }}
 
-{% elif inventory_hostname == master_name %}
+{% elif identity_name == master_name %}
 
 # database backups for {{ cluster_name }} master
 {{ database_dump (
@@ -90,7 +90,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # database backups sync to {{ cluster_name }} slave
 {{ rsync_pull (
 	schedule = '30 3 * * *',
-	remote = master_name + '.vpn',
+	remote = identity_name + '.vpn',
 	source = '/datingnode-live/backups',
 	dest = '/datingnode-live/backups') }}
 
@@ -103,13 +103,13 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 {% for cluster_name, cluster in clusters.items () %}
 
 {% set master_name = cluster.cluster.vm_master %}
-{% set master = hostvars [master_name] %}
+{% set master = hostvars ['host/' + master_name] %}
 
 {% set data_dir = '/datingnode-' + cluster_name %}
 {% set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index %}
 {% set web_app_remote = data_dir + '/' + cluster_name + '-web-application-' + master.identity_index %}
 
-{% if inventory_hostname == master_name %}
+{% if identity_name == master_name %}
 
 {% if cluster_name == 'live' %}
 

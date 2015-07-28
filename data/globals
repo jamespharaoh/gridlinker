@@ -1,7 +1,7 @@
 ---
 
-cluster_name: "{{ identity.cluster }}"
-cluster: "{{ clusters [cluster_name] }}"
+#cluster_name: "{{ identity.cluster }}"
+#cluster: "{{ clusters [cluster_name] }}"
 
 docker_registry: "quay.io"
 
@@ -17,7 +17,7 @@ dns_servers:
   primary: "8.8.8.8"
   secondary: "8.8.4.4"
 
-data_dir: "/datingnode-{{ identity.cluster }}"
+#data_dir: "/datingnode-{{ identity.cluster }}"
 
 platform_super_branch: "apache2.4"
 platform_super_dir: "/var/www/datingnode-super"
