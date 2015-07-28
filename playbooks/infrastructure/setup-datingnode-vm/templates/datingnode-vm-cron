@@ -14,7 +14,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 {{ schedule }} root rsync -a {{ source }}/ {{ remote }}:{{ dest }}/ {{ options }}
 {% endmacro %}
 
-# ========== application crons
+# ==================== application crons
 
 {% for host in [
 	'secure.datingnode.com',
@@ -34,6 +34,33 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 {% endfor %}
 {% endfor %}
+
+# ==================== disk space recovery
+
+{% for cluster_name, cluster in clusters.items () %}
+
+{% set master_name = cluster.cluster.vm_master %}
+{% set master = hostvars [master_name] %}
+
+{% if inventory_hostname == master_name %}
+
+{% set data_dir = '/datingnode-' + cluster_name %}
+{% set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index %}
+
+# temp files for {{ cluster_name }} on master
+5 3 * * * root cd {{ web_app_local }}/fast/temp; find -mtime +2 -delete
+
+# image cache for {{ cluster_name }} on master
+10 3 * * * root cd {{ web_app_local }}/fast/image-cache; find -atime +60 -delete
+15 3 * * * root cd {{ web_app_local }}/fast/image-cache; find -type d -empty -delete
+
+{% else %}
+
+# no disk space recovery for {{ cluster_name }} on slave
+
+{% endif %}
+
+{% endif %}
 
 # ========== postgresql backups
 
@@ -71,7 +98,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 {% endfor %}
 
-# ========== rsync backups
+# ================ rsync backups
 
 {% for cluster_name, cluster in clusters.items () %}
 
