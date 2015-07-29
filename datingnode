@@ -30,20 +30,6 @@ function do_devops () {
 
 }
 
-function do_hosts () {
-
-	do_devops
-
-	$master_ansible \
-		--extra-vars "@config/deploy-config" \
-		--extra-vars "@config/runtime-config" \
-		--extra-vars "cluster_name=shared" \
-		--inventory "hosts" \
-		"playbooks/hosts.yml" \
-		"$@"
-
-}
-
 function build_image () {
 
 	base_image="$1"

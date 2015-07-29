@@ -14,9 +14,16 @@ class:
 
     - "containers"
 
+  references:
+
+    - name: "cluster"
+      type: "resource"
+      target: "cluster/{{ identity_cluster }}"
+
 container:
 
   type: "web-application"
+  directory: "/datingnode-{{ identity_cluster }}/{{ identity_name }}"
 
 start:
 
@@ -31,8 +38,8 @@ start:
     - "{{ parent.private.address }}:{{ cluster.ports.web_application }}:80"
 
   volumes_default:
-    - "{{ data_dir }}/{{ identity_name }}/config:/config"
-    - "{{ data_dir }}/{{ identity_name }}/data:/data"
+    - "{{ container_directory }}/config:/config"
+    - "{{ container_directory }}/data:/data"
 
   volumes_instant:
     - "/home/vagrant/datingnode-super:/var/www/datingnode-super"

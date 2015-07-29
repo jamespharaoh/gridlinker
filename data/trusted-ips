@@ -17,7 +17,7 @@
 - "104.16.0.0/12"
 
 # cloudfront: https://ip-ranges.amazonaws.com/ip-ranges.json
-# see also: tools/misc/update-cloudfront-ips
+# see also: tools/misc/update-cloudfront-ips (deleted but in git history)
 
 - "54.182.0.0/16"
 - "54.192.0.0/16"

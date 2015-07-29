@@ -14,9 +14,16 @@ class:
 
     - "containers"
 
+  references:
+
+    - name: "cluster"
+      type: "resource"
+      target: "cluster/{{ identity_cluster }}"
+
 container:
 
   type: "memcache"
+  directory: "/datingnode-{{ identity_cluster }}/{{ identity_name }}"
 
 start:
 
@@ -31,8 +38,8 @@ start:
     - "{{ parent.private.address }}:{{ cluster.ports.memcache }}:11211"
 
   volumes:
-    - "{{ data_dir }}/{{ identity_name }}/config:/config"
-    - "{{ data_dir }}/{{ identity_name }}/data:/data"
+    - "{{ container_directory }}/config:/config"
+    - "{{ container_directory }}/data:/data"
 
   env: {}
 

@@ -4,7 +4,7 @@
   delegate_to: "host/{{ identity.parent }}"
   action:
     module: "file"
-    path: "{{ data_dir }}/{{ identity.name }}/config"
+    path: "{{ container_directory }}/config"
     state: "directory"
   sudo: "yes"
 
@@ -12,7 +12,7 @@
   delegate_to: "host/{{ identity.parent }}"
   action:
     module: "template"
-    dest: "{{ data_dir }}/{{ identity.name }}/config/runtime-config"
+    dest: "{{ container_directory }}/config/runtime-config"
     src: "runtime-config"
   sudo: "yes"
 
@@ -21,7 +21,7 @@
   action:
     module: "template"
     src: "parent-config"
-    dest: "{{ data_dir }}/{{ identity.name }}/config/parent-config"
+    dest: "{{ container_directory }}/config/parent-config"
   sudo: "yes"
 
 - name: "create inventory"
@@ -29,7 +29,7 @@
   action:
     module: "template"
     src: "ansible-inventory"
-    dest: "{{ data_dir }}/{{ identity.name }}/config/inventory"
+    dest: "{{ container_directory }}/config/inventory"
   sudo: "yes"
 
 - name: "start container"

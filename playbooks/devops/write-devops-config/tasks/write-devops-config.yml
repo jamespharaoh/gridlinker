@@ -14,7 +14,6 @@
 
     - "datingnode-config"
     - "deploy-config"
-    - "runtime-config"
 
   action:
 

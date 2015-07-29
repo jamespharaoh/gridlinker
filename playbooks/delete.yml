@@ -9,7 +9,7 @@
       delegate_to: "{{ parent }}"
       action:
         module: "file"
-        path: "{{ data_dir }}/{{ cluster_name }}-{{ inventory_hostname }}"
+        path: "{{ container_directory }}"
         state: "absent"
       sudo: "yes"
 

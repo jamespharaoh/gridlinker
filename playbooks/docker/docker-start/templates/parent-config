@@ -1,6 +1,9 @@
 ---
 
-cluster_name: "{{ identity.cluster }}"
+{% set cluster = hostvars ['cluster/' + identity_cluster] %}
+
+cluster_name: "{{ identity_cluster }}"
+cluster: "{{ '{{' }} clusters [cluster_name] {{ '}}' }}"
 
 parent_address: "{{ parent.private.address }}"
 
@@ -38,7 +41,7 @@ vm_addresses:
 {% endfor %}
 
 {% if inventory_hostname in groups.database | default ([]) %}
-{% if cluster_name in [ 'staging', 'production' ] %}
+{% if identity_cluster in [ 'staging', 'production' ] %}
 postgresql_shared_buffers: "8GB"
 postgresql_temp_buffers: "32MB"
 postgresql_work_mem: "95MB"

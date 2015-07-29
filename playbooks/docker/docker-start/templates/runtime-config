@@ -1,7 +1,6 @@
 ---
 
 clusters: {{ clusters | to_json }}
-cluster: "{{ '{{ clusters [cluster_name] }}' }}"
 
 vhost_proxy_build: "{{ deployment_name }}"
 
