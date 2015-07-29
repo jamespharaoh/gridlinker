@@ -45,7 +45,13 @@ start:
     - "/home/vagrant/datingnode-super:/var/www/datingnode-super"
 
   volumes_all: "{{ start_volumes_default + start_volumes_instant }}"
-  volumes: "{{ start_volumes_all if instant_deploy == 'yes' else start_volumes_default }}"
+
+  volumes: "{{
+    start_volumes_all
+    if instant_deploy == 'yes'
+    and parent.identity_class == 'vagrant-devbox'
+    else start_volumes_default
+  }}"
 
   env: {}
 
