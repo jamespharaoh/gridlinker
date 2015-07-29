@@ -388,7 +388,9 @@ class MiscSetFileArgument:
 			metavar = ("NAME", "SOURCE"),
 			help = "miscellaneous file to store")
 
-	def update_files (self, arg_vars, unique_name, collection, helper):
+	def update_files (self, arg_vars, unique_name, helper):
+
+		collection = helper.get_collection ()
 
 		value = arg_vars ["set_file"]
 
@@ -426,7 +428,9 @@ class FileArgument:
 			metavar = "FILE",
 			help = self.help)
 
-	def update_files (self, arg_vars, unique_name, collection, helper):
+	def update_files (self, arg_vars, unique_name, helper):
+
+		collection = helper.get_collection ()
 
 		value = arg_vars [self.argument_name]
 
