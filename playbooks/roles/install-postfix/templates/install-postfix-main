@@ -1,12 +1,12 @@
 # network
 
-myhostname = {{ inventory_hostname }}
+myhostname = {{ identity_name }}
 relayhost =
 inet_interfaces = all
 inet_protocols = all
 
 mydestination =
-	{{ inventory_hostname }},
+	{{ identity_name }},
 	localhost.localdomain,
 	localhost
 
