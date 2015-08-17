@@ -142,6 +142,17 @@ function do_image_clean () {
 
 # --------- images
 
+function update_deployed_build () {
+
+	local container_type="$1"
+	local build_version="$2"
+
+	"$script-local" resource update \
+		--name "cluster/$CLUSTER_NAME" \
+		--set "build.$container_type" "$CLUSTER_NAME-$build_version"
+
+}
+
 function do_image_build_base () {
 
 	build_image \
@@ -159,6 +170,8 @@ function do_image_build_database () {
 		"$IMAGE_DATABASE" \
 		"$CONTAINER_DATABASE" \
 		"database"
+
+	update_deployed_build "database" "$BUILD_VERSION"
 
 }
 
@@ -180,6 +193,8 @@ function do_image_build_web_application () {
 		"$CONTAINER_WEB_APPLICATION" \
 		"web-application"
 
+	update_deployed_build "web_application" "$BUILD_VERSION"
+
 }
 
 function do_image_build_vhost_proxy () {
@@ -190,6 +205,8 @@ function do_image_build_vhost_proxy () {
 		"$CONTAINER_VHOST_PROXY" \
 		"vhost-proxy"
 
+	update_deployed_build "vhost_proxy" "$BUILD_VERSION"
+
 }
 
 function do_image_build_memcache () {
@@ -199,6 +216,8 @@ function do_image_build_memcache () {
 		"$IMAGE_MEMCACHE" \
 		"$CONTAINER_MEMCACHE" \
 		"memcache"
+
+	update_deployed_build "memcache" "$BUILD_VERSION"
 
 }
 
@@ -255,13 +274,6 @@ case "$command" in
 
 	let BUILD_VERSION="BUILD_VERSION + 1"
 	echo "$BUILD_VERSION" >config/build-counter
-
-	"$script-local" resource update \
-		--name "cluster/$CLUSTER_NAME" \
-		--set "build.vhost_proxy" "$CLUSTER_NAME-$BUILD_VERSION" \
-		--set "build.database" "$CLUSTER_NAME-$BUILD_VERSION" \
-		--set "build.web_application" "$CLUSTER_NAME-$BUILD_VERSION" \
-		--set "build.memcache" "$CLUSTER_NAME-$BUILD_VERSION"
 
 	"$script-local" ansible playbook -- \
 		"playbooks/devops.yml"
