@@ -33,6 +33,10 @@
 {% if identity_name == cluster.cluster.vm_master %}
 
 {{ local_mount (
+	source = web_app_local + '/fast/sitemaps',
+	dest = web_app_local + '/data/assets/sitemaps') }}
+
+{{ local_mount (
 	source = web_app_local + '/fast/image-cache',
 	dest = web_app_local + '/data/assets/image-cache') }}
 
@@ -45,6 +49,10 @@
 	dest = web_app_local + '/data/assets/user-data') }}
 
 {% else %}
+
+{{ local_mount (
+	source = web_app_local + '/fast/sitemaps',
+	dest = web_app_local + '/data/assets/sitemaps') }}
 
 {{ local_mount (
 	source = web_app_local + '/fast/image-cache',

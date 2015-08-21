@@ -42,23 +42,15 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 {%		set master_name = cluster.cluster.vm_master %}
 {%		set master = hostvars ['host/' + master_name] %}
 
-{%		if identity_name == master_name %}
+{%		set data_dir = '/datingnode-' + cluster_name %}
+{%		set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index %}
 
-{%			set data_dir = '/datingnode-' + cluster_name %}
-{%			set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index %}
+# temp files for {{ cluster_name }}
+5 3 * * * root cd {{ web_app_local }}/fast/temp && find -mtime +1 -delete
 
-# temp files for {{ cluster_name }} on master
-5 3 * * * root cd {{ web_app_local }}/fast/temp; find -mtime +1 -delete
-
-# image cache for {{ cluster_name }} on master
-10 3 * * * root cd {{ web_app_local }}/fast/image-cache; find -atime +30 -delete
-15 3 * * * root cd {{ web_app_local }}/fast/image-cache; find -type d -empty -delete
-
-{%		else %}
-
-# no disk space recovery for {{ cluster_name }} on slave
-
-{%		endif %}
+# image cache for {{ cluster_name }}
+10 3 * * * root cd {{ web_app_local }}/fast/image-cache && find -atime +30 -delete
+15 3 * * * root cd {{ web_app_local }}/fast/image-cache && find -type d -empty -delete
 
 {% 	endfor %}
 
@@ -137,4 +129,33 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 {% endif %}
 
+{% endfor %}
+
+# ==================== symmetric sync
+
+{% for cluster_name, cluster in clusters.items () %}
+
+{% set data_dir = '/datingnode-' + cluster_name %}
+{% set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index %}
+
+# sitemaps for {{ cluster_name }}
+
+{% for host_name in groups ['rocket-hz-vm'] %}
+{% if host_name != inventory_hostname %}
+{% set host = hostvars [host_name] %}
+
+{% set web_app_remote = data_dir + '/' + cluster_name + '-web-application-' + host.identity_index %}
+
+{{ rsync_pull (
+	schedule = cluster.cluster.rsync_schedule,
+	remote = host.identity_name + '.vpn',
+	source = web_app_remote + '/fast/sitemaps',
+	dest = web_app_local + '/fast/sitemaps',
+	options = [
+		'--exclude \'*.new\'',
+		'--update',
+	] | join (' ')) }}
+
+{% endif %}
+{% endfor %}
 {% endfor %}

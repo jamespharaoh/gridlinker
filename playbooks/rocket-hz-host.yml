@@ -17,16 +17,8 @@
     - "setup-sysctl"
     - "install-dnsmasq"
 
-    - "build-python"
-    - "setup-python-alternatives"
-    - "install-python-pip"
-    - "setup-python-pip-alternatives"
-    - "build-python-apt"
-    - "install-python-packages"
-
-    - "install-etcd"
-    - "setup-etcd"
-    - "start-etcd"
+    - "python"
+    - "etcd"
 
     - "install-kvm"
     - "install-openvpn"
