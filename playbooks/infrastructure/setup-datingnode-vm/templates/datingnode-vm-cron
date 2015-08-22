@@ -1,18 +1,58 @@
+{%- macro database_dump (schedule, config) -%}
+
+	{%- print [
+		schedule,
+		'root',
+		'source ' + config + ' && /usr/local/bin/database-backup-script',
+	] | join (' ') -%}
+
+{%- endmacro -%}
+
+{%- macro rsync_pull (lockfile, schedule, remote, source, dest, options = '') -%}
+
+	{%- print [
+		schedule,
+		'root',
+		[
+			'set -e',
+			'exec 9>' + lockfile,
+			'flock --nonblock 9 || exit 0',
+			[
+				'rsync --archive',
+				remote + ':' + source + '/',
+				dest + '/',
+				options,
+			] | join (' '),
+			'rm ', lockfile,
+		] | join ('; '),
+	] | join (' ') -%}
+
+{%- endmacro -%}
+
+{%- macro rsync_push (lockfile, schedule, remote, source, dest, options = '') -%}
+
+	{%- print [
+		schedule,
+		'root',
+		[
+			'set -e',
+			'exec 9>' + lockfile,
+			'flock --nonblock 9 || exit 0',
+			[
+				'rsync --archive',
+				source + '/',
+				remote + ':' + dest + '/',
+				options,
+			] | join (' '),
+			'rm ', lockfile,
+		] | join ('; '),
+	] | join (' ') -%}
+
+{%- endmacro -%}
+
 MAILTO=jimmy@rocketware.co.uk
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-
-{% macro database_dump (schedule, config) %}
-{{ schedule }} root source {{ config }} && /usr/local/bin/database-backup-script
-{% endmacro %}
-
-{% macro rsync_pull (schedule, remote, source, dest, options = '') %}
-{{ schedule }} root rsync -a {{ remote }}:{{ source }}/ {{ dest }}/ {{ options }}
-{% endmacro %}
-
-{% macro rsync_push (schedule, remote, source, dest, options = '') %}
-{{ schedule }} root rsync -a {{ source }}/ {{ remote }}:{{ dest }}/ {{ options }}
-{% endmacro %}
 
 # ==================== application crons
 
@@ -72,6 +112,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 	schedule = '30 1 * * *',
 	config = '/etc/database-backup-config') }}
 {{ rsync_push (
+	lockfile = '/var/run/rsync-pull-database-' + cluster_name,
 	schedule = '30 2 * * *',
 	remote = '4474@usw-s004.rsync.net',
 	source = '/datingnode-live/backups',
@@ -81,6 +122,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # database backups sync to {{ cluster_name }} slave
 {{ rsync_pull (
+	lockfile = '/var/run/rsync-push-database-' + cluster_name,
 	schedule = '30 3 * * *',
 	remote = identity_name + '.vpn',
 	source = '/datingnode-live/backups',
@@ -107,6 +149,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # backup live to remote location
 {{ rsync_push (
+	lockfile = '/var/run/rsync-push-user-data-' + cluster_name,
 	schedule = '0 */2 * * *',
 	remote = '4474@usw-s004.rsync.net',
 	source = web_app_local + '/big/user-data',
@@ -122,6 +165,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # pull {{ cluster_name }} from master
 {{ rsync_pull (
+	lockfile = '/var/run/rsync-pull-user-data-' + cluster_name,
 	schedule = cluster.cluster.rsync_schedule,
 	remote = master_name + '.vpn',
 	source = web_app_remote + '/big/user-data',
@@ -147,6 +191,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 {% set web_app_remote = data_dir + '/' + cluster_name + '-web-application-' + host.identity_index %}
 
 {{ rsync_pull (
+	lockfile = '/var/run/rsync-pull-sitemaps-' + cluster_name,
 	schedule = cluster.cluster.rsync_schedule,
 	remote = host.identity_name + '.vpn',
 	source = web_app_remote + '/fast/sitemaps',
