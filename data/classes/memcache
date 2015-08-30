@@ -18,7 +18,7 @@ class:
 
     - name: "cluster"
       type: "resource"
-      target: "cluster/{{ identity_cluster }}"
+      value: "cluster/{{ identity_cluster }}"
 
 container:
 
@@ -47,3 +47,4 @@ start:
     - "{{ cluster.ports.memcache }}"
 
 # ex: et ts=2 filetype=yaml
+

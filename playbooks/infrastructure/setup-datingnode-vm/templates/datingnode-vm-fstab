@@ -8,7 +8,9 @@
 
 /dev/vda1 / ext4 errors=remount-ro 0 1
 
-{% for cluster_name, cluster in clusters.items () %}
+{% for cluster_unique_name in groups ['deployment-cluster'] %}
+{% set cluster = hostvars [cluster_unique_name] %}
+{% set cluster_name = cluster.identity_name %}
 
 {% if cluster_name == 'live' %}
 

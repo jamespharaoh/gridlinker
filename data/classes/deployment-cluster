@@ -1,0 +1,16 @@
+---
+
+identity:
+
+  name: "deployment-cluster"
+  type: "class"
+
+class:
+
+  namespace: "cluster"
+
+cluster:
+
+  external_communications_email_white_list: []
+
+# ex: et ts=2 filetype=yaml

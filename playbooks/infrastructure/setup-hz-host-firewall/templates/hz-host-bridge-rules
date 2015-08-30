@@ -13,8 +13,8 @@
 
 	{% for other_host_name in groups ['rocket-hz-vm'] %}
 	{% set other_host = hostvars [other_host_name] %}
-	{% if other_host.identity.parent == inventory_hostname
-	and 'failover' in other_host %}
+	{% if other_host.identity.parent == identity_name
+		and 'failover' in other_host %}
 
 		{% for failover_address in []
 			| union (other_host.failover.primary | default ([]))

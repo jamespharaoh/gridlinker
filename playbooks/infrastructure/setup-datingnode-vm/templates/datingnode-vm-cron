@@ -77,7 +77,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # ==================== disk space recovery
 
-{%	for cluster_name, cluster in clusters.items () %}
+{%	for cluster_unique_name in groups ['deployment-cluster'] %}
+{%	set cluster = hostvars [cluster_unique_name] %}
+{%	set cluster_name = cluster.identity_name %}
 
 {%		set master_name = cluster.cluster.vm_master %}
 {%		set master = hostvars ['host/' + master_name] %}
@@ -96,7 +98,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # ========== postgresql backups
 
-{% for cluster_name, cluster in clusters.items () %}
+{%	for cluster_unique_name in groups ['deployment-cluster'] %}
+{%	set cluster = hostvars [cluster_unique_name] %}
+{%	set cluster_name = cluster.identity_name %}
 
 {% set master_name = cluster.cluster.vm_master %}
 {% set master = hostvars ['host/' + master_name] %}
@@ -134,7 +138,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # ================ rsync backups
 
-{% for cluster_name, cluster in clusters.items () %}
+{%	for cluster_unique_name in groups ['deployment-cluster'] %}
+{%	set cluster = hostvars [cluster_unique_name] %}
+{%	set cluster_name = cluster.identity_name %}
 
 {% set master_name = cluster.cluster.vm_master %}
 {% set master = hostvars ['host/' + master_name] %}
@@ -177,7 +183,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # ==================== symmetric sync
 
-{% for cluster_name, cluster in clusters.items () %}
+{%	for cluster_unique_name in groups ['deployment-cluster'] %}
+{%	set cluster = hostvars [cluster_unique_name] %}
+{%	set cluster_name = cluster.identity_name %}
 
 {% set data_dir = '/datingnode-' + cluster_name %}
 {% set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index %}

@@ -145,4 +145,6 @@ extra_ssl_domains:
   - "letterbubbles.com"
   - "articlizer.com"
 
+ubuntu_mirror: "http:/"
+
 # ex: et ts=2 filetype=yaml

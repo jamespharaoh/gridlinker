@@ -2,15 +2,15 @@
 
 identity:
 
-  name: "cluster"
+  name: "super-cluster"
   type: "class"
 
 class:
 
   namespace: "cluster"
 
-cluster:
+icinga:
 
-  external_communications_email_white_list: []
+  master: ""
 
 # ex: et ts=2 filetype=yaml

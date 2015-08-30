@@ -29,4 +29,6 @@
 
     - "setup-datingnode-vm"
 
+    - "icinga-master"
+
 # ex: et ts=2 filetype=yaml
