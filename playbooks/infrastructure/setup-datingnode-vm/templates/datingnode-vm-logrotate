@@ -1,0 +1,29 @@
+# keep 30 days of rotated logs
+daily
+rotate 30
+
+# run as root with syslog group
+su root syslog
+
+# create missing logfiles
+create
+
+# compress log files after one day
+compress
+delaycompress
+
+# include config from packages
+include /etc/logrotate.d
+
+# handle wtmp
+/var/log/wtmp {
+    missingok
+    create 0664 root utmp
+}
+
+# handle btmp
+/var/log/btmp {
+    missingok
+    create 0660 root utmp
+}
+
