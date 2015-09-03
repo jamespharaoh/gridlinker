@@ -13,6 +13,7 @@ class:
   groups:
 
     - "rocket-hz"
+    - "icinga-agents"
 
   references:
 
@@ -80,6 +81,9 @@ ubuntu:
     - name: "iotop"
       state: "present"
 
+    - name: "libpq-dev"
+      state: "present"
+
     - name: "man-db"
       state: "present"
 
@@ -115,10 +119,22 @@ ubuntu:
 
 postfix:
 
-  helo_name: "{{ identity.name }}.rocketware.co.uk"
+  helo_name: "{{ identity_name }}.rocketware.co.uk"
 
 icinga:
 
   master: "{{ super_cluster.icinga_master }}"
+  authority: "rocket-icinga"
+  ca_certificate: "/authority/{{ icinga_authority }}/certificate"
+
+icinga_endpoint:
+
+  host: "{{ identity_name }}.vpn"
+  internal: "{{ identity_name }}.vpn"
+  external: "{{ identity_name }}.vpn"
+
+icinga_host:
+
+  address: "{{ identity_name }}.vpn"
 
 # ex: et ts=2 filetype=yaml

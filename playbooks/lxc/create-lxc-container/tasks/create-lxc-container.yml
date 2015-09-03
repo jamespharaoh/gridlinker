@@ -1,10 +1,10 @@
 ---
 
 - name: "create lxc container"
-  delegate_to: "{{ identity.parent }}"
+  delegate_to: "{{ identity_parent }}"
   args:
     executable: "/bin/bash"
-    creates: "/var/lib/lxc/{{ identity.name }}/create-flag"
+    creates: "/var/lib/lxc/{{ identity_name }}/create-flag"
   sudo: "yes"
   shell:
 
@@ -12,14 +12,14 @@
 
     echo "--- preparing to create container ---" >&2;
 
-    lxc-stop --name {{ identity.name }} || true;
-    rm -rf /var/lib/lxc/{{ identity.name }};
+    lxc-stop --name {{ identity_name }} || true;
+    rm -rf /var/lib/lxc/{{ identity_name }};
 
     echo "--- creating lxc container ---" >&2;
 
     lxc-create
       --template download
-      --name {{ identity.name }}
+      --name {{ identity_name }}
       --
       --dist ubuntu
       --release trusty
@@ -27,16 +27,16 @@
 
     echo "--- configuring networking ---" >&2;
 
-    chroot /var/lib/lxc/{{ identity.name }}/rootfs
+    chroot /var/lib/lxc/{{ identity_name }}/rootfs
     apt-get purge -y resolvconf;
 
-    echo "nameserver {{ private.gateway }}"
-      > /var/lib/lxc/{{ identity.name }}/rootfs/etc/resolv.conf;
+    echo "nameserver {{ private_gateway }}"
+      > /var/lib/lxc/{{ identity_name }}/rootfs/etc/resolv.conf;
 
     (
       echo "auto lo";
       echo "iface lo inet loopback";
-    ) > /var/lib/lxc/{{ identity.name }}/rootfs/etc/network/interfaces;
+    ) > /var/lib/lxc/{{ identity_name }}/rootfs/etc/network/interfaces;
 
     echo "--- configuring sudo ---" >&2;
 
@@ -47,47 +47,47 @@
       echo 'root ALL = (ALL) NOPASSWD:'' ALL';
       echo '%admin ALL = (ALL) NOPASSWD:'' ALL';
       echo '%sudo ALL = (ALL) NOPASSWD:'' ALL';
-    ) > /var/lib/lxc/{{ identity.name }}/rootfs/etc/sudoers;
+    ) > /var/lib/lxc/{{ identity_name }}/rootfs/etc/sudoers;
 
     echo "--- updating package lists ---" >&2;
 
-    chroot /var/lib/lxc/{{ identity.name }}/rootfs
+    chroot /var/lib/lxc/{{ identity_name }}/rootfs
     apt-get update -y;
 
     echo "--- upgrading packages ---" >&2;
 
-    chroot /var/lib/lxc/{{ identity.name }}/rootfs
+    chroot /var/lib/lxc/{{ identity_name }}/rootfs
     apt-get dist-upgrade -y;
 
     echo "--- installing ssh server ---" >&2;
 
-    chroot /var/lib/lxc/{{ identity.name }}/rootfs
+    chroot /var/lib/lxc/{{ identity_name }}/rootfs
     apt-get install -y openssh-server;
 
     echo "--- configuring ssh acccess ---" >&2;
 
-    mkdir /var/lib/lxc/{{ identity.name }}/rootfs/home/ubuntu/.ssh;
+    mkdir /var/lib/lxc/{{ identity_name }}/rootfs/home/ubuntu/.ssh;
 
     cp $HOME/.ssh/authorized_keys
-      /var/lib/lxc/{{ identity.name }}/rootfs/home/ubuntu/.ssh;
+      /var/lib/lxc/{{ identity_name }}/rootfs/home/ubuntu/.ssh;
 
     chown -R 1000:1000
-      /var/lib/lxc/{{ identity.name }}/rootfs/home/ubuntu/.ssh;
+      /var/lib/lxc/{{ identity_name }}/rootfs/home/ubuntu/.ssh;
 
     echo "--- done ---" >&2;
 
-    touch /var/lib/lxc/{{ identity.name }}/create-flag;
+    touch /var/lib/lxc/{{ identity_name }}/create-flag;
 
 - name: "create lxc configs"
-  delegate_to: "{{ identity.parent }}"
+  delegate_to: "{{ identity_parent }}"
   action:
     module: "template"
     src: "lxc-config"
-    dest: "/var/lib/lxc/{{ identity.name }}/config"
+    dest: "/var/lib/lxc/{{ identity_name }}/config"
   sudo: "yes"
 
 - name: "start lxc container"
-  delegate_to: "{{ identity.parent }}"
+  delegate_to: "{{ identity_parent }}"
   args:
     executable: "/bin/bash"
   shell:
@@ -96,7 +96,7 @@
 
     state=$(
       lxc-info
-        --name {{ identity.name }}
+        --name {{ identity_name }}
         --state
         --no-humanize
       | head --lines 1
@@ -108,7 +108,7 @@
     };
 
     lxc-start
-      --name {{ identity.name }}
+      --name {{ identity_name }}
       --daemon;
 
   sudo: "yes"
@@ -118,7 +118,7 @@
 - name: "wait for ssh"
   delegate_to: "localhost"
   wait_for:
-    host: "{{ private.address }}"
+    host: "{{ private_address }}"
     port: "22"
     search_regex: "OpenSSH"
 

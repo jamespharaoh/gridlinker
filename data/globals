@@ -3,6 +3,7 @@
 docker_registry: "quay.io"
 
 docker_images:
+
   base: "ubuntu:14.04"
   database: "rocketware/datingnode-database"
   web_application: "rocketware/datingnode-web-application"
@@ -11,6 +12,7 @@ docker_images:
   memcache: "rocketware/datingnode-memcache"
 
 dns_servers:
+
   primary: "8.8.8.8"
   secondary: "8.8.4.4"
 
@@ -26,6 +28,7 @@ deployment_user: "ubuntu"
 test_domain_extension: "dev"
 
 php_bool:
+
   "yes": "true"
   "no": "false"
 
@@ -35,20 +38,26 @@ python_version: "2.7.10"
 
 python_packages:
 
-  - name: "pyyaml"
-    version: "3.11"
+  - name: "pip"
+    version: "7.1.2"
 
-  - name: "pyopenssl"
-    version: "0.15.1"
-
-  - name: "paramiko"
-    version: "1.15.2"
+  - name: "docker-py"
+    version: "1.2.2"
 
   - name: "jinja2"
     version: "2.7.3"
 
-  - name: "docker-py"
-    version: "1.2.2"
+  - name: "paramiko"
+    version: "1.15.2"
+
+  - name: "psycopg2"
+    version: "2.6.1"
+
+  - name: "pyopenssl"
+    version: "0.15.1"
+
+  - name: "pyyaml"
+    version: "3.11"
 
 python_apt_version: "0.9.3-1"
 python_apt_mirror: "{{ wbs_dist }}/python-apt"
@@ -114,6 +123,9 @@ ubuntu_system_packages:
     state: "present"
 
   - name: "ngrep"
+    state: "present"
+
+  - name: "libpq-dev"
     state: "present"
 
   - name: "rsync"

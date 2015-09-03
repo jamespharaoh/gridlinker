@@ -23,4 +23,6 @@
     - "install-kvm"
     - "install-openvpn"
 
+    - "icinga-agent"
+
 # ex: et ts=2 filetype=yaml

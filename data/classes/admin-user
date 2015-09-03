@@ -9,4 +9,18 @@ class:
 
   namespace: "admin-user"
 
+  groups:
+
+    - "icinga-users"
+
+icinga_user:
+
+  display_name: "{{ user_full_name }}"
+  email: "{{ user_email }}"
+  pager: "{{ user_mobile }}"
+  groups: [ "admins" ]
+  period: "always"
+  states: [ "OK", "Warning", "Critical", "Unknown" ]
+  types: [ "Problem", "Recovery" ]
+
 # ex: et ts=2 filetype=yaml

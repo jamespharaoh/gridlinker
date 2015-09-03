@@ -1,0 +1,16 @@
+---
+
+identity:
+
+  name: "admin-group"
+  type: "class"
+
+class:
+
+  namespace: "admin-group"
+
+  groups:
+
+    - "icinga-groups"
+
+# ex: et ts=2 filetype=yaml

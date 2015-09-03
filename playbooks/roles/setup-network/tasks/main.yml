@@ -1,11 +1,12 @@
 ---
 
 - name: "configure network"
-  action:
-    module: "template"
-    src: "setup-network-interfaces"
-    dest: "/etc/network/interfaces"
-  sudo: "yes"
   tags: "network"
+  sudo: "yes"
+  action:
+
+    module: "template"
+    dest: "/etc/network/interfaces"
+    src: "setup-network-interfaces"
 
 # ex: et ts=2 filetype=yaml

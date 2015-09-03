@@ -1,7 +1,14 @@
 ---
 
-- hosts: "rocket-hz-vm"
+- hosts: "super-cluster"
   roles:
+
+    - "setup-icinga-web-database"
+
+- hosts: "icinga"
+  roles:
+
+    - "create-lxc-container"
 
     - "wait-for-ssh"
     - "scan-ssh-key"
@@ -15,20 +22,13 @@
       authorized_keys_home: "/home/ubuntu"
 
     - "install-system-packages"
-    - "setup-grub-vm"
-    - "setup-network"
     - "setup-hosts"
-    - "install-dnsmasq"
-    - "install-postfix"
-    - "install-nfs-server"
 
     - "python"
+    - "php"
+    - "nginx-from-source"
 
-    - "install-docker"
-    - "install-lxc"
-
-    - "setup-datingnode-vm"
-
-    - "icinga-agent"
+    - "icinga-master"
+    - "icinga-web"
 
 # ex: et ts=2 filetype=yaml

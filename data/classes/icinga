@@ -1,0 +1,66 @@
+---
+
+identity:
+
+  name: "icinga"
+  type: "class"
+
+class:
+
+  namespace: "host"
+  parent_namespace: "host"
+
+  groups:
+
+    - "icinga-masters"
+
+ansible:
+
+  ssh_host: "{{ private.address }}"
+  ssh_user: "ubuntu"
+
+ssh:
+
+  hostnames:
+
+    - "{{ identity.name }}"
+    - "{{ private.address }}"
+
+icinga:
+
+  master: "{{ super_cluster.icinga_master }}"
+  authority: "rocket-icinga"
+  ca_certificate: "/authority/{{ icinga_authority }}/certificate"
+
+icinga_endpoint:
+
+  host: "{{ identity_name }}.vpn"
+  internal: "{{ identity_name }}.vpn"
+  external: "{{ identity_name }}.vpn"
+
+icinga_host:
+
+  address: "{{ identity_name }}.vpn"
+
+icinga_web:
+
+  version: "2.0.0-rc1"
+
+  hostname: "monitoring.datingnode.com"
+  security: "none"
+
+  database_type: "postgresql"
+  database_hostname: "{{
+    hostvars [
+      'host/' + hostvars [
+        'host/' + hostvars ['cluster/live'].cluster_database_master
+      ].identity_parent
+    ].identity_name
+  }}.vpn"
+  database_port: "{{ hostvars ['cluster/live'].ports_database }}"
+
+nginx:
+
+  version: "1.9.4"
+
+# ex: et ts=2 filetype=yaml

@@ -12,6 +12,7 @@ class:
   groups:
 
     - "rocket-hz"
+    - "icinga-agents"
 
 ansible:
 
@@ -46,5 +47,16 @@ etcd:
     'rocket-hz-host-1=https://rocket-hz-host-1.rocketware.co.uk:2380',
     'rocket-hz-host-2=https://rocket-hz-host-2.rocketware.co.uk:2380',
   ] | join (',') }}"
+
+icinga:
+
+  master: "{{ super_cluster.icinga_master }}"
+  authority: "rocket-icinga"
+  ca_certificate: "/authority/{{ icinga_authority }}/certificate"
+
+icinga_endpoint:
+
+  host: "{{ identity_name }}.vpn"
+  external: "{{ identity_name }}.vpn"
 
 # ex: et ts=2 filetype=yaml
