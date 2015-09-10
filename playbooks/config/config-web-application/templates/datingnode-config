@@ -108,13 +108,33 @@
 	},
 
 	"database" : {
+
 		"postgresql" : {
-			"name" 		: "dating",
+			"name" 		: "{{ database_master_name }}",
 			"host" 		: "{{ database_master_address }}",
 			"port" 		: "{{ database_master_port }}",
-			"user" 		: "jimmy",
-			"password" 	: "topsecret"
-		}
+			"user" 		: "{{ database_master_user }}",
+			"password" 	: "{{ database_master_password }}"
+		},
+
+		"postgresql-read-only" : [
+{% for database_slave in database_slaves %}
+{% if first %}
+			{
+{% endif %}
+				"name" 		: "{{ database_slave.name }}",
+				"host" 		: "{{ database_slave.address }}",
+				"port" 		: "{{ database_slave.port }}",
+				"user" 		: "{{ database_slave.user }}",
+				"password" 	: "{{ database_slave.password }}"
+{% if last %}
+			}
+{% else %}
+			}, {
+{% endif %}
+{% endfor %}
+		]
+
 	},
 
 	"cache" : {

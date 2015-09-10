@@ -10,8 +10,34 @@ parent_address: "{{ parent.private.address }}"
 {% set database_master = hostvars ['host/' + cluster.cluster.database_master] %}
 {% set database_master_parent = hostvars ['host/' + database_master.identity.parent] %}
 
+database_master_name: "dating"
 database_master_address: "{{ database_master_parent.private_address }}"
 database_master_port: "{{ cluster.ports.database }}"
+database_master_user: "jimmy"
+database_master_password: "topsecret"
+
+{% set database_slaves_string %}
+{% for database_name in groups.database %}
+{% set database = hostvars [database_name] %}
+{% set database_parent = hostvars ['host/' + database.identity_parent] %}
+{% if database.identity_cluster == identity_cluster %}
+{% if database.identity_name != cluster.cluster_database_master %}
+  - name: "dating"
+    address: "{{ database_master_parent.private_address }}"
+    port: "{{ cluster.ports_database }}"
+    user: "jimmy"
+    password: "topsecret"
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endset %}
+{% if database_slaves_string %}
+database_slaves:
+{{ database_slaves_string }}
+{% else %}
+database_slaves: []
+{% endif %}
+
 
 {% if inventory_hostname in groups.database | default ([]) %}
 {% if identity_name == cluster.cluster.database_master %}
