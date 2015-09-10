@@ -104,4 +104,10 @@ other_vhost_servers:
 
 {% endfor %}
 
+extra_ssl_domains:
+
+{% for ssl_domain in extra_ssl_domains %}
+  - "{{ ssl_domain }}"
+{% endfor %}
+
 # ex: et ts=2 filetype=yaml

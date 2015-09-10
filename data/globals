@@ -156,6 +156,7 @@ extra_ssl_domains:
   - "rocketware.co.uk"
   - "letterbubbles.com"
   - "articlizer.com"
+  - "monitoring.datingnode.com"
 
 ubuntu_mirror: "http:/"
 
