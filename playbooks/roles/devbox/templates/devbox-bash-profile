@@ -15,7 +15,7 @@ export PATH="$HOME/bin:$HOME/.gem/ruby/1.9.1/bin:$PATH"
 
 # postgres connection
 
-export PGHOST="{{ devbox_private }}"
+export PGHOST="{{ private_address }}"
 export PGPORT="5001"
 export PGUSER="postgres"
 export PGPASSWORD="topsecret"

@@ -1,20 +1,20 @@
 ---
 
 - name: "checkout projects from git"
+  with_items: "devbox_checkouts"
+  args:
+
+    creates: "{{ devbox_home }}/{{ item.name }}"
+    executable: "/bin/bash"
+
   shell:
 
-    set -e;
+    set -euf -o pipefail;
 
     cd "{{ devbox_home }}";
 
     git clone "{{ item.remote }}"
       --branch "{{ item.branch }}"
       --recurse-submodules;
-
-  args:
-    creates: "{{ devbox_home }}/{{ item.name }}"
-  sudo: "yes"
-  sudo_user: "{{ devbox_user }}"
-  with_items: "devbox_checkouts"
 
 # ex: et ts=2 filetype=yaml

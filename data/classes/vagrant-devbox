@@ -16,6 +16,8 @@ ansible:
 etcd:
 
   version: "2.0.11"
+  secured: "no"
+  clustered: "no"
 
 ubuntu:
 
@@ -61,6 +63,9 @@ ubuntu:
     - name: "libffi-dev"
       state: "present"
 
+    - name: "libpq-dev"
+      state: "present"
+
     - name: "libssl-dev"
       state: "present"
 
@@ -81,5 +86,20 @@ ubuntu:
 
     - name: "whois"
       state: "present"
+
+devbox:
+
+  home: "/home/{{ devbox_user }}"
+  user: "vagrant"
+
+  checkouts:
+
+    - name: "datingnode-ansible"
+      remote: "git@bitbucket.org:jimmyff/datingnode-ansible.git"
+      branch: "master"
+
+    - name: "datingnode-super"
+      remote: "git@bitbucket.org:jimmyff/datingnode-super.git"
+      branch: "unity"
 
 # ex: et ts=2 filetype=yaml

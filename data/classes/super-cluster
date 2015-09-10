@@ -13,18 +13,14 @@ icinga:
 
   master: ""
 
+  database_type: "postgresql"
+  database_delegate: "host/icinga-1"
+  database_hostname: "icinga-1.vpn"
+
 icinga_web:
 
   database_type: "postgresql"
-  database_port: "{{ hostvars ['cluster/live'].ports_database }}"
   database_delegate: "host/icinga-1"
-
-  database_hostname: "{{
-    hostvars [
-      'host/' + hostvars [
-        'host/' + hostvars ['cluster/live'].cluster_database_master
-      ].identity_parent
-    ].identity_name
-  }}"
+  database_hostname: "icinga-1.vpn"
 
 # ex: et ts=2 filetype=yaml

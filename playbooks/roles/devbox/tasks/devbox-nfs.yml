@@ -1,12 +1,12 @@
 ---
 
 - name: "create exports"
-  action:
-    module: "template"
-    src: "devbox-nfs-exports"
-    dest: "/etc/exports"
-  sudo: "yes"
-  sudo_user: "root"
   notify: "reload nfs server"
+  sudo: "yes"
+  action:
+
+    module: "template"
+    dest: "/etc/exports"
+    src: "devbox-nfs-exports"
 
 # ex: et ts=2 filetype=yaml

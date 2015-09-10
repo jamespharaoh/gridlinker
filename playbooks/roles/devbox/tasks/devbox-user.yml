@@ -2,52 +2,48 @@
 
 - name: "create bash profile"
   action:
+
     module: "template"
-    src: "devbox-bash-profile"
     dest: "{{ devbox_home }}/.bash_profile"
-  sudo: "yes"
-  sudo_user: "{{ devbox_user }}"
+    src: "devbox-bash-profile"
 
 - name: "create bash rc"
   action:
+
     module: "template"
-    src: "devbox-bash-rc"
     dest: "{{ devbox_home }}/.bashrc"
-  sudo: "yes"
-  sudo_user: "{{ devbox_user }}"
+    src: "devbox-bash-rc"
 
 - name: "create git config"
   action:
+
     module: "template"
-    src: "devbox-git-config"
     dest: "{{ devbox_home }}/.gitconfig"
-  sudo: "yes"
-  sudo_user: "{{ devbox_user }}"
+    src: "devbox-git-config"
 
 - name: "create bin directory"
   action:
+
     module: "file"
     path: "{{ devbox_home }}/bin"
     state: "directory"
+
     mode: "0755"
-  sudo: "yes"
-  sudo_user: "{{ devbox_user }}"
 
 - name: "install fix-whitespace"
   action:
+
     module: "copy"
-    src: "fix-whitespace"
     dest: "{{ devbox_home }}/bin/fix-whitespace"
+    src: "fix-whitespace"
+
     mode: "0755"
-  sudo: "yes"
-  sudo_user: "{{ devbox_user }}"
 
 - name: "create ssh config"
   action:
+
     module: "template"
-    src: "devbox-ssh-config"
     dest: "{{ devbox_home }}/.ssh/config"
-  sudo: "yes"
-  sudo_user: "{{ devbox_user }}"
+    src: "devbox-ssh-config"
 
 # ex: et ts=2 filetype=yaml

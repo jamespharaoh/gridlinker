@@ -160,4 +160,8 @@ extra_ssl_domains:
 
 ubuntu_mirror: "http:/"
 
+ansible:
+
+  python_interpreter: "/usr/bin/env python"
+
 # ex: et ts=2 filetype=yaml
