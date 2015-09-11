@@ -61,14 +61,6 @@ cluster="$1"
 
 ./datingnode-local resource create \
 	--update-existing \
-	--class "database" \
-	--name "$cluster-database-2" \
-	--set-parent "datingnode-devbox" \
-	--index "2" \
-	--set "identity.cluster" "$cluster"
-
-./datingnode-local resource create \
-	--update-existing \
 	--class "web-application" \
 	--name "$cluster-web-application-1" \
 	--set-parent "datingnode-devbox" \
