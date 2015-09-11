@@ -1,42 +1,7 @@
 ---
 
-- hosts: "super-cluster"
-  roles:
-
-    - "prepare-icinga-database"
-    - "prepare-icinga-web-database"
-
-- hosts: "icinga"
-  roles:
-
-    - "create-lxc-container"
-
-    - "wait-for-ssh"
-    - "scan-ssh-key"
-
-    - role: "setup-authorized-keys"
-      authorized_keys_user: "root"
-      authorized_keys_home: "/root"
-
-    - role: "setup-authorized-keys"
-      authorized_keys_user: "ubuntu"
-      authorized_keys_home: "/home/ubuntu"
-
-    - "install-system-packages"
-    - "setup-hosts"
-
-    - "python"
-    - "php"
-    - "postgresql"
-    - "nginx-from-source"
-
-    - "icinga-master"
-    - "icinga-web"
-
-- hosts: "super-cluster"
-  roles:
-
-    - "setup-icinga-database"
-    - "setup-icinga-web-database"
+- include: "icinga-cluster-prepare.yml"
+- include: "icinga-master.yml"
+- include: "icinga-cluster-setup.yml"
 
 # ex: et ts=2 filetype=yaml

@@ -1,0 +1,9 @@
+---
+
+- hosts: "super-cluster"
+  roles:
+
+    - "setup-icinga-database"
+    - "setup-icinga-web-database"
+
+# ex: et ts=2 filetype=yaml

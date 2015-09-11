@@ -56,17 +56,27 @@ icinga_host:
 
 icinga_web:
 
-  version: "2.0.0-rc1"
+  version: "{{ super_cluster.icinga_web_version }}"
 
   hostname: "monitoring.datingnode.com"
   security: "none"
 
   database_type: "{{ super_cluster.icinga_web_database_type }}"
   database_hostname: "{{ super_cluster.icinga_web_database_hostname }}"
-  database_port: "5432"
+  database_username: "{{ super_cluster.icinga_web_database_username }}"
+  database_password: "{{ super_cluster.icinga_web_database_password }}"
+  database_port: "{{ super_cluster.icinga_web_database_port }}"
 
 nginx:
 
   version: "1.9.4"
+
+php:
+
+  packages:
+
+    - "php5-cli"
+    - "php5-fpm"
+    - "php5-pgsql"
 
 # ex: et ts=2 filetype=yaml

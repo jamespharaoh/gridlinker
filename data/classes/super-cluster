@@ -19,8 +19,12 @@ icinga:
 
 icinga_web:
 
+  version: "2.0.0-rc1"
+
   database_type: "postgresql"
   database_delegate: "host/icinga-1"
+  database_username: "icingaweb"
   database_hostname: "icinga-1.vpn"
+  database_port: "5432"
 
 # ex: et ts=2 filetype=yaml

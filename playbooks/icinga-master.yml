@@ -1,0 +1,30 @@
+---
+
+- hosts: "icinga"
+  roles:
+
+    - "create-lxc-container"
+
+    - "wait-for-ssh"
+    - "scan-ssh-key"
+
+    - role: "setup-authorized-keys"
+      authorized_keys_user: "root"
+      authorized_keys_home: "/root"
+
+    - role: "setup-authorized-keys"
+      authorized_keys_user: "ubuntu"
+      authorized_keys_home: "/home/ubuntu"
+
+    - "install-system-packages"
+    - "setup-hosts"
+
+    - "python"
+    - "php"
+    - "postgresql"
+    - "nginx-from-source"
+
+    - "icinga-master"
+    - "icinga-web"
+
+# ex: et ts=2 filetype=yaml
