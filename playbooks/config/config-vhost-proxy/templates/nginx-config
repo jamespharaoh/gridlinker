@@ -1,9 +1,9 @@
 user www-data;
-worker_processes 16;
+worker_processes {{ nginx_worker_processes }};
 pid /run/nginx.pid;
 
 events {
-	worker_connections 2048;
+	worker_connections {{ nginx_worker_connections }};
 }
 
 http {
@@ -13,7 +13,7 @@ http {
 	sendfile on;
 	tcp_nopush on;
 	tcp_nodelay on;
-	keepalive_timeout 65;
+	keepalive_timeout {{ nginx_keepalive_timeout }};
 	types_hash_max_size 2048;
 
 	# mime types
@@ -23,12 +23,15 @@ http {
 
 	# proxy settings
 
-	proxy_connect_timeout 1s;
-	proxy_read_timeout 60s;
+	proxy_connect_timeout {{ nginx_proxy_connect_timeout }};
+	proxy_read_timeout {{ nginx_proxy_read_timeout }};
 
 	# fastcgi settings
 
-	fastcgi_buffers 128 32k;
+	fastcgi_buffers {{ [
+		nginx_fastcgi_buffers_count,
+		nginx_fastcgi_buffers_size,
+	] | join (' ') }};
 
 	# logging
 
@@ -42,8 +45,8 @@ http {
 
 	# various limits
 
-	client_max_body_size 19m;
-	server_names_hash_bucket_size 1024;
+	client_max_body_size {{ nginx_client_max_body_size }};
+	server_names_hash_bucket_size {{ nginx_server_names_hash_bucket_size }};
 
 	# load balancer
 

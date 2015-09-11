@@ -1,5 +1,7 @@
 ---
 
+# -------------------- general
+
 {% set cluster = hostvars ['cluster/' + identity_cluster] %}
 
 cluster_name: "{{ identity_cluster }}"
@@ -7,7 +9,18 @@ cluster: "{{ '{{' }} clusters [cluster_name] {{ '}}' }}"
 
 parent_address: "{{ parent.private.address }}"
 
-{% set database_master = hostvars ['host/' + cluster.cluster.database_master] %}
+vm_addresses:
+
+{% for vm_name in []
+  | union (groups ['rocket-hz-vm'] | default ([]))
+  | union (groups ['vagrant-devbox'] | default ([]))
+%}
+  - "{{ hostvars [vm_name].private.address }}"
+{% endfor %}
+
+# -------------------- database connection
+
+{% set database_master = hostvars ['host/' + cluster.cluster_database_master] %}
 {% set database_master_parent = hostvars ['host/' + database_master.identity.parent] %}
 
 database_master_name: "dating"
@@ -17,6 +30,7 @@ database_master_user: "jimmy"
 database_master_password: "topsecret"
 
 {% set database_slaves_string %}
+{% if cluster.cluster_slave_reads == 'yes' %}
 {% for database_name in groups.database %}
 {% set database = hostvars [database_name] %}
 {% set database_parent = hostvars ['host/' + database.identity_parent] %}
@@ -30,6 +44,7 @@ database_master_password: "topsecret"
 {% endif %}
 {% endif %}
 {% endfor %}
+{% endif %}
 {% endset %}
 {% if database_slaves_string %}
 database_slaves:
@@ -38,14 +53,7 @@ database_slaves:
 database_slaves: []
 {% endif %}
 
-
-{% if inventory_hostname in groups.database | default ([]) %}
-{% if identity_name == cluster.cluster.database_master %}
-database_mode: "master"
-{% else %}
-database_mode: "slave"
-{% endif %}
-{% endif %}
+# ------------------- memcache connection
 
 memcache_nodes:
 {% for memcache_name in groups.memcache %}
@@ -57,17 +65,16 @@ memcache_nodes:
 {% endif %}
 {% endfor %}
 
-vm_addresses:
-
-{% for vm_name in []
-  | union (groups ['rocket-hz-vm'] | default ([]))
-  | union (groups ['vagrant-devbox'] | default ([]))
-%}
-  - "{{ hostvars [vm_name].private.address }}"
-{% endfor %}
-
 {% if inventory_hostname in groups.database | default ([]) %}
-{% if identity_cluster in [ 'staging', 'production' ] %}
+# ------------------- database specific
+
+{% if identity_name == cluster.cluster_database_master %}
+database_mode: "master"
+{% else %}
+database_mode: "slave"
+{% endif %}
+
+{% if identity_cluster in [ 'staging', 'live' ] %}
 postgresql_shared_buffers: "8GB"
 postgresql_temp_buffers: "32MB"
 postgresql_work_mem: "95MB"
@@ -82,6 +89,37 @@ postgresql_maintenance_work_mem: "256MB"
 postgresql_wal_buffers: "16MB"
 postgresql_effective_cache_size: "256MB"
 {% endif %}
+
+{% endif %}
+
+{% if inventory_hostname in groups ['web-application'] | default ([]) %}
+# ------------------- web application specific
+
+php_pm_max_children: "{{ cluster.php_pm_max_children }}"
+php_pm_max_requests: "{{ cluster.php_pm_max_children }}"
+php_pm_start_servers: "{{ cluster.php_pm_start_servers }}"
+php_pm_min_spare_servers: "{{ cluster.php_pm_min_spare_servers }}"
+php_pm_max_spare_servers: "{{ cluster.php_pm_max_spare_servers }}"
+
+{% endif %}
+
+{% if inventory_hostname in groups ['vhost-proxy'] | default ([]) %}
+# ------------------- vhost proxy specific
+
+nginx_worker_processes: "16"
+nginx_worker_connections: "2048"
+
+nginx_keepalive_timeout: "65"
+
+nginx_proxy_connect_timeout: "1s"
+nginx_proxy_read_timeout: "60s"
+
+nginx_fastcgi_buffers_count: "128"
+nginx_fastcgi_buffers_size: "32k"
+
+nginx_client_max_body_size: "19m"
+nginx_server_names_hash_bucket_size: "1024"
+
 {% endif %}
 
 # ex: et ts=2 filetype=yaml

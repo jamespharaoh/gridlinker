@@ -1,0 +1,66 @@
+---
+
+- name: "enable apache modules"
+  with_items:
+
+   - "actions"
+   - "alias"
+   - "deflate"
+   - "env"
+   - "fcgid"
+   - "mpm_event"
+   - "proxy"
+   - "proxy_fcgi"
+   - "rewrite"
+   - "ssl"
+   - "headers"
+
+  sudo: "yes"
+  action:
+
+    module: "apache2_module"
+    name: "{{ item }}"
+
+- name: "create apache config"
+  sudo: "yes"
+  with_items:
+
+    - template: "apache-php5-fpm-config"
+      target: "/etc/apache2/conf-available/php5-fpm.conf"
+
+    - template: "apache-mpm-event-config"
+      target: "/etc/apache2/mods-available/mpm_event.conf"
+
+  action:
+
+    module: "template"
+    dest: "{{ item.target }}"
+    src: "{{ item.template }}"
+
+- name: "enable apache php5 fpm config"
+  sudo: "yes"
+  args:
+
+    creates: "/etc/apache2/conf-enabled/php5-fpm.conf"
+
+  command:
+
+    a2enconf php5-fpm
+
+- name: "configure php"
+  with_items:
+
+    - template: "php5-fpm-www-config"
+      target: "/etc/php5/fpm/pool.d/www.conf"
+
+    - template: "php-ini"
+      target: "/etc/php5/fpm/php.ini"
+
+  sudo: "yes"
+  action:
+
+    module: "template"
+    dest: "{{ item.target }}"
+    src: "{{ item.template }}"
+
+# ex: et ts=2 filetype=yaml

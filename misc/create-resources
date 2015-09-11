@@ -21,7 +21,7 @@ cluster="$1"
 
 ./datingnode-local resource create \
 	--update-existing \
-	--class "cluster" \
+	--class "deployment-cluster" \
 	--name "$cluster" \
 	\
 	--set "cluster.database_master" "$cluster-database-1" \
@@ -48,15 +48,23 @@ cluster="$1"
 	--update-existing \
 	--class "database" \
 	--name "$cluster-database-1" \
-	--parent "datingnode-devbox" \
+	--set-parent "datingnode-devbox" \
 	--index "1" \
+	--set "identity.cluster" "$cluster"
+
+./datingnode-local resource create \
+	--update-existing \
+	--class "database" \
+	--name "$cluster-database-2" \
+	--set-parent "datingnode-devbox" \
+	--index "2" \
 	--set "identity.cluster" "$cluster"
 
 ./datingnode-local resource create \
 	--update-existing \
 	--class "web-application" \
 	--name "$cluster-web-application-1" \
-	--parent "datingnode-devbox" \
+	--set-parent "datingnode-devbox" \
 	--index "1" \
 	--set "identity.cluster" "$cluster"
 
@@ -64,7 +72,7 @@ cluster="$1"
 	--update-existing \
 	--class "vhost-proxy" \
 	--name "$cluster-vhost-proxy-1" \
-	--parent "datingnode-devbox" \
+	--set-parent "datingnode-devbox" \
 	--index "1" \
 	--set "identity.cluster" "$cluster"
 
@@ -72,7 +80,7 @@ cluster="$1"
 	--update-existing \
 	--class "memcache" \
 	--name "$cluster-memcache-1" \
-	--parent "datingnode-devbox" \
+	--set-parent "datingnode-devbox" \
 	--index "1" \
 	--set "identity.cluster" "$cluster"
 

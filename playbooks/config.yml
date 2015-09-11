@@ -8,6 +8,7 @@
 - hosts: "web-application"
   roles:
 
+    - "config-web-server"
     - "config-web-application"
 
 - hosts: "vhost-proxy"

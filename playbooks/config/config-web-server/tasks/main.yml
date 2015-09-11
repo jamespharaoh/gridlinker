@@ -1,0 +1,9 @@
+---
+
+- include: "config-web-server.yml"
+  tags:
+
+    - "config"
+    - "config-web-server"
+
+# ex: et ts=2 filetype=yaml
