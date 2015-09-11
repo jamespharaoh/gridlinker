@@ -17,7 +17,14 @@ cluster="$1"
 	--name "datingnode-devbox" \
 	--set "private.address" "172.28.128.5"
 
-# create cluster
+# create super cluster
+
+./datingnode-local resource create \
+	--update-existing \
+	--class "super-cluster" \
+	--name "master"
+
+# create deployment cluster
 
 ./datingnode-local resource create \
 	--update-existing \

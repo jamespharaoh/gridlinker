@@ -15,7 +15,7 @@ ansible:
 
 etcd:
 
-  version: "2.0.11"
+  version: "2.2.0"
   secured: "no"
   clustered: "no"
 
