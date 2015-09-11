@@ -75,6 +75,9 @@ database_mode: "slave"
 {% endif %}
 
 {% if identity_cluster in [ 'staging', 'live' ] %}
+postgresql_max_connections: "1024"
+postgresql_wal_senders: "4"
+postgresql_wal_keep_segments: "128"
 postgresql_shared_buffers: "8GB"
 postgresql_temp_buffers: "32MB"
 postgresql_work_mem: "95MB"
@@ -82,6 +85,9 @@ postgresql_maintenance_work_mem: "2GB"
 postgresql_wal_buffers: "16MB"
 postgresql_effective_cache_size: "22GB"
 {% else %}
+postgresql_max_connections: "128"
+postgresql_wal_senders: "2"
+postgresql_wal_keep_segments: "8"
 postgresql_shared_buffers: "128MB"
 postgresql_temp_buffers: "32MB"
 postgresql_work_mem: "16MB"

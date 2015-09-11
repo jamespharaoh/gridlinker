@@ -2,16 +2,16 @@
 
 listen_addresses = '*'
 port = 5432
-max_connections = 1000
+max_connections = {{ postgresql_max_connections }}
 
 # replication
 
 wal_level = 'hot_standby'
 archive_mode = on
 archive_command = 'cd .'
-max_wal_senders = 1
+max_wal_senders = {{ postgresql_wal_senders }}
 hot_standby = on
-wal_keep_segments = 32
+wal_keep_segments = {{ postgresql_wal_keep_segments }}
 
 # checkpoints
 
