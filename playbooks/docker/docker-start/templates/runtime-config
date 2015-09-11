@@ -93,15 +93,18 @@ ssl_domain_suffixes:
 
 other_vhost_servers:
 
+  - name: "dummy"
+    domains: []
+
+{% if hostvars ['cluster/master'].icinga_master != '' %}
   - name: "{{ hostvars ['cluster/master'].icinga_master }}"
     domains: [ "monitoring.datingnode.com" ]
+{% endif %}
 
 {% for host_name in groups ['rocket-hz-sites'] %}
 {% set host = hostvars [host_name] %}
-
   - name: "{{ host.identity_name }}"
     domains: {{ host.vhost_domains | default ([]) | to_json }}
-
 {% endfor %}
 
 extra_ssl_domains:
