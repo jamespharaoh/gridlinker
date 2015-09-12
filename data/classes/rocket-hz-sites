@@ -13,6 +13,7 @@ class:
   groups:
 
     - "rocket-hz"
+    - "icinga-hosts"
 
 ansible:
 
@@ -22,7 +23,18 @@ ansible:
 ssh:
 
   hostnames:
+
     - "{{ identity.name }}"
     - "{{ private.address }}"
+
+icinga:
+
+  master: "{{ super_cluster.icinga_master }}"
+  authority: "rocket-icinga"
+  ca_certificate: "/authority/{{ icinga_authority }}/certificate"
+
+icinga_host:
+
+  address: "{{ identity_name }}.vpn"
 
 # ex: et ts=2 filetype=yaml

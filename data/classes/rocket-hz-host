@@ -59,4 +59,8 @@ icinga_endpoint:
   host: "{{ identity_name }}.vpn"
   external: "{{ identity_name }}.vpn"
 
+icinga_host:
+
+  address: "{{ identity_name }}.vpn"
+
 # ex: et ts=2 filetype=yaml
