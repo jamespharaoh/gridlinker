@@ -3,7 +3,10 @@
 - name: "start docker containers"
   hosts: "containers"
   gather_facts: "no"
-  roles: [ "docker-start" ]
   serial: "1"
+  roles:
+
+    - "docker-config"
+    - "docker-start"
 
 # ex: et ts=2 filetype=yaml

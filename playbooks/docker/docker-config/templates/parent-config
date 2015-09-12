@@ -37,7 +37,7 @@ database_master_password: "topsecret"
 {% if database.identity_cluster == identity_cluster %}
 {% if database.identity_name != cluster.cluster_database_master %}
   - name: "dating"
-    address: "{{ database_master_parent.private_address }}"
+    address: "{{ database_parent.private_address }}"
     port: "{{ cluster.ports_database }}"
     user: "jimmy"
     password: "topsecret"

@@ -1,37 +1,5 @@
 ---
 
-- name: "create config dir"
-  delegate_to: "host/{{ identity.parent }}"
-  action:
-    module: "file"
-    path: "{{ container_directory }}/config"
-    state: "directory"
-  sudo: "yes"
-
-- name: "create runtime config"
-  delegate_to: "host/{{ identity.parent }}"
-  action:
-    module: "template"
-    dest: "{{ container_directory }}/config/runtime-config"
-    src: "runtime-config"
-  sudo: "yes"
-
-- name: "create parent config"
-  delegate_to: "host/{{ identity.parent }}"
-  action:
-    module: "template"
-    src: "parent-config"
-    dest: "{{ container_directory }}/config/parent-config"
-  sudo: "yes"
-
-- name: "create inventory"
-  delegate_to: "host/{{ identity.parent }}"
-  action:
-    module: "template"
-    src: "ansible-inventory"
-    dest: "{{ container_directory }}/config/inventory"
-  sudo: "yes"
-
 - name: "start container"
   delegate_to: "host/{{ identity.parent }}"
   action:
@@ -49,15 +17,5 @@
     stdin_open: "True"
     volumes: "{{ start.volumes }}"
     env: "{{ start.env }}"
-
-#- name: "wait for connection"
-#  delegate_to: "{{ identity.parent }}"
-#  action:
-#    module: "wait_for"
-#    host: "{{ hostvars [parent].private.address }}"
-#    port: "{{ item }}"
-#    state: "started"
-#    timeout: "10"
-#  with_items: "start.wait"
 
 # ex: et ts=2 filetype=yaml

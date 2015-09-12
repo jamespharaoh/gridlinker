@@ -6,7 +6,6 @@
    - "apache2"
    - "apachetop"
    - "libapache2-mod-fcgid"
-   - "memcached"
    - "gettext"
    - "php5"
    - "php5-cli"
@@ -29,7 +28,6 @@
   with_items:
 
     - "apache"
-    - "memcached"
     - "php-fpm"
 
   sudo: "yes"
@@ -43,7 +41,6 @@
   with_items:
 
     - "apache"
-    - "memcached"
     - "php-fpm"
 
   sudo: "yes"
