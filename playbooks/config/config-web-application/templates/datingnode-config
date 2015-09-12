@@ -119,7 +119,7 @@
 
 		"postgresql-read-only" : [
 {% for database_slave in database_slaves %}
-{% if first %}
+{% if loop.first %}
 			{
 {% endif %}
 				"name" 		: "{{ database_slave.name }}",
@@ -127,7 +127,7 @@
 				"port" 		: "{{ database_slave.port }}",
 				"user" 		: "{{ database_slave.user }}",
 				"password" 	: "{{ database_slave.password }}"
-{% if last %}
+{% if loop.last %}
 			}
 {% else %}
 			}, {
