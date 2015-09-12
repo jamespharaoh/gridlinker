@@ -42,7 +42,9 @@ icinga:
 
   database_type: "{{ super_cluster.icinga_database_type }}"
   database_hostname: "{{ super_cluster.icinga_database_hostname }}"
-  database_port: "5432"
+  database_port: "{{ super_cluster.icinga_database_port }}"
+  database_username: "{{ super_cluster.icinga_database_username }}"
+  database_password: "{{ super_cluster.icinga_database_password }}"
 
 icinga_endpoint:
 
@@ -63,9 +65,9 @@ icinga_web:
 
   database_type: "{{ super_cluster.icinga_web_database_type }}"
   database_hostname: "{{ super_cluster.icinga_web_database_hostname }}"
+  database_port: "{{ super_cluster.icinga_web_database_port }}"
   database_username: "{{ super_cluster.icinga_web_database_username }}"
   database_password: "{{ super_cluster.icinga_web_database_password }}"
-  database_port: "{{ super_cluster.icinga_web_database_port }}"
 
 nginx:
 

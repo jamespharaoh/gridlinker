@@ -15,7 +15,9 @@ icinga:
 
   database_type: "postgresql"
   database_delegate: "host/icinga-1"
+  database_username: "icinga"
   database_hostname: "icinga-1.vpn"
+  database_port: "5432"
 
 icinga_web:
 
