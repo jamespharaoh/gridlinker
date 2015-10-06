@@ -51,8 +51,14 @@ etcd:
 icinga:
 
   master: "{{ super_cluster.icinga_master }}"
+
   authority: "rocket-icinga"
   ca_certificate: "/authority/{{ icinga_authority }}/certificate"
+
+  alt_dns:
+
+    - "{{ identity_name }}"
+    - "{{ identity_name }}.vpn"
 
 icinga_endpoint:
 
@@ -62,5 +68,25 @@ icinga_endpoint:
 icinga_host:
 
   address: "{{ identity_name }}.vpn"
+
+  vars:
+
+    - name: "disks"
+      key: "Disk root"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/"
+
+    - name: "disks"
+      key: "Disk boot"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/boot"
 
 # ex: et ts=2 filetype=yaml

@@ -38,6 +38,11 @@ icinga:
   authority: "rocket-icinga"
   ca_certificate: "/authority/{{ icinga_authority }}/certificate"
 
+  alt_dns:
+
+    - "{{ identity_name }}"
+    - "{{ identity_name }}.vpn"
+
   master: "{{ super_cluster.icinga_master }}"
 
   database_type: "{{ super_cluster.icinga_database_type }}"
@@ -45,6 +50,16 @@ icinga:
   database_port: "{{ super_cluster.icinga_database_port }}"
   database_username: "{{ super_cluster.icinga_database_username }}"
   database_password: "{{ super_cluster.icinga_database_password }}"
+
+  master_services:
+
+    - for_key: "disk"
+      for_value: "config"
+      for_var: "host.vars.disks"
+      check_command: "disk"
+      add_vars: "config"
+      assign_where: "host.vars.disks"
+      command_endpoint: "host.name"
 
 icinga_endpoint:
 

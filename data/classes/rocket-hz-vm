@@ -137,4 +137,102 @@ icinga_host:
 
   address: "{{ identity_name }}.vpn"
 
+  vars:
+
+    # ---------- misc
+
+    - name: "disks"
+      key: "Disk root"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/"
+
+    - name: "disks"
+      key: "Disk lxc"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/var/lib/lxc"
+
+    - name: "disks"
+      key: "Disk docker"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/var/lib/docker"
+
+    # ---------- live containers
+
+    - name: "disks"
+      key: "Disk live database"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/datingnode-live/live-database-{{ identity_index }}/data"
+
+    - name: "disks"
+      key: "Disk live web fast"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/datingnode-live/live-web-application-{{ identity_index }}/fast"
+
+    - name: "disks"
+      key: "Disk live web big"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/datingnode-live/live-web-application-{{ identity_index }}/big"
+
+    - name: "disks"
+      key: "Disk live backups"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/datingnode-live/backups"
+
+    # ---------- staging containers
+
+    - name: "disks"
+      key: "Disk staging database"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/datingnode-staging/staging-database-{{ identity_index }}/data"
+
+    - name: "disks"
+      key: "Disk staging web fast"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/datingnode-staging/staging-web-application-{{ identity_index }}/fast"
+
+    - name: "disks"
+      key: "Disk staging web big"
+      type: "object"
+      value:
+
+        - name: "disk_partition"
+          type: "string"
+          value: "/datingnode-staging/staging-web-application-{{ identity_index }}/big"
+
 # ex: et ts=2 filetype=yaml
