@@ -119,6 +119,9 @@ nginx_keepalive_timeout: "65"
 
 nginx_proxy_connect_timeout: "1s"
 nginx_proxy_read_timeout: "60s"
+nginx_proxy_buffering: "on"
+nginx_proxy_buffers_number: "128"
+nginx_proxy_buffers_size: "32k"
 
 nginx_fastcgi_buffers_count: "128"
 nginx_fastcgi_buffers_size: "32k"
