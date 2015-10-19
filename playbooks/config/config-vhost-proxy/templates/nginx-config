@@ -76,6 +76,7 @@ if 'ports' in cluster %}
 		location / {
 			proxy_pass http://{{ cluster_name }};
 			proxy_set_header Host $host;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 		}
 
 	}
@@ -142,6 +143,7 @@ if 'ports' in cluster %}
 		location / {
 			proxy_pass http://{{ cluster_name }};
 			proxy_set_header Host $host;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 		}
 		
 	}
@@ -167,6 +169,7 @@ if 'ports' in cluster %}
 		location / {
 			proxy_pass http://{{ cluster_name }};
 			proxy_set_header Host $host;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 		}
 
 	}
@@ -205,6 +208,7 @@ if 'ports' in cluster %}
 		location / {
 			proxy_pass http://{{ other_vhost_server.name }}.vpn;
 			proxy_set_header Host $host;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 		}
 		
 	}
