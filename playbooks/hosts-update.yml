@@ -1,0 +1,8 @@
+---
+
+- hosts: "rocket-hz-host"
+  roles:
+
+    - "update-system-packages"
+
+# ex: et ts=2 filetype=yaml
