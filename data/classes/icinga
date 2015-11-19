@@ -71,6 +71,15 @@ icinga_host:
 
   address: "{{ identity_name }}.vpn"
 
+  vars:
+
+    - name: "notification_groups"
+      type: "array"
+      value:
+
+        - type: "string"
+          value: "admins"
+
 icinga_web:
 
   version: "{{ super_cluster.icinga_web_version }}"

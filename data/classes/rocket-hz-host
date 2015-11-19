@@ -71,6 +71,13 @@ icinga_host:
 
   vars:
 
+    - name: "notification_groups"
+      type: "array"
+      value:
+
+        - type: "string"
+          value: "admins"
+
     - name: "disks"
       key: "Disk root"
       type: "object"

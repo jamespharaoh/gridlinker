@@ -37,4 +37,13 @@ icinga_host:
 
   address: "{{ identity_name }}.vpn"
 
+  vars:
+
+    - name: "notification_groups"
+      type: "array"
+      value:
+
+        - type: "string"
+          value: "admins"
+
 # ex: et ts=2 filetype=yaml
