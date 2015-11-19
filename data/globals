@@ -122,6 +122,9 @@ ubuntu_system_packages:
   - name: "libpq-dev"
     state: "present"
 
+  - name: "mailutils"
+    state: "present"
+
   - name: "man-db"
     state: "present"
 
