@@ -1,11 +1,8 @@
 ---
 
-- name: "create hosts file"
-  sudo: "yes"
-  action:
+- include: "setup-hosts.yml"
+  tags:
 
-    module: "template"
-    dest: "/etc/hosts"
-    src: "setup-hosts-file"
+    - "setup-hosts"
 
 # ex: et ts=2 filetype=yaml

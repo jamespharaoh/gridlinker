@@ -87,6 +87,34 @@ ubuntu:
     - name: "whois"
       state: "present"
 
+python:
+
+  packages:
+
+    - name: "pip"
+      version: "7.1.2"
+
+    - name: "docker-py"
+      version: "1.2.2"
+
+    - name: "jinja2"
+      version: "2.8"
+
+    - name: "netaddr"
+      version: "0.7.18"
+
+    - name: "paramiko"
+      version: "1.15.2"
+
+    - name: "psycopg2"
+      version: "2.6.1"
+
+    - name: "pyopenssl"
+      version: "0.15.1"
+
+    - name: "pyyaml"
+      version: "3.11"
+
 devbox:
 
   home: "/home/{{ devbox_user }}"

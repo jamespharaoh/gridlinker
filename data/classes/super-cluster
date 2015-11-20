@@ -29,4 +29,16 @@ icinga_web:
   database_hostname: "icinga-1.vpn"
   database_port: "5432"
 
+icinga_web_graphite:
+
+  version: "b451489effdfb179ce2e3ff8c0d8390efad8db5e"
+
+graphite_carbon:
+
+  version: "0.9.14"
+
+graphite_web:
+
+  version: "0.9.14"
+
 # ex: et ts=2 filetype=yaml

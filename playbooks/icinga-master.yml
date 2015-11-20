@@ -28,4 +28,7 @@
     - "icinga-master"
     - "icinga-web"
 
+    - "graphite-carbon"
+    - "graphite-web"
+
 # ex: et ts=2 filetype=yaml

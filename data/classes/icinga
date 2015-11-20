@@ -21,6 +21,12 @@ class:
       type: "resource"
       value: "cluster/master"
 
+private:
+
+  aliases:
+
+    - "graphite.vpn.rocketware.co.uk"
+
 ansible:
 
   ssh_host: "{{ private.address }}"
@@ -54,6 +60,8 @@ icinga:
   database_port: "{{ super_cluster.icinga_database_port }}"
   database_username: "{{ super_cluster.icinga_database_username }}"
   database_password: "{{ super_cluster.icinga_database_password }}"
+
+  graphite_enabled: "yes"
 
   master_services:
 
@@ -97,6 +105,26 @@ icinga_web:
   database_username: "{{ super_cluster.icinga_web_database_username }}"
   database_password: "{{ super_cluster.icinga_web_database_password }}"
 
+icinga_web_graphite:
+
+  version: "{{ super_cluster.icinga_web_graphite_version }}"
+
+  base_url: "/graphite/render?"
+  upstream: "http://graphite.vpn.rocketware.co.uk"
+
+graphite_carbon:
+
+  version: "{{ super_cluster.graphite_carbon_version }}"
+
+graphite_web:
+
+  version: "{{ super_cluster.graphite_web_version }}"
+
+  hostname: "graphite.vpn.rocketware.co.uk"
+  security: "none"
+
+  secret_key: "{{ super_cluster.graphite_web_secret_key }}"
+
 nginx:
 
   version: "1.9.4"
@@ -108,5 +136,33 @@ php:
     - "php5-cli"
     - "php5-fpm"
     - "php5-pgsql"
+
+python:
+
+  packages:
+
+    - name: "cairocffi"
+      version: "0.7.2"
+
+    - name: "django"
+      version: "1.8.6"
+
+    - name: "django-tagging"
+      version: "0.4"
+
+    - name: "python-memcached"
+      version: "1.57"
+
+    - name: "twisted"
+      version: "15.4.0"
+
+    - name: "uwsgi"
+      version: "2.0.11.2"
+
+    - name: "whisper"
+      version: "0.9.14"
+
+    - name: "whitenoise"
+      version: "2.0.6"
 
 # ex: et ts=2 filetype=yaml
