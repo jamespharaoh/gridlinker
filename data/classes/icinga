@@ -33,6 +33,10 @@ ssh:
     - "{{ identity.name }}"
     - "{{ private.address }}"
 
+postfix:
+
+  helo_name: "{{ parent.postfix_helo_name }}"
+
 icinga:
 
   authority: "rocket-icinga"

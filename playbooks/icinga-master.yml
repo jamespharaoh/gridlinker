@@ -18,6 +18,7 @@
 
     - "install-system-packages"
     - "setup-hosts"
+    - "install-postfix"
 
     - "python"
     - "php"

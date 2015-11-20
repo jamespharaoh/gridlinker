@@ -1,0 +1,31 @@
+---
+
+- name: "install postfix packages"
+  with_items:
+
+    - "mailutils"
+    - "postfix"
+
+  sudo: "yes"
+  action:
+
+    module: "apt"
+    name: "{{ item }}"
+
+- name: "configure postfix"
+  with_items:
+
+    - template: "install-postfix-main"
+      target: "/etc/postfix/main.cf"
+
+  notify: "restart postfix"
+  sudo: "yes"
+  action:
+
+    module: "template"
+    dest: "{{ item.target }}"
+    src: "{{ item.template }}"
+  
+- meta: "flush_handlers"
+
+# ex: et ts=2 filetype=yaml
