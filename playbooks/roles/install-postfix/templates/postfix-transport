@@ -1,0 +1,8 @@
+{% set master = hostvars ['cluster/master'] %}
+{% for entry in master.postfix_relay %}
+{% if entry.enable == 'yes' %}
+{% for domain in entry.domains %}
+{{ domain }} smtp:[{{ entry.hostname }}]:{{ entry.port }}
+{% endfor %}
+{% endif %}
+{% endfor %}

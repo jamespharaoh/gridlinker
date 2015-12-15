@@ -15,8 +15,23 @@
 - name: "configure postfix"
   with_items:
 
-    - template: "install-postfix-main"
-      target: "/etc/postfix/main.cf"
+    - target: "/etc/postfix/main.cf"
+      template: "install-postfix-main"
+      user: "root"
+      group: "root"
+      mode: "0644"
+
+    - target: "/etc/postfix/sasl-passwords"
+      template: "postfix-sasl-passwords"
+      user: "root"
+      group: "root"
+      mode: "0600"
+
+    - target: "/etc/postfix/transport"
+      template: "postfix-transport"
+      user: "root"
+      group: "root"
+      mode: "0600"
 
   notify: "restart postfix"
   sudo: "yes"
@@ -25,7 +40,20 @@
     module: "template"
     dest: "{{ item.target }}"
     src: "{{ item.template }}"
-  
+
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+
+- name: "create postfix hashes"
+  with_items:
+
+    - "/etc/postfix/sasl-passwords"
+    - "/etc/postfix/transport"
+
+  sudo: "yes"
+  shell: "postmap {{ item }}"
+
 - meta: "flush_handlers"
 
 # ex: et ts=2 filetype=yaml
