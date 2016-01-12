@@ -27,3 +27,23 @@ include /etc/logrotate.d
     create 0660 root utmp
 }
 
+# compress apache access logs
+{% for env in [ 'live', 'staging' ] %}
+{% set container = env + '-web-application-' + identity_index %}
+{% set directory = '/datingnode-' + env + '/' + container + '/fast/logs' %}
+{{ [
+	directory + '/*-apache-access.log',
+	directory + '/*-apache-error.log',
+] | join (' ') }} {
+	daily
+	missingok
+	rotate 365
+	compress
+	delaycompress
+	notifempty
+	create 640 root adm
+	postrotate
+		docker exec {{ container }} /etc/init.d/apache2 reload >/dev/null
+	endscript
+}
+{% endfor %}
