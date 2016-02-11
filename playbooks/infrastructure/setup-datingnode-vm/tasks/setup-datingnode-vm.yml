@@ -1,5 +1,12 @@
 ---
 
+- name: "install ntp"
+  sudo: "yes"
+  action:
+
+    module: "apt"
+    name: "ntp"
+
 - name: "write vm fstab"
   sudo: "yes"
   action:
