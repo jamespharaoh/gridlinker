@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# (c) 2012, Michael DeHaan <michael.dehaan@gmail.com>
+# (c) 2015, Jon Hawkesworth (@jhawkesworth) <figs@unity.demon.co.uk>
 #
 # This file is part of Ansible
 #
@@ -22,9 +22,8 @@
 DOCUMENTATION = '''
 ---
 module: win_file
-version_added: "1.8"
+version_added: "1.9.2"
 short_description: Creates, touches or removes files or directories.
-extends_documentation_fragment: files
 description:
      - Creates (empty) files, updates file modification stamps of existing files,
        and can create or remove directories.
@@ -32,7 +31,7 @@ description:
 notes:
     - See also M(win_copy), M(win_template), M(copy), M(template), M(assemble)
 requirements: [ ]
-author: Michael DeHaan
+author: "Jon Hawkesworth (@jhawkesworth)"
 options:
   path:
     description:
