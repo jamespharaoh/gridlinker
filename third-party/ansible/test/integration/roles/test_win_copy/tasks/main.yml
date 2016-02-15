@@ -19,6 +19,41 @@
 - name: record the output directory
   set_fact: output_file={{win_output_dir}}/foo.txt
 
+- name: copy an empty file
+  win_copy:
+    src: empty.txt
+    dest: "{{win_output_dir}}/empty.txt"
+  register: copy_empty_result
+
+- name: check copy empty result
+  assert:
+    that:
+      - copy_empty_result|changed
+      - copy_empty_result.checksum == 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+
+- name: stat the empty file
+  win_stat:
+    path: "{{win_output_dir}}/empty.txt"
+  register: stat_empty_result
+
+- name: check that empty file really was created
+  assert:
+    that:
+      - stat_empty_result.stat.exists
+      - stat_empty_result.stat.size == 0
+
+- name: copy an empty file again
+  win_copy:
+    src: empty.txt
+    dest: "{{win_output_dir}}/empty.txt"
+  register: copy_empty_again_result
+
+- name: check copy empty again result
+  assert:
+    that:
+      - not copy_empty_again_result|changed
+      - copy_empty_again_result.checksum == 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+
 - name: initiate a basic copy
 #- name: initiate a basic copy, and also test the mode
 #  win_copy: src=foo.txt dest={{output_file}} mode=0444
@@ -62,7 +97,7 @@
 - name: verify that the file checksum is correct
   assert: 
     that: 
-      - "copy_result.checksum[0] == 'c79a6506c1c948be0d456ab5104d5e753ab2f3e6'"
+      - "copy_result.checksum == 'c79a6506c1c948be0d456ab5104d5e753ab2f3e6'"
 
 - name: check the stat results of the file
   win_stat: path={{output_file}}
@@ -78,7 +113,7 @@
 #      - "stat_results.stat.isfifo == false"
 #      - "stat_results.stat.isreg == true"
 #      - "stat_results.stat.issock == false"
-      - "stat_results.stat.checksum[0] == 'c79a6506c1c948be0d456ab5104d5e753ab2f3e6'"
+      - "stat_results.stat.checksum == 'c79a6506c1c948be0d456ab5104d5e753ab2f3e6'"
 
 - name: overwrite the file via same means
   win_copy: src=foo.txt dest={{output_file}}
