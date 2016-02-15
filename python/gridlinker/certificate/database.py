@@ -480,7 +480,7 @@ class CertificateDatabase:
 			verify_subject = True,
 			verify_common_name = True):
 
-		subject_path = self.path + "/" + name
+		subject_path = self.path + "/subjects/" + name
 
 		# read certificates and private key
 
@@ -633,7 +633,7 @@ class CertificateDatabase:
 				"No certificate for " + name)
 
 		if not self.client.exists (
-			entry_path):
+			entry_path + "/current"):
 
 			raise Exception (
 				"No current certificate for " + name)
@@ -733,7 +733,10 @@ class CertificateDatabase:
 
 		return [
 			self.get (subject_name)
-			for subject_name in self.client.ls (self.path + "/subjects")
+			for subject_name
+				in self.client.ls (self.path + "/subjects")
+			if self.client.exists (
+				self.path + "/subjects/" + subject_name + "/current")
 		]
 
 def args (prev_sub_parsers):
