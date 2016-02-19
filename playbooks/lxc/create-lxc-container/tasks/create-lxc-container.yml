@@ -1,10 +1,12 @@
 ---
 
 - name: "create lxc container"
-  delegate_to: "{{ identity_parent }}"
+  delegate_to: "host/{{ identity_parent }}"
   args:
+
     executable: "/bin/bash"
     creates: "/var/lib/lxc/{{ identity_name }}/create-flag"
+
   sudo: "yes"
   shell:
 
@@ -79,17 +81,23 @@
     touch /var/lib/lxc/{{ identity_name }}/create-flag;
 
 - name: "create lxc configs"
-  delegate_to: "{{ identity_parent }}"
-  action:
-    module: "template"
-    src: "lxc-config"
-    dest: "/var/lib/lxc/{{ identity_name }}/config"
+  delegate_to: "host/{{ identity_parent }}"
   sudo: "yes"
+  action:
+
+    module: "template"
+    dest: "/var/lib/lxc/{{ identity_name }}/config"
+    src: "lxc-config"
 
 - name: "start lxc container"
-  delegate_to: "{{ identity_parent }}"
+  register: "start_result"
+  changed_when: "start_result.stdout != 'UNCHANGED'"
+  delegate_to: "host/{{ identity_parent }}"
+  sudo: "yes"
   args:
+
     executable: "/bin/bash"
+
   shell:
 
     set -euf -o pipefail;
@@ -111,13 +119,10 @@
       --name {{ identity_name }}
       --daemon;
 
-  sudo: "yes"
-  register: "start_result"
-  changed_when: "start_result.stdout != 'UNCHANGED'"
-
 - name: "wait for ssh"
   delegate_to: "localhost"
   wait_for:
+
     host: "{{ private_address }}"
     port: "22"
     search_regex: "OpenSSH"

@@ -63,6 +63,8 @@ icinga:
 
   graphite_enabled: "yes"
 
+  email_from: "icinga@rocketware.co.uk"
+
   master_services:
 
     - for_key: "disk"

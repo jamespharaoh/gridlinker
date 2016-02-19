@@ -34,12 +34,18 @@ php_bool:
 
 wbs_dist: "https://dist.wellbehavedsoftware.com"
 
-python_version: "2.7.10"
+python:
 
-python_packages:
+  version: "2.7.10"
 
-  - name: "pip"
-    version: "7.1.2"
+  packages:
+
+    - name: "pip"
+      version: "7.1.2"
+
+python_pip:
+
+  version: "8.0.2"
 
 python_apt_version: "0.9.3-1"
 python_apt_mirror: "{{ wbs_dist }}/python-apt"

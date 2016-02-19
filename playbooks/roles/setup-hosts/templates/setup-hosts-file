@@ -1,15 +1,33 @@
+{% macro do_internal (host_name) %}
+{% set host = hostvars [host_name] %}
+{{ host.private.address }} {{
+	[
+		host.identity_name + '.vpn.rocketware.co.uk',
+		host.identity_name + '.vpn',
+		host.identity_name,
+	]
+	| union (host.private_aliases | default ([]))
+	| join (' ')
+}}
+{% endmacro %}
+
+{% if 'rocket-hz' in groups %}
+{{ do_internal (inventory_hostname) }}
+{% endif %}
+
 127.0.0.1 localhost
 
 ::1 localhost ip6-localhost ip6-loopback
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 
-{% for host_name in groups ['vagrant-devbox'] %}
-{% set host = hostvars [host_name] %}
-{{ host.private.address }} {{ host.identity_name }}
-{% endfor %}
-
 {% if 'rocket-hz' in groups %}
+
+{% for host_name in groups ['vagrant-devbox'] %}
+{% if host_name != inventory_hostname %}
+{{ do_internal (host_name) }}
+{% endif %}
+{% endfor %}
 
 {% for host_name in groups ['rocket-hz'] %}
 {% set host = hostvars [host_name] %}
@@ -17,6 +35,7 @@ ff02::2 ip6-allrouters
 	[
 		host.identity_name + '.vpn.rocketware.co.uk',
 		host.identity_name + '.vpn',
+		host.identity_name,
 	]
 	| union (host.private_aliases | default ([]))
 	| join (' ')

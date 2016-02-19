@@ -1,7 +1,7 @@
 ---
 
 - name: "checkout projects from git"
-  with_items: "devbox_checkouts"
+  with_items: "{{ devbox_checkouts }}"
   args:
 
     creates: "{{ devbox_home }}/{{ item.name }}"
