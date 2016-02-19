@@ -22,7 +22,7 @@
   action:
 
     module: "apt"
-    package: "{{ item }}"
+    name: "{{ item }}"
 
 - name: "add ubuntu to nagios group"
   sudo: "yes"
@@ -45,7 +45,7 @@
     rm -f /etc/init.d/icinga2 /etc/init.d/rc?.d/[KS]??icinga2;
 
 - name: "set icinga.state to 'installed'"
-  when: "icinga_state == 'no'"
+  when: "icinga_state == ''"
   tags: [ "icinga", "install-icinga" ]
   update_resource:
 
