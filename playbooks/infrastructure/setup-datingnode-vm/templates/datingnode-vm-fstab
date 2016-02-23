@@ -1,3 +1,7 @@
+{% macro uuid_mount (name, path) %}
+UUID={{ disk_ids [name] }} {{ path }} ext4 defaults 0 2
+{% endmacro %}
+
 {% macro local_mount (source, dest) %}
 {{ source }} {{ dest }} none bind 0 0
 {% endmacro %}
@@ -6,25 +10,35 @@
 {{ remote }}:{{ source }} {{ dest }} nfs async 0 0
 {% endmacro %}
 
-/dev/vda1 / ext4 errors=remount-ro 0 1
+/dev/sda1 / ext4 errors=remount-ro 0 1
 
 {% for cluster_unique_name in groups ['deployment-cluster'] %}
 {% set cluster = hostvars [cluster_unique_name] %}
 {% set cluster_name = cluster.identity_name %}
 
-{% if cluster_name == 'live' %}
+{{ uuid_mount (
+	cluster_name + '-database-' + identity_index,
+	[
+		'/datingnode-' + cluster_name,
+		'/' + cluster_name + '-database-' + identity_index,
+		'/data',
+	] | join) }}
 
-/dev/vdb /datingnode-live/live-database-{{ identity_index }}/data ext4 defaults 0 2
-/dev/vdc /datingnode-live/live-web-application-{{ identity_index }}/fast ext4 defaults 0 2
-/dev/vdd /datingnode-live/live-web-application-{{ identity_index }}/big ext4 defaults 0 2
+{{ uuid_mount (
+	cluster_name + '-images-' + identity_index,
+	[
+		'/datingnode-' + cluster_name,
+		'/' + cluster_name + '-database-' + identity_index,
+		'/big',
+	] | join) }}
 
-{% elif cluster_name == 'staging' %}
-
-/dev/vde /datingnode-staging/staging-database-{{ identity_index }}/data ext4 defaults 0 2
-/dev/vdf /datingnode-staging/staging-web-application-{{ identity_index }}/fast ext4 defaults 0 2
-/dev/vdg /datingnode-staging/staging-web-application-{{ identity_index }}/big ext4 defaults 0 2
-
-{% endif %}
+{{ uuid_mount (
+	cluster_name + '-cache-' + identity_index,
+	[
+		'/datingnode-' + cluster_name,
+		'/' + cluster_name + '-web-application-' + identity_index,
+		'/fast',
+	] | join) }}
 
 {% set master = hostvars ['host/' + cluster.cluster.vm_master] %}
 
@@ -70,6 +84,14 @@
 
 {% endfor %}
 
-/dev/vdh /datingnode-live/backups ext4 defaults 0 2
-/dev/vdi /var/lib/lxc ext4 defaults 0 2
-/dev/vdj /var/lib/docker ext4 defaults 0 2
+{{ uuid_mount (
+	'live-backups-' + identity_index,
+	'/datingnode-live/backups') }}
+
+{{ uuid_mount (
+	'lxc-' + identity_index,
+	'/var/lib/lxc') }}
+
+{{ uuid_mount (
+	'docker-' + identity_index,
+	'/var/lib/docker') }}

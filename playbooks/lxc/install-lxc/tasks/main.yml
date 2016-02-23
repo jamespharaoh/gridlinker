@@ -1,26 +1,31 @@
 ---
 
 - name: "install lxc packages"
-  action:
-    module: "apt"
-    package: "{{ item }}"
-  sudo: "yes"
   with_items:
+
     - "lxc"
     - "lxc-templates"
 
-- name: "configure lxc network defaults"
+  become: "yes"
   action:
+
+    module: "apt"
+    name: "{{ item }}"
+
+- name: "configure lxc network defaults"
+  become: "yes"
+  action:
+
     module: "template"
-    src: "lxc-net-default"
     dest: "/etc/default/lxc-net"
-  sudo: "yes"
+    src: "lxc-net-default"
 
 - name: "configure lxc defaults"
+  become: "yes"
   action:
+
     module: "template"
-    src: "lxc-default"
     dest: "/etc/lxc/default.conf"
-  sudo: "yes"
+    src: "lxc-default"
 
 # ex: et ts=2 filetype=yaml
