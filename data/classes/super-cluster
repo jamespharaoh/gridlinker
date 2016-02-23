@@ -21,7 +21,7 @@ icinga:
 
 icinga_web:
 
-  version: "2.1.0"
+  version: "2.1.2"
 
   database_type: "postgresql"
   database_delegate: "host/icinga-1"
