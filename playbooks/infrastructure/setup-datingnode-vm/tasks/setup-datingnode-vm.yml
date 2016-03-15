@@ -16,6 +16,7 @@
     src: "datingnode-vm-fstab"
 
 - name: "install database backup script"
+  tags: "vm-backup-script"
   sudo: "yes"
   action:
 
@@ -26,6 +27,7 @@
     mode: "0755"
 
 - name: "install database backup config"
+  tags: "vm-backup-config"
   sudo: "yes"
   action:
 
@@ -36,6 +38,7 @@
     mode: "0600"
 
 - name: "configure cron"
+  tags: "vm-backup-cron"
   notify: "restart cron"
   sudo: "yes"
   action:

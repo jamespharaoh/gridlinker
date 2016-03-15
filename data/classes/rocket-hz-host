@@ -33,7 +33,7 @@ openvpn:
 
 etcd:
 
-  version: "2.0.11"
+  version: "2.2.5"
   hostname: "{{ identity.name }}.rocketware.co.uk"
 
   secured: "yes"

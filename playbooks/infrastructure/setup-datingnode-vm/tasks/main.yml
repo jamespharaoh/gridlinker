@@ -1,6 +1,9 @@
 ---
 
 - include: "setup-datingnode-vm.yml"
-  tags: [ "datingnode", "setup-datingnode-vm" ]
+  tags:
+
+    - "datingnode"
+    - "setup-datingnode-vm"
 
 # ex: et ts=2 filetype=yaml

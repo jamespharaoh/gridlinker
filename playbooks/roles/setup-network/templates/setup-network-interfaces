@@ -13,15 +13,23 @@ iface lo inet loopback
 auto brpub0
 iface brpub0 inet static
 
+	# addressing
+
 	address {{ public.address }}
 	netmask {{ public.netmask }}
 	broadcast {{ public.broadcast }}
 	gateway {{ public.gateway }}
 
+	# bridging
+
 	bridge_ports eth0
 	bridge_stp off
 	bridge_maxwait 0
 	bridge_fd 0
+
+	# link performance
+
+	pre-up tc qdisc add dev eth0 root sfq
 
 	# firewall rules
 
@@ -48,14 +56,23 @@ iface brpub0 inet static
 auto brprv0
 iface brprv0 inet static
 
+	# addressing
+
 	address {{ private.address }}
 	netmask {{ private.netmask }}
 	broadcast {{ private.broadcast }}
+
+	# bridging
 
 	bridge_ports eth1
 	bridge_stp off
 	bridge_maxwait 0
 	bridge_fd 0
+
+	# link performance
+
+	pre-up ip link set eth1 mtu 9000
+	pre-up tc qdisc add dev eth1 root sfq
 
 	# firewall rules
 
