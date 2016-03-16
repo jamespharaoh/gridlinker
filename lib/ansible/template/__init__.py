@@ -370,7 +370,10 @@ class Templar:
         '''
         returns True if the data contains a variable pattern
         '''
-        return self.environment.block_start_string in data or self.environment.variable_start_string in data
+        for marker in  [self.environment.block_start_string, self.environment.variable_start_string, self.environment.comment_start_string]:
+            if marker in data:
+                return True
+        return False
 
     def _convert_bare_variable(self, variable, bare_deprecated):
         '''
@@ -420,7 +423,13 @@ class Templar:
                 if wantlist:
                     ran = wrap_var(ran)
                 else:
-                    ran = UnsafeProxy(",".join(ran))
+                    try:
+                        ran = UnsafeProxy(",".join(ran))
+                    except TypeError:
+                        if isinstance(ran, list) and len(ran) == 1:
+                            ran = wrap_var(ran[0])
+                        else:
+                            ran = wrap_var(ran)
 
             return ran
         else:

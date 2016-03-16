@@ -518,12 +518,15 @@ class AnsibleModule(object):
         self.no_log = no_log
         self.cleanup_files = []
         self._debug = False
+        self._diff = False
+        self._verbosity = 0
+
         # May be used to set modifications to the environment for any
         # run_command invocation
         self.run_command_environ_update = {}
 
         self.aliases = {}
-        self._legal_inputs = ['_ansible_check_mode', '_ansible_no_log', '_ansible_debug']
+        self._legal_inputs = ['_ansible_check_mode', '_ansible_no_log', '_ansible_debug', '_ansible_diff', '_ansible_verbosity']
 
         if add_file_common_args:
             for k, v in FILE_COMMON_ARGUMENTS.items():
@@ -898,7 +901,7 @@ class AnsibleModule(object):
     def _symbolic_mode_to_octal(self, path_stat, symbolic_mode):
         new_mode = stat.S_IMODE(path_stat.st_mode)
 
-        mode_re = re.compile(r'^(?P<users>[ugoa]+)(?P<operator>[-+=])(?P<perms>[rwxXst]*|[ugo])$')
+        mode_re = re.compile(r'^(?P<users>[ugoa]+)(?P<operator>[-+=])(?P<perms>[rwxXst-]*|[ugo])$')
         for mode in symbolic_mode.split(','):
             match = mode_re.match(mode)
             if match:
@@ -1111,8 +1114,18 @@ class AnsibleModule(object):
             elif k == '_ansible_debug':
                 self._debug = self.boolean(v)
 
+            elif k == '_ansible_diff':
+                self._diff = self.boolean(v)
+
+            elif k == '_ansible_verbosity':
+                self._verbosity = v
+
             elif check_invalid_arguments and k not in self._legal_inputs:
                 self.fail_json(msg="unsupported parameter for module: %s" % k)
+
+            #clean up internal params:
+            if k.startswith('_ansible_'):
+                del self.params[k]
 
     def _count_terms(self, check):
         count = 0
@@ -1768,7 +1781,7 @@ class AnsibleModule(object):
 
         # expand things like $HOME and ~
         if not shell:
-            args = [ os.path.expandvars(os.path.expanduser(x)) for x in args ]
+            args = [ os.path.expandvars(os.path.expanduser(x)) for x in args if x is not None ]
 
         rc = 0
         msg = None
