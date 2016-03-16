@@ -95,9 +95,6 @@
 		{%- set cluster = hostvars [cluster_unique_name] -%}
 		{%- set cluster_name = cluster.identity_name -%}
 
-		{%- set master_name = cluster.cluster.vm_master -%}
-		{%- set master = hostvars ['host/' + master_name] -%}
-
 		{%- set data_dir = '/datingnode-' + cluster_name -%}
 		{%- set web_app_local = data_dir + '/' + cluster_name + '-web-application-' + identity_index -%}
 
@@ -196,9 +193,6 @@
 		{%- set cluster = hostvars [cluster_unique_name] -%}
 		{%- set cluster_name = cluster.identity_name -%}
 
-		{%- set master_name = cluster.cluster.vm_master -%}
-		{%- set master = hostvars ['host/' + master_name] -%}
-
 		{%- set data_dir = '/datingnode-' + cluster_name -%}
 
 		{%- set web_app_local = [
@@ -206,12 +200,7 @@
 			cluster_name + '-web-application-' + identity_index,
 		] | join ('/') -%}
 
-		{%- set web_app_remote = [
-			data_dir,
-			cluster_name + '-web-application-' + master.identity_index,
-		] | join ('/') -%}
-
-		{%- if identity_name == master_name -%}
+		{%- if identity_name == cluster.cluster.vm_master -%}
 
 			{%- if cluster_name == 'live' -%}
 
@@ -233,7 +222,19 @@
 
 			{%- endif -%}
 
+		{%- elif cluster.cluster.vm_master == 'none' -%}
+
+			{%- print '# no vm master for ', cluster_name, '\n\n' -%}
+
 		{%- else -%}
+
+			{%- set master_name = cluster.cluster.vm_master -%}
+			{%- set master = hostvars ['host/' + master_name] -%}
+
+			{%- set web_app_remote = [
+				data_dir,
+				cluster_name + '-web-application-' + master.identity_index,
+			] | join ('/') -%}
 
 			{%- print '# pull ', cluster_name, ' from master\n\n' -%}
 

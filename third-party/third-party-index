@@ -3,7 +3,9 @@
 ansible:
 
   url: "git@github.com:ansible/ansible.git"
-  version: "stable-2.0"
+  #version: "stable-2.0"
+  version: "2eb59bedcfc127b6b3ea392e654c031e83a6e87d"
+  python: "ansible/lib"
 
 ansible-modules-core:
 
@@ -19,20 +21,30 @@ gitdb:
 
   url: "git@github.com:gitpython-developers/gitdb.git"
   version: "master"
+  python: "gitdb"
 
 gitpython:
 
   url: "git@github.com:gitpython-developers/GitPython.git"
   version: "master"
+  python: "gitpython"
 
 gridlinker:
 
   url: "git@gitlab.wellbehavedsoftware.com:well-behaved-software/gridlinker.git"
   version: "master"
+  python: "gridlinker/python"
+
+smmap:
+
+  url: "git@github.com:gitpython-developers/smmap.git"
+  version: "master"
+  python: "smmap"
 
 wbs-python:
 
   url: "git@gitlab.wellbehavedsoftware.com:well-behaved-software/wbs-python.git"
   version: "master"
+  python: "wbs-python"
 
 # ex: et ts=2 filetype=yaml

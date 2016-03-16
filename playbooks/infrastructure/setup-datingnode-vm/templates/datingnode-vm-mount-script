@@ -1,0 +1,44 @@
+{%- print '#!/bin/bash\n' -%}
+
+{%- for cluster_unique_name in groups ['deployment-cluster'] -%}
+
+	{%- set cluster = hostvars [cluster_unique_name] -%}
+	{%- set cluster_name = cluster.identity_name -%}
+
+	{%- print '\n# ----------- cluster ' + cluster_name + '\n\n' -%}
+
+	{%- set data_dir =
+		'/datingnode-' + cluster_name -%}
+
+	{%- set web_app_local = [
+		data_dir,
+		cluster_name + '-web-application-' + identity_index,
+	] | join ('/') -%}
+
+	{%- if cluster.cluster.vm_master == 'none' -%}
+
+		{%- print [
+			'umount',
+			web_app_local + '/data/temp',
+		] | join (' '), '\n' -%}
+
+		{%- print [
+			'umount',
+			web_app_local + '/data/assets/user-data',
+		] | join (' '), '\n' -%}
+
+	{%- else -%}
+
+		{%- print [
+			'mount',
+			web_app_local + '/data/temp',
+		] | join (' '), '\n' -%}
+
+		{%- print [
+			'mount',
+			web_app_local + '/data/assets/user-data',
+		] | join (' '), '\n' -%}
+
+	{%- endif -%}
+
+{%- endfor -%}
