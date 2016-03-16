@@ -23,8 +23,8 @@
     }}"
 
 - name: "install gridlinker admin system packages"
-  with_items: "gridlinker_admin_system_packages"
-  sudo: "yes"
+  with_items: "{{ gridlinker_admin_system_packages }}"
+  become: "yes"
   action:
 
     module: "apt"
