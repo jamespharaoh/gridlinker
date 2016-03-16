@@ -362,7 +362,7 @@ class VariableManager:
         variables['playbook_dir'] = loader.get_basedir()
 
         if host:
-            variables['group_names'] = sorted([group.name for group in host.get_groups() if group.name != 'all'])
+            variables['group_names'] = [group.name for group in host.get_groups() if group.name != 'all']
 
             if self._inventory is not None:
                 variables['groups']  = dict()
@@ -600,10 +600,8 @@ class VariableManager:
         '''
         Sets a value in the vars_cache for a host.
         '''
+
         host_name = host.get_name()
         if host_name not in self._vars_cache:
             self._vars_cache[host_name] = dict()
-        if varname in self._vars_cache[host_name]:
-            self._vars_cache[host_name][varname] = combine_vars(self._vars_cache[host_name][varname], value)
-        else:
-            self._vars_cache[host_name][varname] = value
+        self._vars_cache[host_name][varname] = value
