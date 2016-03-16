@@ -193,7 +193,6 @@ class TestStrategyBase(unittest.TestCase):
         mock_inventory.get_host.side_effect = _get_host
         mock_inventory.get_group.side_effect = _get_group
         mock_inventory.clear_pattern_cache.return_value = None
-        mock_inventory.get_host_vars.return_value = {}
 
         mock_var_mgr = MagicMock()
         mock_var_mgr.set_host_variable.return_value = None

@@ -366,17 +366,12 @@ class PlayContext(Base):
         else:
             delegated_vars = dict()
 
-        attrs_considered = []
         for (attr, variable_names) in iteritems(MAGIC_VARIABLE_MAPPING):
             for variable_name in variable_names:
-                if attr in attrs_considered:
-                    continue
                 if isinstance(delegated_vars, dict) and variable_name in delegated_vars:
                     setattr(new_info, attr, delegated_vars[variable_name])
-                    attrs_considered.append(attr)
                 elif variable_name in variables:
                     setattr(new_info, attr, variables[variable_name])
-                    attrs_considered.append(attr)
 
         # make sure we get port defaults if needed
         if new_info.port is None and C.DEFAULT_REMOTE_PORT is not None:
@@ -451,10 +446,8 @@ class PlayContext(Base):
 
             if self.become_method == 'sudo':
                 # If we have a password, we run sudo with a randomly-generated
-                # prompt set using -p. Otherwise we run it with default -n, which makes
+                # prompt set using -p. Otherwise we run it with -n, which makes
                 # it fail if it would have prompted for a password.
-                # Cannot rely on -n as it can be removed from defaults, which should be
-                # done for older versions of sudo that do not support the option.
                 #
                 # Passing a quoted compound command to sudo (or sudo -s)
                 # directly doesn't work, so we shellquote it with pipes.quote()
@@ -470,13 +463,12 @@ class PlayContext(Base):
 
             elif self.become_method == 'su':
 
-                # passing code ref to examine prompt as simple string comparisson isn't good enough with su
                 def detect_su_prompt(data):
                     SU_PROMPT_LOCALIZATIONS_RE = re.compile("|".join(['(\w+\'s )?' + x + ' ?: ?' for x in SU_PROMPT_LOCALIZATIONS]), flags=re.IGNORECASE)
                     return bool(SU_PROMPT_LOCALIZATIONS_RE.match(data))
-                prompt = detect_su_prompt
 
-                becomecmd = '%s %s %s -c %s' % (exe, flags, self.become_user, pipes.quote('%s -c %s' % (executable, success_cmd)))
+                prompt = detect_su_prompt
+                becomecmd = '%s %s %s -c "%s -c %s"' % (exe, flags, self.become_user, executable, success_cmd)
 
             elif self.become_method == 'pbrun':
 
@@ -490,7 +482,7 @@ class PlayContext(Base):
 
             elif self.become_method == 'runas':
                 raise AnsibleError("'runas' is not yet implemented")
-                #FIXME: figure out prompt
+                #TODO: figure out prompt
                 # this is not for use with winrm plugin but if they ever get ssh native on windoez
                 becomecmd = '%s %s /user:%s "%s"' % (exe, flags, self.become_user, success_cmd)
 
@@ -505,8 +497,7 @@ class PlayContext(Base):
                 if self.become_user:
                     flags += ' -u %s ' % self.become_user
 
-                #FIXME: make shell independant
-                becomecmd = '%s %s echo %s && %s %s env ANSIBLE=true %s' % (exe, flags, success_key, exe, flags, cmd)
+                becomecmd = '%s %s %s -c %s' % (exe, flags, executable, success_cmd)
 
             else:
                 raise AnsibleError("Privilege escalation method not found: %s" % self.become_method)
@@ -514,7 +505,7 @@ class PlayContext(Base):
             if self.become_pass:
                 self.prompt = prompt
             self.success_key = success_key
-            return becomecmd
+            return ('%s -c %s' % (executable, pipes.quote(becomecmd)))
 
         return cmd
 
@@ -524,15 +515,11 @@ class PlayContext(Base):
         In case users need to access from the play, this is a legacy from runner.
         '''
 
-        for prop, var_list in MAGIC_VARIABLE_MAPPING.items():
-            try:
-                if 'become' in prop:
-                    continue
+        # TODO: should we be setting the more generic values here rather than
+        #       the more specific _ssh_ ones?
+        for special_var in RESET_VARS:
 
-                var_val = getattr(self, prop)
-                for var_opt in var_list:
-                    if var_opt not in variables and var_val is not None:
-                        variables[var_opt] = var_val
-            except AttributeError:
-                continue
-
+            if special_var not in variables:
+                for prop, varnames in MAGIC_VARIABLE_MAPPING.items():
+                    if special_var in varnames:
+                        variables[special_var] = getattr(self, prop)

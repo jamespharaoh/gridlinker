@@ -89,7 +89,6 @@ class ActionModule(ActionBase):
         delimiter  = self._task.args.get('delimiter', None)
         remote_src = self._task.args.get('remote_src', 'yes')
         regexp     = self._task.args.get('regexp', None)
-        follow     = self._task.args.get('follow', False)
         ignore_hidden = self._task.args.get('ignore_hidden', False)
 
         if src is None or dest is None:
@@ -100,6 +99,7 @@ class ActionModule(ActionBase):
         if boolean(remote_src):
             result.update(self._execute_module(tmp=tmp, task_vars=task_vars))
             return result
+
         elif self._task._role is not None:
             src = self._loader.path_dwim_relative(self._task._role._role_path, 'files', src)
         else:
@@ -109,36 +109,15 @@ class ActionModule(ActionBase):
         if regexp is not None:
             _re = re.compile(regexp)
 
-        if not os.path.isdir(src):
-            result['failed'] = True
-            result['msg'] = "Source (%s) is not a directory" % src
-            return result
-
         # Does all work assembling the file
         path = self._assemble_from_fragments(src, delimiter, _re, ignore_hidden)
 
         path_checksum = checksum_s(path)
         dest = self._remote_expand_user(dest)
-        dest_stat = self._execute_remote_stat(dest, all_vars=task_vars, follow=follow)
+        remote_checksum = self._remote_checksum(dest, all_vars=task_vars)
 
         diff = {}
-
-        # setup args for running modules
-        new_module_args = self._task.args.copy()
-
-        # clean assemble specific options
-        for opt in ['remote_src', 'regexp', 'delimiter', 'ignore_hidden']:
-            if opt in new_module_args:
-                del new_module_args[opt]
-
-        new_module_args.update(
-            dict(
-                dest=dest,
-                original_basename=os.path.basename(src),
-            )
-        )
-
-        if path_checksum != dest_stat['checksum']:
+        if path_checksum != remote_checksum:
             resultant = file(path).read()
 
             if self._play_context.diff:
@@ -150,13 +129,31 @@ class ActionModule(ActionBase):
             if self._play_context.become and self._play_context.become_user != 'root':
                 self._remote_chmod('a+r', xfered)
 
-            new_module_args.update( dict( src=xfered,))
+            # run the copy module
+
+            new_module_args = self._task.args.copy()
+            new_module_args.update(
+                dict(
+                    src=xfered,
+                    dest=dest,
+                    original_basename=os.path.basename(src),
+                )
+            )
 
             res = self._execute_module(module_name='copy', module_args=new_module_args, task_vars=task_vars, tmp=tmp)
             if diff:
                 res['diff'] = diff
             result.update(res)
+            return result
         else:
-            result.update(self._execute_module(module_name='file', module_args=new_module_args, task_vars=task_vars, tmp=tmp))
+            new_module_args = self._task.args.copy()
+            new_module_args.update(
+                dict(
+                    src=xfered,
+                    dest=dest,
+                    original_basename=os.path.basename(src),
+                )
+            )
 
-        return result
+            result.update(self._execute_module(module_name='file', module_args=new_module_args, task_vars=task_vars, tmp=tmp))
+            return result

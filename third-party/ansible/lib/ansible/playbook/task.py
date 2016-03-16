@@ -69,11 +69,11 @@ class Task(Base, Conditional, Taggable, Become):
 
     _any_errors_fatal     = FieldAttribute(isa='bool')
     _async                = FieldAttribute(isa='int', default=0)
-    _changed_when         = FieldAttribute(isa='list', default=[])
+    _changed_when         = FieldAttribute(isa='string')
     _delay                = FieldAttribute(isa='int', default=5)
     _delegate_to          = FieldAttribute(isa='string')
     _delegate_facts       = FieldAttribute(isa='bool', default=False)
-    _failed_when          = FieldAttribute(isa='list', default=[])
+    _failed_when          = FieldAttribute(isa='string')
     _first_available_file = FieldAttribute(isa='list')
     _loop                 = FieldAttribute(isa='string', private=True)
     _loop_args            = FieldAttribute(isa='list', private=True)
@@ -82,7 +82,7 @@ class Task(Base, Conditional, Taggable, Become):
     _poll                 = FieldAttribute(isa='int')
     _register             = FieldAttribute(isa='string')
     _retries              = FieldAttribute(isa='int', default=3)
-    _until                = FieldAttribute(isa='list', default=[])
+    _until                = FieldAttribute(isa='string')
 
     def __init__(self, block=None, role=None, task_include=None):
         ''' constructors a task, without the Task.load classmethod, it will be pretty blank '''
@@ -216,6 +216,14 @@ class Task(Base, Conditional, Taggable, Become):
 
         return super(Task, self).preprocess_data(new_ds)
 
+    def _load_any_errors_fatal(self, attr, value):
+        '''
+        Exists only to show a deprecation warning, as this attribute is not valid
+        at the task level.
+        '''
+        display.deprecated("Setting any_errors_fatal on a task is no longer supported. This should be set at the play level only")
+        return None
+
     def post_validate(self, templar):
         '''
         Override of base class post_validate, to also do final validation on
@@ -228,13 +236,6 @@ class Task(Base, Conditional, Taggable, Become):
             self._task_include.post_validate(templar)
 
         super(Task, self).post_validate(templar)
-
-    def _post_validate_register(self, attr, value, templar):
-        '''
-        Override post validation for the register args field, which is not
-        supposed to be templated
-        '''
-        return value
 
     def _post_validate_loop_args(self, attr, value, templar):
         '''
@@ -251,21 +252,11 @@ class Task(Base, Conditional, Taggable, Become):
         if value is None:
             return dict()
 
-        elif isinstance(value, list):
-            if  len(value) == 1:
-                return templar.template(value[0], convert_bare=True)
-            else:
-                env = []
-                for env_item in value:
-                    if isinstance(env_item, (string_types, AnsibleUnicode)) and env_item in templar._available_variables.keys():
-                        env[env_item] =  templar.template(env_item, convert_bare=True)
-        elif isinstance(value, dict):
-            env = dict()
-            for env_item in value:
-                if isinstance(env_item, (string_types, AnsibleUnicode)) and env_item in templar._available_variables.keys():
-                    env[env_item] =  templar.template(value[env_item], convert_bare=True)
-
-        # at this point it should be a simple string
+        for env_item in value:
+            if isinstance(env_item, (string_types, AnsibleUnicode)) and env_item in templar._available_variables.keys():
+                display.deprecated("Using bare variables for environment is deprecated."
+                        " Update your playbooks so that the environment value uses the full variable syntax ('{{foo}}')")
+                break
         return templar.template(value, convert_bare=True)
 
     def _post_validate_changed_when(self, attr, value, templar):
@@ -431,10 +422,3 @@ class Task(Base, Conditional, Taggable, Become):
         if parent_environment is not None:
             environment = self._extend_value(environment, parent_environment)
         return environment
-
-    def _get_attr_any_errors_fatal(self):
-        '''
-        Override for the 'tags' getattr fetcher, used from Base.
-        '''
-        return self._get_parent_attribute('any_errors_fatal')
-
