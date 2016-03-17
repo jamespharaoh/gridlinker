@@ -41,7 +41,7 @@ python:
   packages:
 
     - name: "pip"
-      version: "7.1.2"
+      version: "8.1.0"
 
 python_pip:
 
