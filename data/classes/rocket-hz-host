@@ -71,6 +71,10 @@ icinga_host:
 
   vars:
 
+    - name: "type"
+      type: "string"
+      value: "dedicated"
+
     - name: "notification_groups"
       type: "array"
       value:

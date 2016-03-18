@@ -75,6 +75,68 @@ icinga:
       assign_where: "host.vars.disks"
       command_endpoint: "host.name"
 
+    # ---------- load
+
+    - name: "Load"
+      check_command: "load"
+      assign_where: "host.vars.type == \"dedicated\""
+      command_endpoint: "host.name"
+      vars:
+
+        - name: "load_wload1"
+          type: "raw"
+          value: "20.0"
+
+        - name: "load_wload5"
+          type: "raw"
+          value: "15.0"
+
+        - name: "load_wload15"
+          type: "raw"
+          value: "10.0"
+
+        - name: "load_cload1"
+          type: "raw"
+          value: "30.0"
+
+        - name: "load_cload5"
+          type: "raw"
+          value: "25.0"
+
+        - name: "load_cload15"
+          type: "raw"
+          value: "20.0"
+
+    - name: "Load"
+      check_command: "load"
+      assign_where: "host.vars.type == \"virtual\""
+      command_endpoint: "host.name"
+      vars:
+
+        - name: "load_wload1"
+          type: "raw"
+          value: "50.0"
+
+        - name: "load_wload5"
+          type: "raw"
+          value: "40.0"
+
+        - name: "load_wload15"
+          type: "raw"
+          value: "30.0"
+
+        - name: "load_cload1"
+          type: "raw"
+          value: "100.0"
+
+        - name: "load_cload5"
+          type: "raw"
+          value: "75.0"
+
+        - name: "load_cload15"
+          type: "raw"
+          value: "50.0"
+
 icinga_endpoint:
 
   host: "{{ identity_name }}.vpn"
@@ -86,6 +148,10 @@ icinga_host:
   address: "{{ identity_name }}.vpn"
 
   vars:
+
+    - name: "type"
+      type: "string"
+      value: "lxc-container"
 
     - name: "notification_groups"
       type: "array"

@@ -81,11 +81,12 @@ iface brprv0 inet static
 
 	# vpn routing
 
-{% for host_name in groups ['rocket-hz-host']
-	if host_name != identity.name %}
+{% for host_name in groups ['rocket-hz-host'] %}
 {% set host = hostvars [host_name] %}
+{% if host.identity_name != identity_name %}
 	up route add -net {{ host.openvpn.network }}.0/24 gw {{ host.private.address }} brprv0
 	down route del -net {{ host.openvpn.network }}.0/24 gw {{ host.private.address }} brprv0
+{% endif %}
 {% endfor %}
 
 # dummy for mail

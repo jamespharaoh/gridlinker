@@ -139,6 +139,10 @@ icinga_host:
 
   vars:
 
+    - name: "type"
+      type: "string"
+      value: "virtual"
+
     - name: "notification_groups"
       type: "array"
       value:
