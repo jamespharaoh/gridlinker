@@ -212,8 +212,8 @@
 						schedule = '*/2 * * * *',
 						remote = 'ubuntu@bunga-balancer-1.wellbehavedsoftware.com',
 						port = '2245',
-						source = web_app_local + '/big/user-data',
-						dest = '/home/ubuntu/user-data'),
+						source = web_app_local + '/big/user-data-cipher-local',
+						dest = '/home/ubuntu/user-data-cipher'),
 				] | join, '\n' -%}
 
 			{%- else -%}
@@ -243,8 +243,8 @@
 					lockfile = '/var/run/rsync-pull-user-data-' + cluster_name,
 					schedule = cluster.cluster.rsync_schedule,
 					remote = master_name + '.vpn',
-					source = web_app_remote + '/big/user-data',
-					dest = web_app_local + '/big/user-data'),
+					source = web_app_remote + '/big/user-data-cipher-local',
+					dest = web_app_local + '/big/user-data-cipher-local'),
 			] | join, '\n' -%}
 
 			{%- print '\n' -%}

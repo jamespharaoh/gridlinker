@@ -1,11 +1,55 @@
 ---
 
 - name: "install ntp"
-  sudo: "yes"
+  become: "yes"
   action:
 
     module: "apt"
     name: "ntp"
+
+- name: "write encfs keys"
+  with_dict: "{{ clusters }}"
+  when: "'cluster' in item.value and 'encfs_key' in item.value.cluster"
+  become: "yes"
+  action:
+
+    module: "copy"
+    dest: "{{ [
+      '/datingnode-',
+      item.key,
+      '/',
+      item.key,
+      '-web-application-',
+      identity_index,
+      '/user-data-encryption-key',
+    ] | join }}"
+    content: "{{ item.value.cluster.encfs_key }}"
+
+    owner: "root"
+    group: "root"
+    mode: "0600"
+
+- name: "write encfs helpers"
+  with_dict: "{{ clusters }}"
+  when: "'cluster' in item.value and 'encfs_key' in item.value.cluster"
+  become: "yes"
+  action:
+
+    module: "template"
+    dest: "{{ [
+      '/datingnode-',
+      item.key,
+      '/',
+      item.key,
+      '-web-application-',
+      identity_index,
+      '/big/user-data-helper',
+    ] | join }}"
+    src: "datingnode-vm-user-data-helper"
+
+    owner: "root"
+    group: "root"
+    mode: "0755"
 
 - name: "write vm fstab"
   sudo: "yes"
@@ -47,18 +91,6 @@
 
     mode: "0600"
 
-- name: "configure cron"
-  tags: "vm-backup-cron"
-  notify: "restart cron"
-  sudo: "yes"
-  action:
-
-    module: "template"
-    src: "datingnode-vm-cron"
-    dest: "/etc/cron.d/datingnode"
-
-- meta: "flush_handlers"
-
 - name: "configure nfs exports"
   notify: "reload nfs server"
   sudo: "yes"
@@ -75,6 +107,18 @@
     module: "template"
     dest: "/etc/logrotate.conf"
     src: "datingnode-vm-logrotate"
+
+- meta: "flush_handlers"
+
+- name: "configure cron"
+  tags: "vm-backup-cron"
+  notify: "restart cron"
+  sudo: "yes"
+  action:
+
+    module: "template"
+    src: "datingnode-vm-cron"
+    dest: "/etc/cron.d/datingnode"
 
 - meta: "flush_handlers"
 

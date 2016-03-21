@@ -12,6 +12,7 @@
 
     - "install-system-packages"
     - "setup-network"
+    - "setup-hz-host"
     - "setup-hz-host-firewall"
     - "setup-hosts"
     - "setup-sysctl"

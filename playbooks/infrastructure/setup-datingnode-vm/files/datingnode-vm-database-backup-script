@@ -39,7 +39,7 @@ for database in $DBS; do
 
 	# dump data
 
-	$PGDUMP --data-only $database | gzip -9 > $DATA
+	#$PGDUMP --data-only $database | gzip -9 > $DATA
 
 	# dump fc
 

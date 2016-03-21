@@ -1,0 +1,13 @@
+#!/bin/sh
+
+passfile="{{ [
+	'/datingnode-',
+	item.key,
+	'/',
+	item.key,
+	'-web-application-',
+	identity_index,
+	'/user-data-encryption-key',
+] | join }}"
+
+encfs --public --extpass="cat $passfile" "$@"

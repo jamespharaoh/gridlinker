@@ -1,0 +1,33 @@
+# permissions
+
+su root syslog
+
+# default schedule
+
+daily
+rotate 14
+
+# default compression
+
+compresscmd xz
+uncompresscmd unxz
+compressext xz
+
+# include package config
+
+include /etc/logrotate.d
+
+# misc logfiles
+
+/var/log/wtmp {
+	missingok
+	create 0664 root utmp
+	compress
+}
+
+/var/log/btmp {
+	missingok
+	create 0660 root utmp
+	compress
+}
+

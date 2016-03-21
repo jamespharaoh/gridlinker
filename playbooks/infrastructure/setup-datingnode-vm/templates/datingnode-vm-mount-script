@@ -27,16 +27,36 @@
 			web_app_local + '/data/assets/user-data',
 		] | join (' '), '\n' -%}
 
+		{%- print [
+			'umount',
+			web_app_local + '/data/big/user-data',
+		] | join (' '), '\n' -%}
+
+		{%- print [
+			'umount',
+			web_app_local + '/data/big/user-data-cipher-master',
+		] | join (' '), '\n' -%}
+
 	{%- else -%}
 
 		{%- print [
 			'mount',
-			web_app_local + '/data/temp',
+			web_app_local + '/data/big/user-data-cipher-master',
+		] | join (' '), '\n' -%}
+
+		{%- print [
+			'mount',
+			web_app_local + '/data/big/user-data',
 		] | join (' '), '\n' -%}
 
 		{%- print [
 			'mount',
 			web_app_local + '/data/assets/user-data',
+		] | join (' '), '\n' -%}
+
+		{%- print [
+			'mount',
+			web_app_local + '/data/temp',
 		] | join (' '), '\n' -%}
 
 	{%- endif -%}

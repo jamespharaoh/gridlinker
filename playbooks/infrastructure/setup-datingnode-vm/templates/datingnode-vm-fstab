@@ -46,6 +46,18 @@
 
 {%- endmacro -%}
 
+{%- macro encfs_mount (source, dest, helper) -%}
+
+	{%- print [
+		helper + '#' + source,
+		dest,
+		'fuse',
+		'defaults',
+		'0 0',
+	] | join (' ') -%}
+
+{%- endmacro -%}
+
 {%- print '# ---------- root\n\n' -%}
 
 {%- print [
@@ -62,6 +74,8 @@
 	{%- set cluster_name = cluster.identity_name -%}
 
 	{%- print '\n# ---------- cluster ' + cluster_name + '\n\n' -%}
+
+	{%- print '# master: ' + cluster.cluster.vm_master + '\n\n' -%}
 
 	{%- print [
 		uuid_mount_ext4 (
@@ -124,6 +138,19 @@
 
 		{%- print [
 			local_mount (
+				source = web_app_local + '/big/user-data-cipher-local',
+				dest = web_app_local + '/big/user-data-cipher-master'),
+		] | join, '\n' -%}
+
+		{%- print [
+			encfs_mount (
+				source = web_app_local + '/big/user-data-cipher-master',
+				dest = web_app_local + '/big/user-data',
+				helper = web_app_local + '/big/user-data-helper'),
+		] | join, '\n' -%}
+
+		{%- print [
+			local_mount (
 				source = web_app_local + '/big/user-data',
 				dest = web_app_local + '/data/assets/user-data'),
 		] | join, '\n' -%}
@@ -152,7 +179,20 @@
 		{%- print [
 			remote_mount (
 				remote = cluster.cluster.vm_master + '.vpn',
-				source = web_app_remote + '/big/user-data',
+				source = web_app_remote + '/big/user-data-cipher-local',
+				dest = web_app_local + '/big/user-data-cipher-master'),
+		] | join, '\n' -%}
+
+		{%- print [
+			encfs_mount (
+				source = web_app_local + '/big/user-data-cipher-master',
+				dest = web_app_local + '/big/user-data',
+				helper = web_app_local + '/big/user-data-helper'),
+		] | join, '\n' -%}
+
+		{%- print [
+			local_mount (
+				source = web_app_local + '/big/user-data',
 				dest = web_app_local + '/data/assets/user-data'),
 		] | join, '\n' -%}
 

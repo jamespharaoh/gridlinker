@@ -29,7 +29,7 @@
 						cluster,
 						'/',
 						node.identity_name,
-						'/big/user-data',
+						'/big/user-data-cipher-local',
 					] | join,
 					[
 						vm.identity_name,

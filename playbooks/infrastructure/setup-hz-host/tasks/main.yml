@@ -1,0 +1,8 @@
+---
+
+- include: "setup-hz-host.yml"
+  tags:
+
+    - "setup-hz-host"
+
+# ex: et ts=2 filetype=yaml
