@@ -7,7 +7,7 @@ export PGPASSWORD="topsecret"
 
 # general config
 
-export KEEP_DAYS="14"
+export KEEP_DAYS="30"
 export BASE_DIR="/datingnode-live/backups"
 
 # ex: noet ts=4 filetype=sh

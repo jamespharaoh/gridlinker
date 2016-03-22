@@ -13,13 +13,22 @@ DIR="$BASE_DIR/$YMD"
 mkdir -p $DIR
 cd $DIR
 
-# get list of databases in system , exclude the tempate dbs
+# get list of databases in system, except the tempates
 
-DBS=$($PSQL -l -t | egrep -v 'template[01]' | awk '{print $1}')
+DBS=$(
+	$PSQL \
+		--tuples-only \
+		--no-align \
+		--command "
+			SELECT datname
+			FROM pg_database
+			WHERE datname NOT LIKE 'template_'
+		"
+)
 
 # first dump entire postgres database, including pg_shadow etc.
 
-$DUMPALL --column-inserts | gzip -9 > "$DIR/db.out.gz"
+#$DUMPALL --column-inserts | gzip -9 > "$DIR/db.out.gz"
 
 # next dump globals (roles and tablespaces) only
 
