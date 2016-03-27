@@ -36,11 +36,13 @@ database_master_password: "topsecret"
 {% set database_parent = hostvars ['host/' + database.identity_parent] %}
 {% if database.identity_cluster == identity_cluster %}
 {% if database.identity_name != cluster.cluster_database_master %}
+{% if database.database_enabled == 'yes' %}
   - name: "dating"
     address: "{{ database_parent.private_address }}"
     port: "{{ cluster.ports_database }}"
     user: "jimmy"
     password: "topsecret"
+{% endif %}
 {% endif %}
 {% endif %}
 {% endfor %}
@@ -60,8 +62,10 @@ memcache_nodes:
 {% set memcache = hostvars [memcache_name] %}
 {% set memcache_parent = hostvars ['host/' + memcache.identity.parent] %}
 {% if memcache.identity.cluster == identity.cluster %}
+{% if memcache.memcache_enabled == 'yes' %}
   - name: "{{ memcache_parent.private.address }}"
     port: "{{ cluster.ports.memcache }}"
+{% endif %}
 {% endif %}
 {% endfor %}
 

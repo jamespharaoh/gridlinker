@@ -10,13 +10,13 @@
 
 {%- endmacro -%}
 
-{%- macro uuid_mount_btrfs (name, path) -%}
+{%- macro uuid_mount_btrfs (name, path, subvol) -%}
 
 	{%- print [
 		'UUID=' + disk_ids [name],
 		path,
 		'btrfs',
-		'autodefrag,compress=lzo,discard',
+		'autodefrag,compress=lzo,discard,subvol=' + subvol,
 		'0 2',
 	] | join (' ') -%}
 
@@ -94,7 +94,8 @@
 				'/datingnode-' + cluster_name,
 				'/' + cluster_name + '-web-application-' + identity_index,
 				'/big',
-			] | join),
+			] | join,
+			cluster_name),
 	] | join, '\n' -%}
 
 	{%- print [

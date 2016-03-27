@@ -13,6 +13,8 @@ class:
   groups:
 
     - "containers"
+    - "{{ identity_cluster }}-memcache"
+    - "{{ identity_cluster }}-{{ identity_index }}"
 
   references:
 

@@ -6,7 +6,7 @@
     - "mailutils"
     - "postfix"
 
-  sudo: "yes"
+  become: "yes"
   action:
 
     module: "apt"
@@ -31,10 +31,16 @@
       template: "postfix-transport"
       user: "root"
       group: "root"
-      mode: "0600"
+      mode: "0644"
+
+    - target: "/etc/aliases"
+      template: "postfix-aliases"
+      user: "root"
+      group: "root"
+      mode: "0644"
 
   notify: "restart postfix"
-  sudo: "yes"
+  become: "yes"
   action:
 
     module: "template"
@@ -45,13 +51,17 @@
     group: "{{ item.group }}"
     mode: "{{ item.mode }}"
 
+- name: "create postfix aliases"
+  become: "yes"
+  shell: "postalias /etc/aliases"
+
 - name: "create postfix hashes"
   with_items:
 
     - "/etc/postfix/sasl-passwords"
     - "/etc/postfix/transport"
 
-  sudo: "yes"
+  become: "yes"
   shell: "postmap {{ item }}"
 
 - meta: "flush_handlers"

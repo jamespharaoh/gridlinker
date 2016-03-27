@@ -8,17 +8,24 @@
 
 {%- endmacro -%}
 
-{%- macro rsync_pull (lockfile, schedule, remote, source, dest, options = '') -%}
+{%- macro rsync_pull (
+		lockfile,
+		schedule,
+		remote,
+		source,
+		dest,
+		user = 'root',
+		options = '') -%}
 
 	{%- print [
 		schedule,
-		'root',
+		user,
 		[
 			'set -e',
 			'exec 9>' + lockfile,
 			'flock --nonblock 9 || exit 0',
 			[
-				'rsync --archive',
+				'rsync --archive --inplace',
 				'--rsh \'ssh -c arcfour -o Compression=no\'',
 				remote + ':' + source + '/',
 				dest + '/',
@@ -40,7 +47,7 @@
 			'exec 9>' + lockfile,
 			'flock --nonblock 9 || exit 0',
 			[
-				'rsync --archive',
+				'rsync --archive --inplace',
 				'--rsh \'ssh -c arcfour -o Compression=no -p ' + port + '\'',
 				source + '/',
 				remote + ':' + dest + '/',
@@ -244,7 +251,8 @@
 					schedule = cluster.cluster.rsync_schedule,
 					remote = master_name + '.vpn',
 					source = web_app_remote + '/big/user-data-cipher-local',
-					dest = web_app_local + '/big/user-data-cipher-local'),
+					dest = web_app_local + '/big/user-data-cipher-local',
+					user = 'www-data'),
 			] | join, '\n' -%}
 
 			{%- print '\n' -%}
@@ -284,6 +292,7 @@
 					remote = host.identity_name + '.vpn',
 					source = web_app_remote + '/fast/sitemaps',
 					dest = web_app_local + '/fast/sitemaps',
+					user = 'www-data',
 					options = [
 						'--exclude \'*.new\'',
 						'--update',

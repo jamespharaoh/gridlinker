@@ -13,6 +13,8 @@ class:
   groups:
 
     - "containers"
+    - "{{ identity_cluster }}-web-application"
+    - "{{ identity_cluster }}-{{ identity_index }}"
 
   references:
 
@@ -57,5 +59,10 @@ start:
 
   wait:
     - "{{ cluster.ports.web_application }}"
+
+  reload_commands:
+    - "/etc/my_init.d/ansible"
+    - "sv hup php-fpm"
+    - "sv hup apache"
 
 # ex: et ts=2 filetype=yaml

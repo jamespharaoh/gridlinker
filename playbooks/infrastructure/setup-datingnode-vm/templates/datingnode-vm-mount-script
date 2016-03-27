@@ -1,11 +1,60 @@
-{%- print '#!/bin/bash\n' -%}
+#!/bin/bash
 
-{%- for cluster_unique_name in groups ['deployment-cluster'] -%}
+set -euf -o pipefail
+
+function is_mounted () {
+
+	local mount_point="$1"
+
+	if {
+		cat /proc/mounts \
+		| cut -f2 -d' ' \
+		| grep --quiet --line-regexp "$mount_point"
+	} then
+		return 0
+	else
+		return 1
+	fi
+
+}
+
+function do_mount () {
+
+	local mount_point="$1"
+
+	if is_mounted "$mount_point"; then
+		echo "  $mount_point (already mounted)" >&2
+	else
+		echo "+ $mount_point (mount)" >&2
+		mount "$mount_point"
+	fi
+
+}
+
+function do_umount () {
+
+	local mount_point="$1"
+
+	if is_mounted "$mount_point"; then
+		echo "- $mount_point (unmount)" >&2
+		umount "$mount_point"
+	else
+		echo "  $mount_point (not mounted)" >&2
+	fi
+
+}
+
+echo "" >&2
+
+{% for cluster_unique_name in groups ['deployment-cluster'] -%}
 
 	{%- set cluster = hostvars [cluster_unique_name] -%}
 	{%- set cluster_name = cluster.identity_name -%}
 
-	{%- print '\n# ----------- cluster ' + cluster_name + '\n\n' -%}
+	{%- print '# ----------- cluster ' + cluster_name + '\n\n' -%}
+
+	{%- print 'echo "cluster ' + cluster_name + '" >&2\n' -%}
+	{%- print 'echo "" >&2\n' -%}
 
 	{%- set data_dir =
 		'/datingnode-' + cluster_name -%}
@@ -18,47 +67,51 @@
 	{%- if cluster.cluster.vm_master == 'none' -%}
 
 		{%- print [
-			'umount',
+			'do_umount',
 			web_app_local + '/data/temp',
 		] | join (' '), '\n' -%}
 
 		{%- print [
-			'umount',
+			'do_umount',
 			web_app_local + '/data/assets/user-data',
 		] | join (' '), '\n' -%}
 
 		{%- print [
-			'umount',
-			web_app_local + '/data/big/user-data',
+			'do_umount',
+			web_app_local + '/big/user-data',
 		] | join (' '), '\n' -%}
 
 		{%- print [
-			'umount',
-			web_app_local + '/data/big/user-data-cipher-master',
+			'do_umount',
+			web_app_local + '/big/user-data-cipher-master',
 		] | join (' '), '\n' -%}
 
 	{%- else -%}
 
 		{%- print [
-			'mount',
-			web_app_local + '/data/big/user-data-cipher-master',
+			'do_mount',
+			web_app_local + '/big/user-data-cipher-master',
 		] | join (' '), '\n' -%}
 
 		{%- print [
-			'mount',
-			web_app_local + '/data/big/user-data',
+			'do_mount',
+			web_app_local + '/big/user-data',
 		] | join (' '), '\n' -%}
 
 		{%- print [
-			'mount',
+			'do_mount',
 			web_app_local + '/data/assets/user-data',
 		] | join (' '), '\n' -%}
 
 		{%- print [
-			'mount',
+			'do_mount',
 			web_app_local + '/data/temp',
 		] | join (' '), '\n' -%}
 
 	{%- endif -%}
+
+	{%- print '\n' -%}
+
+	{%- print 'echo "" >&2\n' -%}
 
 {%- endfor -%}

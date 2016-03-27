@@ -13,6 +13,8 @@ class:
   groups:
 
     - "containers"
+    - "{{ identity_cluster }}-vhost-proxy"
+    - "{{ identity_cluster }}-{{ identity_index }}"
 
   references:
 
@@ -49,5 +51,9 @@ start:
   wait:
     - "80"
     - "443"
+
+  reload_commands:
+    - "/etc/my_init.d/ansible"
+    - "sv hup nginx"
 
 # ex: et ts=2 filetype=yaml# ex: et ts=2 filetype=yaml

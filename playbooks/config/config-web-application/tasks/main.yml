@@ -1,20 +1,23 @@
 ---
 
 - name: "create data dirs"
-  action:
-    module: "file"
-    path: "{{ item }}"
-    state: "directory"
-    owner: "www-data"
-    group: "www-data"
-  sudo: "yes"
   with_items:
+
     - "/data/logs"
     - "/data/assets"
     - "/data/assets/image-cache"
     - "/data/assets/sitemaps"
     - "/data/assets/user-data"
     - "/data/temp"
+
+  become: "yes"
+  action:
+
+    module: "file"
+    path: "{{ item }}"
+    state: "directory"
+    owner: "www-data"
+    group: "www-data"
 
 - include: "site.yml"
   label: "control"
