@@ -7,10 +7,11 @@
 
     - name: "delete data dir"
       delegate_to: "{{ parent }}"
+      become: "yes"
       action:
+
         module: "file"
         path: "{{ container_directory }}"
         state: "absent"
-      sudo: "yes"
 
 # ex: et ts=2 filetype=yaml

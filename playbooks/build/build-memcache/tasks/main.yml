@@ -1,25 +1,32 @@
 ---
 
 - name: "install memcache packages"
-  action:
-    module: "apt"
-    name: "{{ item }}"
+  become: "yes"
   with_items:
+
    - "memcached"
 
-- name: "create memcache service directory"
   action:
+
+    module: "apt"
+    name: "{{ item }}"
+
+- name: "create memcache service directory"
+  become: "yes"
+  action:
+
     module: "file"
     path: "/etc/service/memcache"
     state: "directory"
-  sudo: "yes"
 
 - name: "create memcache service script"
+  become: "yes"
   action:
+
     module: "template"
-    src: "memcache-service"
     dest: "/etc/service/memcache/run"
+    src: "memcache-service"
+
     mode: "0755"
-  sudo: "yes"
 
 # ex: et ts=2 filetype=yaml

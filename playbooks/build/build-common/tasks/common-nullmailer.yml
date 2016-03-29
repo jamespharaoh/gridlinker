@@ -1,13 +1,6 @@
 ---
 
 - name: "configure nullmailer"
-  action:
-    module: "debconf"
-    name: "nullmailer"
-    question: "{{ item.question }}"
-    value: "{{ item.value }}"
-    vtype: "{{ item.type }}"
-  sudo: "yes"
   with_items:
 
     - question: "nullmailer/relayhost"
@@ -26,27 +19,43 @@
       value: ""
       type: "string"
 
-- name: "install nullmailer packages"
+  become: "yes"
   action:
-    module: "apt"
-    name: "{{ item }}"
-  sudo: "yes"
+
+    module: "debconf"
+    name: "nullmailer"
+
+    question: "{{ item.question }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.type }}"
+
+- name: "install nullmailer packages"
   with_items:
+
     - "nullmailer"
 
-- name: "create nullmailer service directory"
+  become: "yes"
   action:
+
+    module: "apt"
+    name: "{{ item }}"
+
+- name: "create nullmailer service directory"
+  become: "yes"
+  action:
+
     module: "file"
     path: "/etc/service/nullmailer"
     state: "directory"
-  sudo: "yes"
 
 - name: "create nullmailer service script"
+  become: "yes"
   action:
+
     module: "template"
-    src: "nullmailer-service"
     dest: "/etc/service/nullmailer/run"
+    src: "nullmailer-service"
+
     mode: "0755"
-  sudo: "yes"
 
 # ex: et ts=2 filetype=yaml

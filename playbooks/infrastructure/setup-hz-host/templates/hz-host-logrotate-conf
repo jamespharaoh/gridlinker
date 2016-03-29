@@ -9,9 +9,9 @@ rotate 14
 
 # default compression
 
-compresscmd xz
-uncompresscmd unxz
-compressext xz
+compresscmd /usr/bin/xz
+uncompresscmd /usr/bin/unxz
+compressext .xz
 
 # include package config
 

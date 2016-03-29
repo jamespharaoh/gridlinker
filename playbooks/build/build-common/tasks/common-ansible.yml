@@ -1,11 +1,13 @@
 ---
 
 - name: "create ansible init script"
+  become: "yes"
   action:
+
     module: "template"
-    src: "ansible-init-script"
     dest: "/etc/my_init.d/ansible"
+    src: "ansible-init-script"
+
     mode: "0755"
-  sudo: "yes"
 
 # ex: et ts=2 filetype=yaml
