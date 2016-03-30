@@ -12,11 +12,12 @@
 
     - "install-system-packages"
     - "setup-network"
-    - "setup-hz-host"
-    - "setup-hz-host-firewall"
     - "setup-hosts"
     - "setup-sysctl"
     - "install-dnsmasq"
+
+    - "datingnode-host-firewall-setup"
+    - "datingnode-host-setup"
 
     - "python"
     - "etcd"

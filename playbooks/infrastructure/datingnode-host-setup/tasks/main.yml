@@ -1,0 +1,10 @@
+---
+
+- include: "datingnode-host-setup.yml"
+  tags:
+
+    - "datingnode"
+    - "datingnode-host"
+    - "datingnode-host-setup"
+
+# ex: et ts=2 filetype=yaml

@@ -1,0 +1,11 @@
+---
+
+- include: "datingnode-vm-firewall-setup.yml"
+  tags:
+
+    - "datingnode"
+    - "datingnode-vm"
+    - "datingnode-vm-firewall"
+    - "datingnode-vm-firewall-setup"
+
+# ex: et ts=2 filetype=yaml

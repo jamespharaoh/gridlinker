@@ -1,6 +1,0 @@
----
-
-- include: "setup-hz-host-firewall.yml"
-  tags: [ "infrastructure", "setup-hz-host-firewall" ]
-
-# ex: et ts=2 filetype=yaml

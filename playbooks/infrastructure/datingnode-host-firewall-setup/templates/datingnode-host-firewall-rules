@@ -1,0 +1,119 @@
+#!/bin/bash
+
+set -euf -o pipefail
+
+PUBLIC_INTERFACES=(
+	"eth0"
+	"brpub0"
+)
+
+PUBLIC_ADDRESSES=(
+	"{{ public_address }}"
+)
+
+PRIVATE_INTERFACES=(
+	"eth1"
+	"brprv0"
+)
+
+OPEN_PORTS_TCP=(
+	"ssh"
+	"2379" # etcd
+	"2380" # etcd
+)
+
+OPEN_PORTS_UDP=(
+	"openvpn"
+)
+
+# initialise filter tables
+
+	iptables --table "filter" --flush
+	iptables --table "filter" --delete-chain
+
+	iptables --table "filter" --policy "INPUT" "ACCEPT"
+	iptables --table "filter" --policy "FORWARD" "ACCEPT"
+	iptables --table "filter" --policy "OUTPUT" "ACCEPT"
+
+# restrict input from public internet
+
+	iptables \
+		--table "filter" \
+		--append "INPUT" \
+		--protocol "icmp" \
+		--icmp-type "echo-request" \
+		--jump "ACCEPT"
+
+	for interface in "${PUBLIC_INTERFACES[@]}"; do
+
+		for address in "${PUBLIC_ADDRESSES[@]}"; do
+
+			iptables \
+				--table "filter" \
+				--append "INPUT" \
+				--in-interface "$interface" \
+				--destination "$address" \
+				--match "state" \
+				--state "ESTABLISHED,RELATED" \
+				--jump "ACCEPT"
+
+			if test -v "OPEN_PORTS_TCP"; then
+			for port in "${OPEN_PORTS_TCP[@]}"; do
+
+				iptables \
+					--table "filter" \
+					--append "INPUT" \
+					--in-interface "$interface" \
+					--destination "$address" \
+					--protocol "tcp" \
+					--destination-port "$port" \
+					--jump "ACCEPT"
+
+			done
+			fi
+
+			if test -v "OPEN_PORTS_UDP"; then
+			for port in "${OPEN_PORTS_UDP[@]}"; do
+
+				iptables \
+					--table "filter" \
+					--append "INPUT" \
+					--in-interface "$interface" \
+					--destination "$address" \
+					--protocol "udp" \
+					--destination-port "$port" \
+					--jump "ACCEPT"
+
+			done
+			fi
+
+		done
+
+		iptables \
+			--table "filter" \
+			--append "INPUT" \
+			--in-interface "$interface" \
+			--jump "REJECT"
+
+	done
+
+# initialise nat tables
+
+	iptables --table "nat" --flush
+	iptables --table "nat" --delete-chain
+
+	iptables --table "nat" --policy "PREROUTING" "ACCEPT"
+	iptables --table "nat" --policy "INPUT" "ACCEPT"
+	iptables --table "nat" --policy "OUTPUT" "ACCEPT"
+	iptables --table "nat" --policy "POSTROUTING" "ACCEPT"
+
+# masquerade outbound traffic from private net
+
+	iptables \
+		--table "nat" \
+		--append "POSTROUTING" \
+		--source "{{ private.network }}/{{ private.netbits }}" \
+		--out-interface "brpub0" \
+		--jump MASQUERADE
+
+# ex: noet ts=4 filetype=bash

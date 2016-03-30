@@ -27,6 +27,7 @@
     - "install-docker"
     - "install-lxc"
 
+    - "datingnode-vm-firewall-setup"
     - "setup-datingnode-vm"
 
     - "icinga-agent"
