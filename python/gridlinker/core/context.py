@@ -94,6 +94,13 @@ class GenericContext (object):
 		return self.connections_config [self.connection_name]
 
 	@lazy_property
+	def connection_certificate_name (self):
+
+		return self.connection_config.get (
+			"etcd_certificate",
+			self.connection_name)
+
+	@lazy_property
 	def client (self):
 
 		if self.connection_config ["etcd_secure"] == "yes":
@@ -102,7 +109,7 @@ class GenericContext (object):
 
 			ca_cert_path = "%s/%s-ca.cert" % (
 				self.config,
-				self.connection_name)
+				self.connection_certificate_name)
 
 			if not os.path.isfile (ca_cert_path):
 
@@ -112,7 +119,7 @@ class GenericContext (object):
 
 			cert_path = "%s/%s.cert" % (
 				self.config,
-				self.connection_name)
+				self.connection_certificate_name)
 
 			if not os.path.isfile (cert_path):
 
@@ -122,7 +129,7 @@ class GenericContext (object):
 
 			key_path = "%s/%s.key" % (
 				self.config,
-				self.connection_name)
+				self.connection_certificate_name)
 
 			if not os.path.isfile (key_path):
 
