@@ -1,0 +1,18 @@
+{{ ansible_warning ['#'] }}
+
+general:
+
+  log_path: "/var/log/btrfs-dedupe.log"
+
+tasks:
+
+  - name: "main"
+    database_path: "/var/cache/btrfs-dedupe/database.json.gz"
+    quota_disable_path: "/btrfs"
+    dedupe_paths:
+
+      - "/"
+      - "/home"
+      - "/var/lib/lxc/*/rootfs"
+
+# ex: et ts=2 filetype=yaml

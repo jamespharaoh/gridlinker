@@ -1,0 +1,5 @@
+{{ ansible_warning ['#'] }}
+
+10 11 * * * root btrfs-dedupe-script /etc/btrfs-dedupe-config main
+
+# ex: et ts=2 filetype=cron
