@@ -1,5 +1,13 @@
 {{ ansible_warning ['#'] }}
 
-10 23 * * * root btrfs-dedupe-script /etc/btrfs-dedupe-config main
+{% for task in btrfs_dedupe_tasks %}
+{{ [
+  task.schedule,
+  task.user,
+  '/usr/local/bin/btrfs-dedupe-script',
+  '/etc/btrfs-dedupe-config',
+  task.name,
+] | join (' ') }}
+{% endfor %}
 
 # ex: et ts=2 filetype=cron

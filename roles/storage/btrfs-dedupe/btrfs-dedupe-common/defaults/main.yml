@@ -7,9 +7,21 @@ btrfs_dedupe_state: ""
 btrfs_dedupe_installed_version: ""
 btrfs_dedupe_installed_prefix: ""
 
+# ---------- configuration
+
+btrfs_dedupe_log: "/var/log/btrfs-dedupe.log"
+
+btrfs_dedupe_tasks:
+
+  - name: "main"
+    user: "root"
+    schedule: "10 23 * * *"
+    database_path: "/var/cache/btrfs-dedupe/database.json.gz"
+    dedupe_paths: [ "/" ]
+
 # ---------- installation details
 
-btrfs_dedupe_install: "{{ default_intall | default ('yes') }}"
+btrfs_dedupe_install: "{{ default_install | default ('yes') }}"
 btrfs_dedupe_install_version: ""
 btrfs_dedupe_install_mirror: "https://dist.wellbehavedsoftware.com/btrfs-dedupe"
 btrfs_dedupe_install_target: "/opt/{{ btrfs_dedupe_install_directory }}"
