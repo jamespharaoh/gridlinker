@@ -355,6 +355,10 @@ class Resource (object):
 
 		return self.combined.items ()
 
+	def __unicode__ (self):
+
+		return self.unique_name
+
 class Inventory (object):
 
 	___slots__ = [
@@ -1013,8 +1017,6 @@ class Inventory (object):
 
 		if self.trace:
 
-			uprint (type (value))
-
 			uprint (
 				"%sresolve_value (%s, %s)" % (
 					indent,
@@ -1252,16 +1254,6 @@ class Inventory (object):
 
 				token_index += 1
 
-				if tokens [token_index] == "join" \
-				and value_type == "value" \
-				and isinstance (value, list):
-
-					token_index += 1
-
-					value = "".join (value)
-
-					continue
-
 				if tokens [token_index] == "keys" \
 				and value_type == "value":
 
@@ -1277,6 +1269,67 @@ class Inventory (object):
 					token_index += 1
 
 					value = value.values ()
+
+					continue
+
+				if tokens [token_index] == "join" \
+				and value_type == "value" \
+				and isinstance (value, list):
+
+					token_index += 1
+
+					value = "".join (value)
+
+					continue
+
+				if tokens [token_index + 0] == "union" \
+				and tokens [token_index + 1] == "(" \
+				and value_type == "value" \
+				and isinstance (value, list):
+
+					token_index += 2
+
+					success, token_index, union_value = (
+						self.parse_expression (
+							tokens,
+							token_index,
+							resource,
+							indent))
+
+					if not success:
+
+						return False, None, None
+
+					if not isinstance (union_value, list):
+
+						return False, None, None
+
+					if tokens [token_index] != ")":
+
+						return False, None, None
+
+					token_index += 1
+
+					item_set = set ()
+
+					new_value = list ()
+
+					for item in value + union_value:
+
+						if isinstance (item, dict):
+
+							new_value.append (
+								item)
+
+						elif item not in item_set:
+
+							new_value.append (
+								item)
+
+							item_set.add (
+								item)
+
+					value = new_value
 
 					continue
 
@@ -1302,7 +1355,134 @@ class Inventory (object):
 
 					raise Exception ()
 
+				if tokens [token_index + 0] == "not_empty_string" \
+				and value_type == "value":
+
+					token_index += 1
+
+					string_value = (
+						unicode (
+							value))
+
+					if string_value != "":
+
+						value = string_value
+
+					else:
+
+						return False, None, None
+
+					continue
+
+				if tokens [token_index + 0] == "default" \
+				and tokens [token_index + 1] == "(" \
+				and value_type == "value":
+
+					token_index += 2
+
+					success, token_index, default_value = (
+						self.parse_expression (
+							tokens,
+							token_index,
+							resource,
+							indent))
+
+					if not success:
+
+						return False, None, None
+
+					if tokens [token_index] != ")":
+
+						return False, None, None
+
+					token_index += 1
+
+					if value is None:
+
+						value = default_value
+
+					continue
+
 				return False, None, None
+
+			elif tokens [token_index + 0] == "if" \
+			and value_type == "value":
+
+				token_index += 1
+
+				success, token_index, test_value = (	
+					self.parse_expression (
+						tokens,
+						token_index,
+						resource,
+						indent))
+
+				if not success:
+
+					return False, None, None
+
+				if tokens [token_index] != "else":
+
+					return False, None, None
+
+				token_index += 1
+
+				success, token_index, false_value = (
+					self.parse_expression (
+						tokens,
+						token_index,
+						resource,
+						indent))
+
+				if not success:
+
+					return False, None, None
+
+				if not test_value:
+
+					value = false_value
+
+				continue
+
+			elif tokens [token_index + 0] == "==" \
+			and value_type == "value":
+
+				token_index += 1
+
+				success, token_index, right_value = (
+					self.parse_expression (
+						tokens,
+						token_index,
+						resource,
+						indent))
+
+				if not success:
+
+					return False, None, None
+
+				value = (value == right_value)
+
+				continue
+
+			elif tokens [token_index + 0] == "!=" \
+			and value_type == "value":
+
+				token_index += 1
+
+				success, token_index, right_value = (
+					self.parse_expression (
+						tokens,
+						token_index,
+						resource,
+						indent))
+
+				if not success:
+
+					return False, None, None
+
+				value = (value != right_value)
+
+				continue
 
 			elif tokens [token_index] == "[":
 
@@ -1391,6 +1571,17 @@ class Inventory (object):
 			resource_source,
 			indent):
 
+		if self.trace:
+
+			uprint (
+				"%sparse_simple ([ '%s' ], %s, %s)" % (
+					indent,
+					"', '".join (tokens),
+					token_index,
+					resource_source))
+
+			indent = indent + "  "
+
 		token = (
 			tokens [token_index])
 
@@ -1407,6 +1598,24 @@ class Inventory (object):
 					token [1 : -1]))
 
 			return True, token_index + 1, "value", string_value
+
+		if token == "(":
+
+			new_token_index = (
+				token_index + 1)
+
+			success, new_token_index, value = (
+				self.parse_expression (
+					tokens,
+					new_token_index,
+					resource,
+					indent + "  "))
+
+			if tokens [new_token_index] != ")":
+
+				return False, token_index, None, None
+
+			return True, new_token_index + 1, "value", value
 
 		if token == "[":
 
@@ -1711,6 +1920,7 @@ class Inventory (object):
 	tokenize_re = re.compile ("\s*((?:" + ")|(?:".join ([
 		r"$",
 		r"[][.,|()]",
+		r"==|!=",
 		r"[a-zA-Z][a-zA-Z0-9_]*",
 		r"'(?:[^'\\]|\\\\|\\\')*'",
 	]) + "))")

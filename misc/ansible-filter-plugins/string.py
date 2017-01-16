@@ -74,6 +74,14 @@ def replace_list (items, change_from, change_to):
 		in items
 	]
 
+def not_empty_string (string):
+
+	if unicode (string) != "":
+		return unicode (string)
+
+	else:
+		return None
+
 class FilterModule (object):
 
     def filters (self):
