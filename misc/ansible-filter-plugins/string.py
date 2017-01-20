@@ -82,6 +82,26 @@ def not_empty_string (string):
 	else:
 		return None
 
+regexp_cache = dict ()
+
+def validate_regexp (string, regexp_source):
+
+	if regexp_source in regexp_cache:
+
+		regexp_compiled = (
+			regexp_cache [regexp_source])
+
+	else:
+
+		regexp_compiled = (
+			re.compile (
+				"^" + regexp_source + "$"))
+
+		regexp_cache [regexp_source] = (
+			regexp_compiled)
+
+	return bool (regexp_compiled.match (string))
+
 class FilterModule (object):
 
     def filters (self):
@@ -100,6 +120,8 @@ class FilterModule (object):
 			"join3": join3,
 
 			"git_version_shorten": git_version_shorten,
+
+			"validate_regexp": validate_regexp,
 
 		}
 
