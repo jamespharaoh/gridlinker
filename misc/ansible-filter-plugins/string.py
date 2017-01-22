@@ -21,6 +21,24 @@ def starts_with (value, prefix):
 
 	return value.startswith (prefix)
 
+def ends_with (value, suffix):
+
+	return value.endswith (suffix)
+
+def remove_prefix (value, prefix):
+
+	if not value.startswith (prefix):
+		raise Exception ()
+
+	return value [len (prefix) : ]
+
+def remove_suffix (value, suffix):
+
+	if not value.endswith (suffix):
+		raise Exception ()
+
+	return value [ : len (value) - len (suffix)]
+
 def join3 (values, prefix, separator, suffix):
 
 	if not values:
@@ -116,6 +134,10 @@ class FilterModule (object):
 			"replace_list": replace_list,
 
 			"starts_with": starts_with,
+			"ends_with": ends_with,
+
+			"remove_prefix": remove_prefix,
+			"remove_suffix": remove_suffix,
 
 			"join3": join3,
 
