@@ -1,6 +1,6 @@
 ---
 
-- name: "python apt install system packages"
+- name: "python apt build install system packages"
   with_items:
 
     - "build-essential"
@@ -16,6 +16,21 @@
   action:
 
     module: "apt"
+    name: "{{ item }}"
+
+- name: "python apt build install pip packages"
+  with_items:
+
+    - "sphinx"
+
+  become: "yes"
+  environment:
+
+    PATH: "{{ python_target }}/bin:{{ lookup ('env', 'PATH') }}"
+
+  action:
+
+    module: "pip"
     name: "{{ item }}"
 
 - name: "python apt build from source"
