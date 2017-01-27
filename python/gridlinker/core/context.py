@@ -37,6 +37,19 @@ class GenericContext (object):
 		self.trace = False
 
 	@lazy_property
+	def project_metadata_stripped (self):
+
+		return dict ([
+			(section_name, section_data)
+			for section_name, section_data
+			in self.project_metadata.items ()
+			if section_name not in set ([
+				"project_data",
+				"resource_data",
+			])
+		])
+
+	@lazy_property
 	def config (self):
 
 		return "%s/config" % self.home

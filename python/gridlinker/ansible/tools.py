@@ -210,7 +210,8 @@ def do_inventory_list (context):
 	for group_name in inventory.class_groups:
 
 		output [group_name] = {
-			"hosts": inventory.group_members [group_name],
+			"hosts": sorted (
+				inventory.group_members [group_name]),
 		}
 
 	print_json (output)

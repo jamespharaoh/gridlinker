@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from __future__ import with_statement
 
 import collections
+import itertools
 import re
 import wbs
 
@@ -24,6 +25,9 @@ class ResourceNamespace (object):
 		"groups",
 		"resources",
 
+		"references",
+		"back_references",
+
 	]
 
 	def __init__ (self, name, data):
@@ -36,6 +40,16 @@ class ResourceNamespace (object):
 
 		self.groups = data.get ("namespace", {}).get ("groups", [])
 		self.resources = list ()
+
+		self.references = (
+			data.get ("namespace", {}).get (
+				"references",
+				list ()))
+
+		self.back_references = (
+			data.get ("namespace", {}).get (
+				"back_references",
+				list ()))
 
 	def add_resource (self, resource):
 
@@ -499,7 +513,8 @@ class Inventory (object):
 			"SHORT_TITLE": self.context.project_metadata ["project"] ["short_title"],
 			"CONNECTION": self.context.connection_name,
 			"GRIDLINKER_HOME": self.context.gridlinker_home,
-			"METADATA": self.context.project_metadata,
+			"METADATA": self.context.project_metadata_stripped,
+			"PROJECT": self.context.project_metadata ["project"],
 		}
 
 		if "globals" in self.context.local_data:
@@ -820,8 +835,19 @@ class Inventory (object):
 		for resource_name, resource \
 		in self.resources.items ():
 
+			reference_names = set ()
+
 			for reference \
-			in resource.resource_class.references:
+			in itertools.chain (
+				resource.resource_class.references,
+				resource.resource_namespace.references,
+			):
+
+				if reference ["name"] in reference_names:
+					continue
+
+				reference_names.add (
+					reference ["name"])
 
 				if reference ["type"] == "resource":
 
@@ -2020,7 +2046,10 @@ class Inventory (object):
 		indent = indent + "  "
 
 		for reference \
-		in resource.resource_class.references:
+		in itertools.chain (
+			resource.resource_class.references,
+			resource.resource_namespace.references,
+		):
 
 			if token != reference ["name"]:
 				continue
