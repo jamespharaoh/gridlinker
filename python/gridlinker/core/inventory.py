@@ -11,6 +11,8 @@ import wbs
 from wbs import ReportableError
 from wbs import uprint
 
+from gridlinker.ansible.misc import *;
+
 __all__ = [
 	"Inventory",
 ]
@@ -65,6 +67,7 @@ class ResourceClass (object):
 		"name",
 
 		"groups",
+		"resources",
 		"namespace",
 		"parent_namespace",
 		"resource_identity",
@@ -82,6 +85,7 @@ class ResourceClass (object):
 
 		self.namespace = data ["class"] ["namespace"]
 		self.groups = data ["class"].get ("groups", [])
+		self.resources = list ()
 
 		self.parent_namespace = (
 			data ["class"].get (
@@ -107,6 +111,11 @@ class ResourceClass (object):
 
 		return self.data.items ()
 
+	def add_resource (self, resource):
+
+		self.resources.append (
+			resource)
+
 class Resource (object):
 
 	__slots__ = [
@@ -131,6 +140,8 @@ class Resource (object):
 
 	def __init__ (self, inventory, data):
 
+		context = inventory.context
+
 		self.data = data
 
 		self.identity_class = data ["identity"] ["class"]
@@ -140,15 +151,24 @@ class Resource (object):
 		self.resource_class = (
 			inventory.classes [self.identity_class])
 
-		self.identity_namespace = self.resource_class.namespace
+		self.identity_namespace = (
+			self.resource_class.namespace)
 
 		self.resource_namespace = (
 			inventory.namespaces [self.identity_namespace])
+
+		data ["identity"] ["namespace"] = (
+			self.resource_namespace.name)
+
+		data ["identity_namespace"] = (
+			self.resource_namespace.name)
 
 		self.unique_name = "/".join ([
 			self.identity_namespace,
 			self.identity_name,
 		])
+
+		data ["unique_name"] = self.unique_name
 
 		# add resource data
 
@@ -286,6 +306,47 @@ class Resource (object):
 
 				self.combined [full_name] = (
 					section_value)
+
+		# add defaults
+
+		for section_name, section_data \
+		in self.combined.items ():
+
+			if not isinstance (section_data, dict):
+				continue
+
+			for item_name, item_value \
+			in context.project_defaults.get (section_name, {}).items ():
+
+				if section_name + "_" + item_name not in self.unresolved:
+
+					self.unresolved [section_name + "_" + item_name] = (
+						wbs.deep_copy (item_value))
+
+				if section_name + "_" + item_name not in self.not_yet_resolved:
+
+					self.not_yet_resolved [section_name + "_" + item_name] = (
+						wbs.deep_copy (item_value))
+
+				if section_name + "_" + item_name not in self.combined:
+
+					self.combined [section_name + "_" + item_name] = (
+						wbs.deep_copy (item_value))
+
+				if item_name not in self.unresolved [section_name]:
+
+					self.unresolved [section_name] [item_name] = (
+						wbs.deep_copy (item_value))
+
+				if item_name not in self.not_yet_resolved [section_name]:
+
+					self.not_yet_resolved [section_name] [item_name] = (
+						wbs.deep_copy (item_value))
+
+				if item_name not in self.combined [section_name]:
+
+					self.combined [section_name] [item_name] = (
+						wbs.deep_copy (item_value))
 
 		for identity_name, identity_value \
 		in self.resource_class.resource_identity.items ():
@@ -506,15 +567,46 @@ class Inventory (object):
 	def load_world (self):
 
 		self.all = {
-			"HOME": self.context.home,
-			"WORK": "%s/work" % self.context.home,
+
 			"NAME": self.context.project_metadata ["project"] ["name"],
 			"SHORT_NAME": self.context.project_metadata ["project"] ["short_name"],
 			"SHORT_TITLE": self.context.project_metadata ["project"] ["short_title"],
-			"CONNECTION": self.context.connection_name,
+
+			"HOME": self.context.home,
+			"WORK": "%s/work" % self.context.home,
 			"GRIDLINKER_HOME": self.context.gridlinker_home,
-			"METADATA": self.context.project_metadata_stripped,
-			"PROJECT": self.context.project_metadata ["project"],
+
+			"CONNECTION": self.context.connection_name,
+
+			"CLASSES": ansible_escape (dict ([
+				(class_name, class_data)
+				for class_directory_name, class_directory
+				in self.context.local_data ["classes"].items ()
+				for class_name, class_data
+				in class_directory.items ()
+			])),
+
+			"DEFAULTS": ansible_escape (
+				self.context.local_data ["defaults"]),
+
+			"GLOBALS": ansible_escape (
+				self.context.local_data ["globals"]),
+
+			"METADATA": ansible_escape (
+				self.context.project_metadata_stripped),
+
+			"NAMESPACES": ansible_escape (
+				self.context.local_data ["namespaces"]),
+
+			"PROJECT": ansible_escape (
+				self.context.project_metadata ["project"]),
+
+			"PROJECT_DATA": ansible_escape (
+				self.context.project_metadata ["project_data"]),
+
+			"RESOURCE_DATA": ansible_escape (
+				self.context.project_metadata ["resource_data"]),
+
 		}
 
 		if "globals" in self.context.local_data:
@@ -538,6 +630,16 @@ class Inventory (object):
 		self.resolve_back_references ()
 		self.resolve_resource_values ()
 		self.load_resources_5 ()
+
+		self.all ["GROUPS"] = dict ([
+			(group_name, {
+				"type": "group",
+				"name": group_name,
+				"members": group_member_names,
+			})
+			for group_name, group_member_names
+			in self.group_members.items ()
+		])
 
 	def load_namespaces (self):
 
@@ -645,6 +747,9 @@ class Inventory (object):
 				"Resource '%s' has invalid namespace '%s'" % (
 					resource.unique_name,
 					resource.identity_namespace))
+
+		self.classes [resource.identity_class].add_resource (
+			resource)
 
 		self.namespaces [resource.identity_namespace].add_resource (
 			resource)
@@ -879,6 +984,12 @@ class Inventory (object):
 							[ reference ["name"] ],
 							"{{ hostvars ['%s'] }}" % (
 								target_name))
+
+				elif reference ["type"] == "simple":
+
+					resource.resolve (
+						[ reference ["name"] ],
+						reference ["value"])
 
 				else:
 
@@ -2106,6 +2217,20 @@ class Inventory (object):
 								token))
 
 					return True, "resource", target_resource.unique_name
+
+			elif reference ["type"] == "simple":
+
+				value_success, value = (
+					self.resolve_value_real (
+						resource,
+						reference ["value"],
+						indent + "  "))
+
+				if not value_success:
+
+					return False, None, None
+
+				return True, "value", value
 
 			else:
 
