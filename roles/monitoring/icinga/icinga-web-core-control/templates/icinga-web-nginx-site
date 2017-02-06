@@ -22,7 +22,7 @@
 
 		alias {{ [
 			icinga_web_core_installed_prefix,
-			'/public/index.php',
+			'/public',
 		] | join }};
 
 		index index.php;
