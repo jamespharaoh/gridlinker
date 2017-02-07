@@ -245,7 +245,10 @@ def resolve_resource_data (context, output):
 	in context.project_metadata ["resource_data"].items ():
 
 		if resource_data_key in output ["all"] ["vars"]:
-			raise Exception ()
+
+			raise Exception (
+				"Global key %s in globals and project resource data" % (
+					resource_data_key))
 
 		# find resources
 
