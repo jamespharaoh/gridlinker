@@ -1,7 +1,10 @@
 #!/bin/bash
 
 set -euf -o pipefail
+
 trap 'pid=$(jobs -p); if test "$pid"; then kill $pid; fi' EXIT
+
+etcd_version="3.1.0"
 
 system_packages=(
 	"build-essential"
@@ -10,89 +13,133 @@ system_packages=(
 	"python"
 	"python-crypto"
 	"python-jinja2"
+	"python-netaddr"
 	"python-openssl"
 	"python-paramiko"
 	"python-setuptools"
 	"python-yaml"
 )
 
+cd ~/datingnode-ansible
+
 # check for existing etcd
 
 if test -f /etc/init/etcd.conf; then
+
 	echo "Etcd already seems to be installed, aborting..." >&2
+
 	exit 1
+
 fi
 
-# check config file exists
+# check for existing config
 
-cd ~/datingnode-ansible
-if ! test -d config -a -f config/overrides.yml; then
-	echo "Please create config/overrides.yml first" >&2
+if test -f "config/overrides.yml"; then
+
+	echo "Won't run bootstrap if config/overrides.yml exists" >&2
+
 	exit 1
+
 fi
 
 # ask for deployment name
 
 read -p "Please specify deployment name: " deployment_name
 
+echo >config/overrides.yml <<-END
+	---
+
+	deployment_name: "${deployment_name}"
+
+	# ex: et ts=2 filetype=yaml
+END
+
 # update all packages
 
 echo "Updating packages" >&2
+
 sudo apt-get update
+
 sudo apt-get dist-upgrade -y
 
 # install packages
+
 echo "Installing packages" >&2
+
 sudo apt-get install -y "${system_packages[@]}"
 
 # setup temporary etcd
 
 cd /tmp
-if ! test -f etcd-v2.0.11-linux-amd64.tar.gz; then
+
+if ! test -f "etcd-v${etcd_version}-linux-amd64.tar.gz"; then
+
 	echo "Downloading etcd" >&2
-	curl -# -L https://github.com/coreos/etcd/releases/download/v2.0.11/etcd-v2.0.11-linux-amd64.tar.gz -o etcd-v2.0.11-linux-amd64.tar.gz
+
+	curl "https://github.com/coreos/etcd/releases/download/v${etcd_version}/etcd-v${etcd_version}-linux-amd64.tar.gz" \
+		--progress-bar \
+		--location \
+		--output "etcd-v${etcd_version}-linux-amd64.tar.gz"
+
 fi
 
 echo "Extracting etcd" >&2
-rm -rf etcd-v2.0.11-linux-amd64
-tar xzf etcd-v2.0.11-linux-amd64.tar.gz
-cd etcd-v2.0.11-linux-amd64
+rm -rf "etcd-v${etcd_version}-linux-amd64"
+tar xzf "etcd-v${etcd_version}-linux-amd64.tar.gz"
+cd "etcd-v${etcd_version}-linux-amd64"
 
 echo "Starting temporary etcd" >&2
-./etcd &>/tmp/etcd.log &
+
+./etcd \
+	--advertise-client-urls "http://localhost:12379" \
+	--listen-client-urls "http://localhost:12379" \
+	--listen-peer-urls "http://localhost:12380" \
+	&>/tmp/etcd.log &
+
 etcd_pid=$!
 
 echo "Started as PID $etcd_pid" >&2
+
 sleep 1
 
 # main bootstrap process
 
 echo "Configuring temporary connection" >&2
+
 cd ~/datingnode-ansible
+
 cat >config/connections.yml <<-EOF
 	---
 	datingnode-local:
+
 	  etcd_servers: [ "localhost" ]
 	  etcd_secure: "no"
 	  etcd_prefix: "/datingnode-local"
+	  etcd_port: "12379"
 EOF
 
 echo "Initialising resources" >&2
+
 scripts/create-resources "$deployment_name"
 
 echo "Configuring devbox" >&2
+
 ./datingnode-local ansible playbook -- playbooks/vagrant-devbox.yml
 
 # swap from temporary to permanent etcd
 
 echo "Exporting data from etcd" >&2
+
 ./datingnode-local etcd export --target work/etcd-bootstrap
 
 echo "Killing temporary etcd" >&2
+
 kill $etcd_pid
+
 sleep 2
 
 echo "Configuring permanent connection" >&2
+
 cat >config/connections.yml <<-EOF
 	---
 	datingnode-local:

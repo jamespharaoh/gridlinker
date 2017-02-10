@@ -1,5 +1,57 @@
 ---
 
+ansible:
+
+  python_interpreter: "/usr/bin/env python"
+
+  warning_lines:
+
+    - "######################################################################"
+    - "##################  THIS FILE IS MANAGED BY ANSIBLE  #################"
+    - "######################################################################"
+    - "#                                                                    #"
+    - "#  Please do not make changes to this file, since they will be       #"
+    - "#  automatically overwritten. If you need to change any values in    #"
+    - "#  this file, this should be done by modifying the inputs to         #"
+    - "#  ansible, by modifying the ansible scripts themselves, or by       #"
+    - "#  overriding them in an unmanaged file.                             #"
+    - "#                                                                    #"
+    - "######################################################################"
+
+  warning_generic: "{{
+    'SEP ' + ansible_warning_lines | join ('\nSEP ')
+  }}"
+
+  warning:
+
+    "#": "{{ ansible_warning_generic | replace ('SEP ', '') }}"
+    ";": "{{ ansible_warning_generic | replace ('SEP', ';') }}"
+    "//": "{{ ansible_warning_generic | replace ('SEP', '//') }}"
+    "--": "{{ ansible_warning_generic | replace ('SEP', '--') }}"
+
+  notice_lines:
+
+    - "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+    - "%%%%%%%%%%%%%  this file is PARTIALLY managed by ansible  %%%%%%%%%%%%"
+    - "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+    - "%                                                                    %"
+    - "%  This file will be automatically updated by ansible, although it   %"
+    - "%  should preserve local changes so long as they are included in     %"
+    - "%  the template. Formatting and comments will be lost.               %"
+    - "%                                                                    %"
+    - "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+
+  notice_generic: "{{
+    'SEP ' + ansible_notice_lines | join ('\nSEP ')
+  }}"
+
+  notice:
+
+    "#": "{{ ansible_notice_generic | replace ('SEP', '#') }}"
+    ";": "{{ ansible_notice_generic | replace ('SEP', ';') }}"
+    "//": "{{ ansible_notice_generic | replace ('SEP', '//') }}"
+    "--": "{{ ansible_notice_generic | replace ('SEP', '--') }}"
+
 docker_registry: "quay.io"
 
 docker_images:
@@ -36,7 +88,7 @@ wbs_dist: "https://dist.wellbehavedsoftware.com"
 
 python:
 
-  version: "2.7.10"
+  install_version: "2.7.10"
 
   packages:
 
@@ -45,10 +97,7 @@ python:
 
 python_pip:
 
-  version: "8.0.2"
-
-python_apt_version: "0.9.3-1"
-python_apt_mirror: "{{ wbs_dist }}/python-apt"
+  install_version: "8.0.2"
 
 postgresql_version: "9.3"
 postgresql_user: "postgres"
@@ -153,10 +202,6 @@ extra_ssl_domains:
   - "monitoring.datingnode.com"
 
 ubuntu_mirror: "http:/"
-
-ansible:
-
-  python_interpreter: "/usr/bin/env python"
 
 icinga:
 
