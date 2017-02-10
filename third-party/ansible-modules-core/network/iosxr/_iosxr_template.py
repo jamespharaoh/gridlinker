@@ -19,16 +19,17 @@ DOCUMENTATION = """
 ---
 module: iosxr_template
 version_added: "2.1"
-author: "Peter sprygada (@privateip)"
+author: "Peter Sprygada (@privateip)"
 short_description: Manage Cisco IOSXR device configurations over SSH
 description:
   - Manages network device configurations over SSH.  This module
-    allows implementors to work with the device running-config.  It
+    allows implementers to work with the device running-config.  It
     provides a way to push a set of commands onto a network device
-    by evaluting the current running-config and only pushing configuration
+    by evaluating the current running-config and only pushing configuration
     commands that are not already configured.  The config source can
     be a set of commands or a template.
-extends_documentation_fragment: ios
+deprecated: Deprecated in 2.2. Use iosxr_config instead
+extends_documentation_fragment: iosxr
 options:
   src:
     description:
@@ -64,8 +65,8 @@ options:
         against the contents of source.  There are times when it is not
         desirable to have the task get the current running-config for
         every task.  The I(config) argument allows the implementer to
-        pass in the configuruation to use as the base config for
-        comparision.
+        pass in the configuration to use as the base config for
+        comparison.
     required: false
     default: null
 """
@@ -73,20 +74,18 @@ options:
 EXAMPLES = """
 
 - name: push a configuration onto the device
-  net_config:
+  iosxr_template:
     src: config.j2
 
 - name: forceable push a configuration onto the device
-  net_config:
+  iosxr_template:
     src: config.j2
     force: yes
 
-- name: provide the base configuration for comparision
-  net_config:
+- name: provide the base configuration for comparison
+  iosxr_template:
     src: candidate_config.txt
     config: current_config.txt
-
-
 """
 
 RETURN = """
@@ -98,15 +97,17 @@ updates:
 
 responses:
   description: The set of responses from issuing the commands on the device
-  retured: when not check_mode
+  returned: when not check_mode
   type: list
   sample: ['...', '...']
 """
+from ansible.module_utils.netcfg import NetworkConfig, dumps
+from ansible.module_utils.iosxr import NetworkModule
 
 def get_config(module):
     config = module.params['config'] or dict()
     if not config and not module.params['force']:
-        config = module.config
+        config = module.config.get_config()
     return config
 
 def main():
@@ -122,9 +123,9 @@ def main():
 
     mutually_exclusive = [('config', 'backup'), ('config', 'force')]
 
-    module = get_module(argument_spec=argument_spec,
-                        mutually_exclusive=mutually_exclusive,
-                        supports_check_mode=True)
+    module = NetworkModule(argument_spec=argument_spec,
+                           mutually_exclusive=mutually_exclusive,
+                           supports_check_mode=True)
 
     result = dict(changed=False)
 
@@ -133,17 +134,18 @@ def main():
     contents = get_config(module)
     if contents:
         config = NetworkConfig(contents=contents, indent=1)
-        result['_backup'] = contents
+        result['_backup'] = str(contents)
 
     if not module.params['force']:
         commands = candidate.difference(config)
+        commands = dumps(commands, 'commands').split('\n')
+        commands = [str(c) for c in commands if c]
     else:
         commands = str(candidate).split('\n')
 
     if commands:
         if not module.check_mode:
-            commands = [str(c).strip() for c in commands]
-            response = module.configure(commands)
+            response = module.config(commands)
             result['responses'] = response
         result['changed'] = True
 
@@ -151,10 +153,5 @@ def main():
     module.exit_json(**result)
 
 
-from ansible.module_utils.basic import *
-from ansible.module_utils.shell import *
-from ansible.module_utils.netcfg import *
-from ansible.module_utils.iosxr import *
 if __name__ == '__main__':
     main()
-

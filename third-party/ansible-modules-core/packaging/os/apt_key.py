@@ -109,6 +109,7 @@ EXAMPLES = '''
 from traceback import format_exc
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils._text import to_native
 from ansible.module_utils.urls import fetch_url
 
 
@@ -171,7 +172,7 @@ def all_keys(module, keyring, short_format):
         cmd = "%s adv --list-public-keys --keyid-format=long" % apt_key_bin
     (rc, out, err) = module.run_command(cmd)
     results = []
-    lines = out.split('\n')
+    lines = to_native(out).split('\n')
     for line in lines:
         if line.startswith("pub") or line.startswith("sub"):
             tokens = line.split()

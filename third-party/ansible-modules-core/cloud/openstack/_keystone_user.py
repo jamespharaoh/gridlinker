@@ -229,7 +229,7 @@ def ensure_user_exists(keystone, user_name, password, email, tenant_name,
                        check_mode):
     """ Check if user exists
 
-        Return (True, id) if a new user was created, (False, id) user alrady
+        Return (True, id) if a new user was created, (False, id) user already
         exists
     """
 
@@ -368,7 +368,7 @@ def main():
         d = dispatch(keystone, user, password, tenant, tenant_description,
                      email, role, state, endpoint, token, login_user,
                      login_password, check_mode)
-    except Exception, e:
+    except Exception as e:
         if check_mode:
             # If we have a failure in check mode
             module.exit_json(changed=True,

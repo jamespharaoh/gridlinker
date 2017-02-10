@@ -204,7 +204,7 @@ class ElbManager:
                     self.changed = True
                 break
             elif self._is_instance_state_pending(instance_state):
-                # If it's pending, we'll skip further checks andd continue waiting
+                # If it's pending, we'll skip further checks and continue waiting
                 pass
             elif (awaited_state == 'InService'
                   and instance_state.reason_code == "Instance"
@@ -212,7 +212,7 @@ class ElbManager:
                 # If the reason_code for the instance being out of service is
                 # "Instance" this indicates a failure state, e.g. the instance
                 # has failed a health check or the ELB does not have the
-                # instance's availabilty zone enabled. The exact reason why is
+                # instance's availability zone enabled. The exact reason why is
                 # described in InstantState.description.
                 msg = ("The instance %s could not be put in service on %s."
                        " Reason: %s")
@@ -239,7 +239,7 @@ class ElbManager:
         """
         try:
             status = lb.get_instance_health([self.instance_id])[0]
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             if e.error_code == 'InvalidInstance':
                 return None
             else:
@@ -257,7 +257,7 @@ class ElbManager:
 
         try:
             elb = connect_to_aws(boto.ec2.elb, self.region, **self.aws_connect_params)
-        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError), e:
+        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
             self.module.fail_json(msg=str(e))
 
         elbs = []
@@ -290,7 +290,7 @@ class ElbManager:
 
         try:
            asg = connect_to_aws(boto.ec2.autoscale, self.region, **self.aws_connect_params)
-        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError), e:
+        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
             self.module.fail_json(msg=str(e))
 
         asg_instances = asg.get_all_autoscaling_instances([self.instance_id])
@@ -314,7 +314,7 @@ class ElbManager:
         """Returns a boto.ec2.InstanceObject for self.instance_id"""
         try:
             ec2 = connect_to_aws(boto.ec2, self.region, **self.aws_connect_params)
-        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError), e:
+        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
             self.module.fail_json(msg=str(e))
         return ec2.get_only_instances(instance_ids=[self.instance_id])[0]
 
@@ -327,7 +327,7 @@ def main():
             ec2_elbs={'default': None, 'required': False, 'type':'list'},
             enable_availability_zone={'default': True, 'required': False, 'type': 'bool'},
             wait={'required': False, 'default': True, 'type': 'bool'},
-            wait_timeout={'requred': False, 'default': 0, 'type': 'int'}
+            wait_timeout={'required': False, 'default': 0, 'type': 'int'}
         )
     )
 

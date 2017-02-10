@@ -95,7 +95,7 @@ options:
     description:
       - Have to be specified for Weighted, latency-based and failover resource record sets only. An identifier
         that differentiates among multiple resource record sets that have the
-        same combination of DNS name and type. 
+        same combination of DNS name and type.
     required: false
     default: null
     version_added: "2.0"
@@ -195,6 +195,16 @@ EXAMPLES = '''
       ttl: "7200"
       value: "::1"
 
+# Add a SRV record with multiple fields for a service on port 22222
+# For more information on SRV records see:
+# https://en.wikipedia.org/wiki/SRV_record
+- route53:
+      command: "create"
+      "zone": "foo.com"
+      "record": "_example-service._tcp.foo.com"
+      "type": "SRV"
+      "value": ["0 0 22222 host1.foo.com", "0 0 22222 host2.foo.com"]
+
 # Add a TXT record. Note that TXT and SPF records must be surrounded
 # by quotes when sent to Route 53:
 - route53:
@@ -214,6 +224,25 @@ EXAMPLES = '''
       value="{{ elb_dns_name }}"
       alias=True
       alias_hosted_zone_id="{{ elb_zone_id }}"
+
+# Retrieve the details for elb.foo.com
+- route53:
+      command: get
+      zone: foo.com
+      record: elb.foo.com
+      type: A
+  register: rec
+
+# Delete an alias record using the results from the get command
+- route53:
+      command: delete
+      zone: foo.com
+      record: "{{ rec.set.record }}"
+      ttl: "{{ rec.set.ttl }}"
+      type: "{{ rec.set.type }}"
+      value: "{{ rec.set.value }}"
+      alias: True
+      alias_hosted_zone_id: "{{ rec.set.alias_hosted_zone_id }}"
 
 # Add an alias record that points to an Amazon ELB and evaluates it health:
 - route53:
@@ -318,7 +347,7 @@ def commit(changes, retry_interval, wait, wait_timeout):
             retry -= 1
             result = changes.commit()
             break
-        except boto.route53.exception.DNSServerError, e:
+        except boto.route53.exception.DNSServerError as e:
             code = e.body.split("<Code>")[1]
             code = code.split("</Code>")[0]
             if code != 'PriorRequestNotComplete' or retry < 0:
@@ -346,7 +375,7 @@ def invoke_with_throttling_retries(function_ref, *argv):
         try:
             retval=function_ref(*argv)
             return retval
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             if e.code != IGNORE_CODE or retries==MAX_RETRIES:
                 raise e
         time.sleep(5 * (2**retries))
@@ -450,7 +479,7 @@ def main():
     # connect to the route53 endpoint
     try:
         conn = Route53Connection(**aws_connect_kwargs)
-    except boto.exception.BotoServerError, e:
+    except boto.exception.BotoServerError as e:
         module.fail_json(msg = e.error_message)
 
     # Find the named zone ID
@@ -541,12 +570,12 @@ def main():
 
     try:
         result = invoke_with_throttling_retries(commit, changes, retry_interval_in, wait_in, wait_timeout_in)
-    except boto.route53.exception.DNSServerError, e:
+    except boto.route53.exception.DNSServerError as e:
         txt = e.body.split("<Message>")[1]
         txt = txt.split("</Message>")[0]
         if "but it already exists" in txt:
                 module.exit_json(changed=False)
-        else:   
+        else:
                 module.fail_json(msg = txt)
     except TimeoutError:
         module.fail_json(msg='Timeout waiting for changes to replicate')

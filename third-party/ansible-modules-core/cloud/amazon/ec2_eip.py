@@ -17,9 +17,10 @@
 DOCUMENTATION = '''
 ---
 module: ec2_eip
-short_description: associate an EC2 elastic IP with an instance.
+short_description: manages EC2 elastic IP (EIP) addresses.
 description:
-    - This module associates AWS EC2 elastic IP addresses with instances
+    - This module can allocate or release an EIP.
+    - This module can associate/disassociate an EIP with instances or network interfaces.
 version_added: "1.4"
 options:
   device_id:
@@ -30,13 +31,15 @@ options:
     version_added: "2.0"
   public_ip:
     description:
-      - The elastic IP address to associate with the instance.
-      - If absent, allocate a new address
+      - The IP address of a previously allocated EIP.
+      - If present and device is specified, the EIP is associated with the device.
+      - If absent and device is specified, the EIP is disassociated from the device.
     required: false
+    aliases: [ ip ]
   state:
     description:
-      - If present, associate the IP with the instance.
-      - If absent, disassociate the IP with the instance.
+      - If present, allocate an EIP or associate an existing EIP with a device.
+      - If absent, disassociate the EIP from the device and optionally release it.
     required: false
     choices: ['present', 'absent']
     default: present
@@ -48,7 +51,7 @@ options:
     version_added: "1.4"
   reuse_existing_ip_allowed:
     description:
-      - Reuse an EIP that is not associated to an instance (when available), instead of allocating a new one.
+      - Reuse an EIP that is not associated to a device (when available), instead of allocating a new one.
     required: false
     default: false
     version_added: "1.6"
@@ -64,8 +67,8 @@ extends_documentation_fragment:
 author: "Rick Mendes (@rickmendes) <rmendes@illumina.com>"
 notes:
    - This module will return C(public_ip) on success, which will contain the
-     public IP address associated with the instance.
-   - There may be a delay between the time the Elastic IP is assigned and when
+     public IP address associated with the device.
+   - There may be a delay between the time the EIP is assigned and when
      the cloud instance is reachable via the new address. Use wait_for and
      pause to delay further playbook execution until the instance is reachable,
      if necessary.
@@ -93,7 +96,7 @@ EXAMPLES = '''
 - name: another way of allocating an elastic IP without associating it to anything
   ec2_eip: state='present'
 - name: provision new instances with ec2
-  ec2: keypair=mykey instance_type=c1.medium image=emi-40603AD1 wait=yes'''
+  ec2: keypair=mykey instance_type=c1.medium image=ami-40603AD1 wait=yes'''
 ''' group=webserver count=3
   register: ec2
 - name: associate new elastic IPs with each of the instances
@@ -221,13 +224,13 @@ def release_address(ec2, address, check_mode):
     return {'changed': True}
 
 
-def find_device(ec2, device_id, isinstance=True):
+def find_device(ec2, module, device_id, isinstance=True):
     """ Attempt to find the EC2 instance and return it """
 
     if isinstance:
         try:
             reservations = ec2.get_all_reservations(instance_ids=[device_id])
-        except boto.exception.EC2ResponseError, e:
+        except boto.exception.EC2ResponseError as e:
             module.fail_json(msg=str(e))
 
         if len(reservations) == 1:
@@ -237,7 +240,7 @@ def find_device(ec2, device_id, isinstance=True):
     else:
         try:
             interfaces = ec2.get_all_network_interfaces(network_interface_ids=[device_id])
-        except boto.exception.EC2ResponseError, e:
+        except boto.exception.EC2ResponseError as e:
             module.fail_json(msg=str(e))
 
         if len(interfaces) == 1:
@@ -246,7 +249,7 @@ def find_device(ec2, device_id, isinstance=True):
     raise EIPException("could not find instance" + device_id)
 
 
-def ensure_present(ec2, domain, address, device_id,
+def ensure_present(ec2, module, domain, address, device_id,
                    reuse_existing_ip_allowed, check_mode, isinstance=True):
     changed = False
 
@@ -261,7 +264,7 @@ def ensure_present(ec2, domain, address, device_id,
     if device_id:
         # Allocate an IP for instance since no public_ip was provided
         if isinstance:
-            instance = find_device(ec2, device_id)
+            instance = find_device(ec2, module, device_id)
             if reuse_existing_ip_allowed:
                 if len(instance.vpc_id) > 0 and domain is None:
                     raise EIPException("You must set 'in_vpc' to true to associate an instance with an existing ip in a vpc")
@@ -269,7 +272,7 @@ def ensure_present(ec2, domain, address, device_id,
             assoc_result = associate_ip_and_device(ec2, address, device_id,
                                                  check_mode)
         else:
-            instance = find_device(ec2, device_id, isinstance=False)
+            instance = find_device(ec2, module, device_id, isinstance=False)
             # Associate address object (provided or allocated) with instance
             assoc_result = associate_ip_and_device(ec2, address, device_id,
                                                  check_mode, isinstance=False)
@@ -350,7 +353,7 @@ def main():
 
         if state == 'present':
             if device_id:
-                result = ensure_present(ec2, domain, address, device_id,
+                result = ensure_present(ec2, module, domain, address, device_id,
                                     reuse_existing_ip_allowed,
                                     module.check_mode, isinstance=is_instance)
             else:

@@ -167,7 +167,7 @@ def migrate_filter_output(line):
     return ("Migrating forwards " in line) or ("Installed" in line and "Installed 0 object" not in line) or ("Applying" in line)
 
 def collectstatic_filter_output(line):
-    return "0 static files" not in line
+    return line and "0 static files" not in line
 
 def main():
     command_allowed_param_map = dict(
@@ -274,7 +274,7 @@ def main():
     lines = out.split('\n')
     filt = globals().get(command + "_filter_output", None)
     if filt:
-        filtered_output = filter(filt, out.split('\n'))
+        filtered_output = list(filter(filt, lines))
         if len(filtered_output):
             changed = filtered_output
 

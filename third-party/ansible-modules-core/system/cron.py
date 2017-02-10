@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 #
-# Cron Plugin: The goal of this plugin is to provide an indempotent method for
+# Cron Plugin: The goal of this plugin is to provide an idempotent method for
 # setting up cron jobs on a host. The script will play well with other manually
 # entered crons. Each cron job entered will be preceded with a comment
 # describing the job so that it can be found later, which is required to be
@@ -46,12 +46,14 @@ description:
   - 'When environment variables are managed: no comment line is added, but, when the module
     needs to find/check the state, it uses the "name" parameter to find the environment
     variable definition line.'
+  - 'When using symbols such as %, they must be properly escaped.'
 version_added: "0.9"
 options:
   name:
     description:
       - Description of a crontab entry or, if env is set, the name of environment variable.
-        Required if state=absent
+        Required if state=absent. Note that if name is not set and state=present, then a
+        new crontab entry will always be created, regardless of existing ones.
     default: null
     required: false
   user:
@@ -137,7 +139,7 @@ options:
   env:
     description:
       - If set, manages a crontab's environment variable. New variables are added on top of crontab.
-        "name" and "value" paramenters are the name and the value of environment variable.
+        "name" and "value" parameters are the name and the value of environment variable.
     version_added: "2.1"
     required: false
     default: "no"
@@ -222,6 +224,7 @@ class CronTab(object):
         self.root      = (os.getuid() == 0)
         self.lines     = None
         self.ansible   = "#Ansible: "
+        self.existing  = ''
 
         if cron_file:
             if os.path.isabs(cron_file):
@@ -240,9 +243,10 @@ class CronTab(object):
             # read the cronfile
             try:
                 f = open(self.cron_file, 'r')
-                self.lines = f.read().splitlines()
+                self.existing = f.read()
+                self.lines = self.existing.splitlines()
                 f.close()
-            except IOError, e:
+            except IOError:
                 # cron file does not exist
                 return
             except:
@@ -254,6 +258,8 @@ class CronTab(object):
             if rc != 0 and rc != 1: # 1 can mean that there are no jobs.
                 raise CronTabError("Unable to read crontab")
 
+            self.existing = out
+
             lines = out.splitlines()
             count = 0
             for l in lines:
@@ -261,6 +267,9 @@ class CronTab(object):
                                  not re.match( r'# \(/tmp/.*installed on.*\)', l) and
                                  not re.match( r'# \(.*version.*\)', l)):
                     self.lines.append(l)
+                else:
+                    pattern = re.escape(l) + '[\r\n]?'
+                    self.existing = re.sub(pattern, '', self.existing, 1)
                 count += 1
 
     def is_empty(self):
@@ -279,7 +288,7 @@ class CronTab(object):
             fileh = open(self.cron_file, 'w')
         else:
             filed, path = tempfile.mkstemp(prefix='crontab')
-            os.chmod(path, 0644)
+            os.chmod(path, int('0644', 8))
             fileh = os.fdopen(filed, 'w')
 
         fileh.write(self.render())
@@ -355,7 +364,7 @@ class CronTab(object):
         try:
             os.unlink(self.cron_file)
             return True
-        except OSError, e:
+        except OSError:
             # cron file does not exist
             return False
         except:
@@ -462,8 +471,8 @@ class CronTab(object):
             crons.append(cron)
 
         result = '\n'.join(crons)
-        if result and result[-1] not in ['\n', '\r']:
-            result += '\n'
+        if result:
+            result = result.rstrip('\r\n') + '\n'
         return result
 
     def _read_user_execute(self):
@@ -572,14 +581,14 @@ def main():
     res_args     = dict()
 
     # Ensure all files generated are only writable by the owning user.  Primarily relevant for the cron_file option.
-    os.umask(022)
+    os.umask(int('022', 8))
     crontab = CronTab(module, user, cron_file)
 
     module.debug('cron instantiated - name: "%s"' % name)
 
     if module._diff:
         diff = dict()
-        diff['before'] = crontab.render()
+        diff['before'] = crontab.existing
         if crontab.cron_file:
             diff['before_header'] = crontab.cron_file
         else:
@@ -657,6 +666,10 @@ def main():
             if len(old_job) > 0:
                 crontab.remove_job(name)
                 changed = True
+
+    # no changes to env/job, but existing crontab needs a terminating newline
+    if not changed and not crontab.existing.endswith(('\r', '\n')):
+        changed = True
 
     res_args = dict(
         jobs = crontab.get_jobnames(),

@@ -48,7 +48,7 @@ options:
         required: false
         default: '*'
         description:
-            - One or more (shell or regex) patterns, which type is controled by C(use_regex) option.
+            - One or more (shell or regex) patterns, which type is controlled by C(use_regex) option.
             - The patterns restrict the list of files to be returned to those whose basenames match at
               least one of the patterns specified. Multiple patterns can be specified using a list.
         aliases: ['pattern']
@@ -56,7 +56,7 @@ options:
         required: false
         default: null
         description:
-            - One or more re patterns which should be matched against the file content
+            - One or more regex patterns which should be matched against the file content
     paths:
         required: true
         aliases: [ "name", "path" ]

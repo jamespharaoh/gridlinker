@@ -17,31 +17,32 @@
 #
 DOCUMENTATION = """
 ---
-module: ios_template
+module: nxos_template
 version_added: "2.1"
-author: "Peter sprygada (@privateip)"
-short_description: Manage Cisco IOS device configurations over SSH
+author: "Peter Sprygada (@privateip)"
+short_description: Manage Cisco NXOS device configurations
 description:
-  - Manages Cisco IOS network device configurations over SSH.  This module
-    allows implementors to work with the device running-config.  It
+  - Manages network device configurations over SSH or NXAPI.  This module
+    allows implementers to work with the device running-config.  It
     provides a way to push a set of commands onto a network device
-    by evaluting the current running-config and only pushing configuration
+    by evaluating the current running-config and only pushing configuration
     commands that are not already configured.  The config source can
     be a set of commands or a template.
-extends_documentation_fragment: ios
+deprecated: Deprecated in 2.2. Use nxos_config instead
+extends_documentation_fragment: nxos
 options:
   src:
     description:
       - The path to the config source.  The source can be either a
         file with config or a template that will be merged during
-        runtime.  By default the task will first search for the source
-        file in role or playbook root folder in templates unless a full
-        path to the file is given.
-    required: true
+        runtime.  By default the task will search for the source
+        file in role or playbook root folder in templates directory.
+    required: false
+    default: null
   force:
     description:
-      - The force argument instructs the module not to consider the
-        current device running-config.  When set to true, this will
+      - The force argument instructs the module to not consider the
+        current devices running-config.  When set to true, this will
         cause the module to push the contents of I(src) into the device
         without first checking if already configured.
     required: false
@@ -50,11 +51,10 @@ options:
   include_defaults:
     description:
       - The module, by default, will collect the current device
-        running-config to use as a base for comparision to the commands
-        in I(src).  Setting this value to true will cause the command
-        issued to add any necessary flags to collect all defaults as
-        well as the device configuration.  If the destination device
-        does not support such a flag, this argument is silently ignored.
+        running-config to use as a base for comparisons to the commands
+        in I(src).  Setting this value to true will cause the module
+        to issue the command C(show running-config all) to include all
+        device settings.
     required: false
     default: false
     choices: [ "true", "false" ]
@@ -73,31 +73,25 @@ options:
         retrieve the current running-config to use as a base for comparing
         against the contents of source.  There are times when it is not
         desirable to have the task get the current running-config for
-        every task.  The I(config) argument allows the implementer to
-        pass in the configuruation to use as the base config for
-        comparision.
+        every task in a playbook.  The I(config) argument allows the
+        implementer to pass in the configuration to use as the base
+        config for comparison.
     required: false
     default: null
 """
 
 EXAMPLES = """
 - name: push a configuration onto the device
-  ios_template:
-    host: hostname
-    username: foo
+  nxos_template:
     src: config.j2
 
 - name: forceable push a configuration onto the device
-  ios_template:
-    host: hostname
-    username: foo
+  nxos_template:
     src: config.j2
     force: yes
 
-- name: provide the base configuration for comparision
-  ios_template:
-    host: hostname
-    username: foo
+- name: provide the base configuration for comparison
+  nxos_template:
     src: candidate_config.txt
     config: current_config.txt
 """
@@ -111,15 +105,18 @@ updates:
 
 responses:
   description: The set of responses from issuing the commands on the device
-  retured: when not check_mode
+  returned: when not check_mode
   type: list
   sample: ['...', '...']
 """
+import ansible.module_utils.nxos
+from ansible.module_utils.netcfg import NetworkConfig, dumps
+from ansible.module_utils.network import NetworkModule
 
 def get_config(module):
     config = module.params['config'] or dict()
     if not config and not module.params['force']:
-        config = module.config
+        config = module.config.get_config()
     return config
 
 def main():
@@ -136,28 +133,29 @@ def main():
 
     mutually_exclusive = [('config', 'backup'), ('config', 'force')]
 
-    module = get_module(argument_spec=argument_spec,
-                        mutually_exclusive=mutually_exclusive,
-                        supports_check_mode=True)
+    module = NetworkModule(argument_spec=argument_spec,
+                           mutually_exclusive=mutually_exclusive,
+                           supports_check_mode=True)
 
     result = dict(changed=False)
 
-    candidate = NetworkConfig(contents=module.params['src'], indent=1)
+    candidate = NetworkConfig(contents=module.params['src'], indent=2)
 
     contents = get_config(module)
     if contents:
-        config = NetworkConfig(contents=contents, indent=1)
-        result['_backup'] = contents
+        config = NetworkConfig(contents=contents, indent=2)
+        result['_backup'] = str(contents)
 
     if not module.params['force']:
         commands = candidate.difference(config)
+        commands = dumps(commands, 'commands').split('\n')
+        commands = [str(c) for c in commands if c]
     else:
         commands = str(candidate).split('\n')
 
     if commands:
         if not module.check_mode:
-            commands = [str(c).strip() for c in commands]
-            response = module.configure(commands)
+            response = module.config(commands)
             result['responses'] = response
         result['changed'] = True
 
@@ -165,10 +163,5 @@ def main():
     module.exit_json(**result)
 
 
-from ansible.module_utils.basic import *
-from ansible.module_utils.shell import *
-from ansible.module_utils.netcfg import *
-from ansible.module_utils.ios import *
 if __name__ == '__main__':
     main()
-

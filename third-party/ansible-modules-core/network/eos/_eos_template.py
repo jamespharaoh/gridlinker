@@ -19,15 +19,16 @@ DOCUMENTATION = """
 ---
 module: eos_template
 version_added: "2.1"
-author: "Peter sprygada (@privateip)"
+author: "Peter Sprygada (@privateip)"
 short_description: Manage Arista EOS device configurations
 description:
   - Manages network device configurations over SSH or eAPI.  This module
-    allows implementors to work with the device running-config.  It
+    allows implementers to work with the device running-config.  It
     provides a way to push a set of commands onto a network device
-    by evaluting the current running-config and only pushing configuration
+    by evaluating the current running-config and only pushing configuration
     commands that are not already configured.  The config source can
     be a set of commands or a template.
+deprecated: Deprecated in 2.2. Use eos_config instead
 extends_documentation_fragment: eos
 options:
   src:
@@ -49,9 +50,9 @@ options:
   include_defaults:
     description:
       - By default when the M(eos_template) connects to the remote
-        device to retrieve the configuration it will issue the `show
-        running-config` command.  If this option is set to True then
-        the issued command will be `show running-config all`
+        device to retrieve the configuration it will issue the C(show
+        running-config) command.  If this option is set to True then
+        the issued command will be C(show running-config all).
     required: false
     default: false
     choices: ['yes', 'no']
@@ -69,8 +70,7 @@ options:
       - This argument will cause the provided configuration to be replaced
         on the destination node.   The use of the replace argument will
         always cause the task to set changed to true and will implies
-        I(force) is true.  This argument is only valid with I(transport)
-        is eapi.
+        C(force=true).  This argument is only valid with C(transport=eapi).
     required: false
     default: false
     choices: ['yes', 'no']
@@ -81,23 +81,23 @@ options:
         against the contents of source.  There are times when it is not
         desirable to have the task get the current running-config for
         every task in a playbook.  The I(config) argument allows the
-        implementer to pass in the configuruation to use as the base
-        config for comparision.
+        implementer to pass in the configuration to use as the base
+        config for comparison.
     required: false
     default: null
 """
 
 EXAMPLES = """
-- name: push a configuration onto the device
+- name: Push a configuration onto the device
   eos_template:
     src: config.j2
 
-- name: forceable push a configuration onto the device
+- name: Forceable push a configuration onto the device
   eos_template:
     src: config.j2
     force: yes
 
-- name: provide the base configuration for comparision
+- name: Provide the base configuration for comparison
   eos_template:
     src: candidate_config.txt
     config: current_config.txt
@@ -112,17 +112,22 @@ updates:
 
 responses:
   description: The set of responses from issuing the commands on the device
-  retured: when not check_mode
+  returned: when not check_mode
   type: list
   sample: ['...', '...']
 """
-
 import re
+
+import ansible.module_utils.eos
+
+from ansible.module_utils.network import NetworkModule
+from ansible.module_utils.netcfg import NetworkConfig, dumps
 
 def get_config(module):
     config = module.params.get('config')
+    defaults = module.params['include_defaults']
     if not config and not module.params['force']:
-        config = module.config
+        config = module.config.get_config(include_defaults=defaults)
     return config
 
 def filter_exit(commands):
@@ -164,9 +169,9 @@ def main():
 
     mutually_exclusive = [('config', 'backup'), ('config', 'force')]
 
-    module = get_module(argument_spec=argument_spec,
-                        mutually_exclusive=mutually_exclusive,
-                        supports_check_mode=True)
+    module = NetworkModule(argument_spec=argument_spec,
+                           mutually_exclusive=mutually_exclusive,
+                           supports_check_mode=True)
 
     replace = module.params['replace']
 
@@ -189,24 +194,21 @@ def main():
 
         if not module.params['force']:
             commands = candidate.difference((running or list()))
+            commands = dumps(commands, 'commands').split('\n')
+            commands = [str(c) for c in commands if c]
         else:
             commands = str(candidate).split('\n')
 
+    commands = filter_exit(commands)
     if commands:
-        commands = filter_exit(commands)
         if not module.check_mode:
-            commands = [str(c).strip() for c in commands]
-            response = module.configure(commands, replace=replace)
+            response = module.config.load_config(commands, replace=replace,
+                                                 commit=True)
             result['responses'] = response
         result['changed'] = True
 
     result['updates'] = commands
     module.exit_json(**result)
 
-from ansible.module_utils.basic import *
-from ansible.module_utils.urls import *
-from ansible.module_utils.shell import *
-from ansible.module_utils.netcfg import *
-from ansible.module_utils.eos import *
 if __name__ == '__main__':
     main()

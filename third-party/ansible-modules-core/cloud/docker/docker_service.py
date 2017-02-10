@@ -72,7 +72,7 @@ options:
       required: false
   scale:
       description:
-        - When C(sate) is I(present) scale services. Provide a dictionary of key/value pairs where the key
+        - When C(state) is I(present) scale services. Provide a dictionary of key/value pairs where the key
           is the name of the service and the value is an integer count for the number of containers.
       type: complex
       required: false
@@ -85,7 +85,7 @@ options:
   definition:
       description:
         - Provide docker-compose yaml describing one or more services, networks and volumes.
-        - Mutually exclusive with C(project_src) and C(project_files).
+        - Mutually exclusive with C(project_src) and C(files).
       type: complex
       required: false
   hostname_check:
@@ -108,13 +108,30 @@ options:
       default: smart
   build:
       description:
-        - Whether or not to build images before starting containers.
-        - Missing images will always be built.
-        - If an image is present and C(build) is false, the image will not be built.
-        - If an image is present and C(build) is true, the image will be built.
+        - Use with state I(present) to always build images prior to starting the application.
+        - Same as running docker-compose build with the pull option.
+        - Images will only be rebuilt if Docker detects a change in the Dockerfile or build directory contents.
+        - Use the C(nocache) option to ignore the image cache when performing the build.
+        - If an existing image is replaced, services using the image will be recreated unless C(recreate) is I(never).
       type: bool
       required: false
-      default: true
+      default: false
+  pull:
+      description:
+        - Use with state I(present) to always pull images prior to starting the application.
+        - Same as running docker-compose pull.
+        - When a new image is pulled, services using the image will be recreated unless C(recreate) is I(never).
+      type: bool
+      required: false
+      default: false
+      version_added: "2.2"
+  nocache:
+      description:
+        - Use with the build option to ignore the cache during the image build process.
+      type: bool
+      required: false
+      default: false
+      version_added: "2.2"
   remove_images:
       description:
         - Use with state I(absent) to remove the all images or only local images.
@@ -153,6 +170,7 @@ requirements:
     - "python >= 2.6"
     - "docker-compose >= 1.7.0"
     - "Docker API >= 1.20"
+    - "PyYAML >= 3.11"
 '''
 
 EXAMPLES = '''
@@ -382,9 +400,35 @@ actions:
           returned: always
           type: complex
           contains:
+              pulled_image:
+                  description: Provides image details when a new image is pulled for the service.
+                  returned: on image pull
+                  type: complex
+                  contains:
+                      name:
+                          description: name of the image
+                          returned: always
+                          type: string
+                      id:
+                          description: image hash
+                          returned: always
+                          type: string
+              built_image:
+                  description: Provides image details when a new image is built for the service.
+                  returned: on image build
+                  type: complex
+                  contains:
+                      name:
+                          description: name of the image
+                          returned: always
+                          type: string
+                      id:
+                          description: image hash
+                          returned: always
+                          type: string
+
               action:
-                  description: A descriptive name of the action to be performed on the set of containers
-                               within the service.
+                  description: A descriptive name of the action to be performed on the service's containers.
                   returned: always
                   type: list
                   contains:
@@ -402,20 +446,31 @@ actions:
                           type: string
 '''
 
+HAS_YAML = True
+HAS_YAML_EXC = None
 HAS_COMPOSE = True
 HAS_COMPOSE_EXC = None
+MINIMUM_COMPOSE_VERSION = '1.7.0'
 
-import yaml
+try:
+    import yaml
+except ImportError as exc:
+    HAS_YAML = False
+    HAS_YAML_EXC = str(exc)
 
+from distutils.version import LooseVersion
 from ansible.module_utils.basic import *
 
 try:
+    from compose import __version__ as compose_version
     from compose.cli.command import project_from_options
     from compose.service import ConvergenceStrategy
     from compose.cli.main import convergence_strategy_from_opts, build_action_from_opts, image_type_from_opt
+    from compose.const import DEFAULT_TIMEOUT
 except ImportError as exc:
     HAS_COMPOSE = False
     HAS_COMPOSE_EXC = str(exc)
+    DEFAULT_TIMEOUT = 10
 
 from ansible.module_utils.docker_common import *
 
@@ -455,6 +510,8 @@ class ContainerManager(DockerBaseClass):
         self.services = None
         self.scale = None
         self.debug = None
+        self.pull = None
+        self.nocache = None
 
         for key, value in client.module.params.items():
             setattr(self, key, value)
@@ -477,10 +534,18 @@ class ContainerManager(DockerBaseClass):
         if not HAS_COMPOSE:
             self.client.fail("Unable to load docker-compose. Try `pip install docker-compose`. Error: %s" % HAS_COMPOSE_EXC)
 
+        if LooseVersion(compose_version) < LooseVersion(MINIMUM_COMPOSE_VERSION):
+            self.client.fail("Found docker-compose version %s. Minimum required version is %s. "
+                             "Upgrade docker-compose to a min version of %s." %
+                             (compose_version, MINIMUM_COMPOSE_VERSION, MINIMUM_COMPOSE_VERSION))
+
         self.log("options: ")
         self.log(self.options, pretty_print=True)
 
         if self.definition:
+            if not HAS_YAML:
+                self.client.fail("Unable to load yaml. Try `pip install PyYAML`. Error: %s" % HAS_YAML_EXC)
+
             if not self.project_name:
                 self.client.fail("Parameter error - project_name required when providing definition.")
 
@@ -541,7 +606,7 @@ class ContainerManager(DockerBaseClass):
 
         up_options = {
             u'--no-recreate': False,
-            u'--build': self.build,
+            u'--build': True,
             u'--no-build': False,
             u'--no-deps': False,
             u'--force-recreate': False,
@@ -558,13 +623,20 @@ class ContainerManager(DockerBaseClass):
         converge = convergence_strategy_from_opts(up_options)
         self.log("convergence strategy: %s" % converge)
 
+        if self.pull:
+            result.update(self.cmd_pull())
+
+        if self.build:
+            result.update(self.cmd_build())
+
         for service in self.project.services:
             if not service_names or service.name in service_names:
                 plan = service.convergence_plan(strategy=converge)
                 if plan.action != 'noop':
                     result['changed'] = True
                 if self.debug or self.check_mode:
-                    result['actions'][service.name] = dict()
+                    if not result['actions'].get(service.name):
+                        result['actions'][service.name] = dict()
                     result['actions'][service.name][plan.action] = []
                     for container in plan.containers:
                         result['actions'][service.name][plan.action].append(dict(
@@ -575,15 +647,18 @@ class ContainerManager(DockerBaseClass):
 
         if not self.check_mode and result['changed']:
             try:
+                do_build = build_action_from_opts(up_options)
+                self.log('Setting do_build to %s' % do_build)
                 self.project.up(
                     service_names=service_names,
                     start_deps=start_deps,
                     strategy=converge,
-                    do_build=build_action_from_opts(up_options),
+                    do_build=do_build,
                     detached=detached,
-                    remove_orphans=self.remove_orphans)
+                    remove_orphans=self.remove_orphans,
+                    timeout=self.timeout)
             except Exception as exc:
-                self.client.fail("Error bring %s up - %s" % (self.project.name, str(exc)))
+                self.client.fail("Error starting project - %s" % str(exc))
 
         if self.stopped:
             result.update(self.cmd_stop(service_names))
@@ -651,6 +726,68 @@ class ContainerManager(DockerBaseClass):
 
         return result
 
+    def cmd_pull(self):
+        result = dict(
+            changed=False,
+            actions=dict(),
+        )
+
+        if not self.check_mode:
+            for service in self.project.get_services(self.services, include_deps=False):
+                self.log('Pulling image for service %s' % service.name)
+                # store the existing image ID
+                image = service.image()
+                old_image_id = None
+                if image and image.get('Id'):
+                    old_image_id = image['Id']
+
+                # pull the image
+                service.pull(ignore_pull_failures=False)
+
+                # store the new image ID
+                image = service.image()
+                new_image_id = None
+                if image and image.get('Id'):
+                    new_image_id = image['Id']
+
+                if new_image_id != old_image_id:
+                    # if a new image was pulled
+                    result['changed'] = True
+                    result['actions'][service.name] = dict()
+                    result['actions'][service.name]['pulled_image'] = dict(
+                        name=service.image_name,
+                        id=service.image()['Id']
+                    )
+        return result
+
+    def cmd_build(self):
+        result = dict(
+            changed=False,
+            actions=dict(),
+        )
+        if not self.check_mode:
+            for service in self.project.get_services(self.services, include_deps=False):
+                self.log('Building image for service %s' % service.name)
+                if service.can_be_built():
+                    # store the existing image ID
+                    image = service.image()
+                    old_image_id = None
+                    if image and image.get('Id'):
+                        old_image_id = image['Id']
+
+                    # build the image
+                    new_image_id = service.build(pull=True, no_cache=self.nocache)
+
+                    if new_image_id not in old_image_id:
+                        # if a new image was built
+                        result['changed'] = True
+                        result['actions'][service.name] = dict()
+                        result['actions'][service.name]['built_image'] = dict(
+                            name=service.image_name,
+                            id=service.image()['Id']
+                        )
+        return result
+
     def cmd_down(self):
         result = dict(
             changed=False,
@@ -670,7 +807,7 @@ class ContainerManager(DockerBaseClass):
             try:
                 self.project.down(image_type, self.remove_volumes, self.remove_orphans)
             except Exception as exc:
-                self.client.fail("Error bringing %s down - %s" % (self.project.name, str(exc)))
+                self.client.fail("Error stopping project - %s" % str(exc))
 
         return result
 
@@ -694,7 +831,7 @@ class ContainerManager(DockerBaseClass):
 
         if not self.check_mode and result['changed']:
             try:
-                self.project.stop(service_names=service_names)
+                self.project.stop(service_names=service_names, timeout=self.timeout)
             except Exception as exc:
                 self.client.fail("Error stopping services for %s - %s" % (self.project.name, str(exc)))
 
@@ -721,7 +858,7 @@ class ContainerManager(DockerBaseClass):
 
         if not self.check_mode and result['changed']:
             try:
-                self.project.restart(service_names=service_names)
+                self.project.restart(service_names=service_names, timeout=self.timeout)
             except Exception as exc:
                 self.client.fail("Error restarting services for %s - %s" % (self.project.name, str(exc)))
 
@@ -743,7 +880,7 @@ class ContainerManager(DockerBaseClass):
                         result['actions'][service.name]['scale'] = self.scale[service.name] - len(containers)
                     if not self.check_mode:
                         try:
-                            service.scale(self.scale[service.name])
+                            service.scale(int(self.scale[service.name]))
                         except Exception as exc:
                             self.client.fail("Error scaling %s - %s" % (service.name, str(exc)))
         return result
@@ -758,7 +895,7 @@ def main():
         definition=dict(type='dict'),
         hostname_check=dict(type='bool', default=False),
         recreate=dict(type='str', choices=['always','never','smart'], default='smart'),
-        build=dict(type='bool', default=True),
+        build=dict(type='bool', default=False),
         remove_images=dict(type='str', choices=['all', 'local']),
         remove_volumes=dict(type='bool', default=False),
         remove_orphans=dict(type='bool', default=False),
@@ -767,7 +904,10 @@ def main():
         scale=dict(type='dict'),
         services=dict(type='list'),
         dependencies=dict(type='bool', default=True),
-        debug=dict(type='bool', default=False)
+        pull=dict(type='bool', default=False),
+        nocache=dict(type='bool', default=False),
+        debug=dict(type='bool', default=False),
+        timeout=dict(type='int', default=DEFAULT_TIMEOUT)
     )
 
     mutually_exclusive = [

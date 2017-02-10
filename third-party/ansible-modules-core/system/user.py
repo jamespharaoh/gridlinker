@@ -150,7 +150,7 @@ options:
               This will B(not) overwrite an existing SSH key.
     ssh_key_bits:
         required: false
-        default: 2048
+        default: default set by ssh-keygen
         version_added: "0.9"
         description:
             - Optionally specify number of bits in SSH key to create.
@@ -221,6 +221,7 @@ import grp
 import platform
 import socket
 import time
+from ansible.module_utils._text import to_native
 
 try:
     import spwd
@@ -285,7 +286,8 @@ class User(object):
         if module.params['expires']:
             try:
                 self.expires = time.gmtime(module.params['expires'])
-            except Exception,e:
+            except Exception:
+                e = get_exception()
                 module.fail_json("Invalid expires time %s: %s" %(self.expires, str(e)))
 
         if module.params['ssh_key_file'] is not None:
@@ -299,6 +301,8 @@ class User(object):
             self.module.debug('In check mode, would have run: "%s"' % cmd)
             return (0, '','')
         else:
+            # cast all args to strings ansible-modules-core/issues/4397
+            cmd = [str(x) for x in cmd]
             return self.module.run_command(cmd, use_unsafe_shell=use_unsafe_shell, data=data)
 
     def remove_user_userdel(self):
@@ -399,7 +403,7 @@ class User(object):
         helpout = data1 + data2
 
         # check if --append exists
-        lines = helpout.split('\n')
+        lines = to_native(helpout).split('\n')
         for line in lines:
             if line.strip().startswith('-a, --append'):
                 return True
@@ -429,7 +433,8 @@ class User(object):
                 cmd.append(self.group)
 
         if self.groups is not None:
-            current_groups = self.user_group_membership()
+            # get a list of all groups for the user, including the primary
+            current_groups = self.user_group_membership(exclude_primary=False)
             groups_need_mod = False
             groups = []
 
@@ -458,7 +463,6 @@ class User(object):
                 else:
                     cmd.append('-G')
                     cmd.append(','.join(groups))
-
 
         if self.comment is not None and info[4] != self.comment:
             cmd.append('-c')
@@ -522,12 +526,19 @@ class User(object):
                 groups.remove(g)
         return groups
 
-    def user_group_membership(self):
+    def user_group_membership(self, exclude_primary=True):
+        ''' Return a list of groups the user belongs to '''
         groups = []
         info = self.get_pwd_info()
         for group in grp.getgrall():
-            if self.name in group.gr_mem and not info[3] == group.gr_gid:
-                groups.append(group[0])
+            if self.name in group.gr_mem:
+                # Exclude the user's primary group by default
+                if not exclude_primary:
+                    groups.append(group[0])
+                else:
+                    if info[3] != group.gr_gid:
+                        groups.append(group[0])
+
         return groups
 
     def user_exists(self):
@@ -585,17 +596,19 @@ class User(object):
             if self.module.check_mode:
                 return (0, '', '')
             try:
-                os.mkdir(ssh_dir, 0700)
+                os.mkdir(ssh_dir, int('0700', 8))
                 os.chown(ssh_dir, info[2], info[3])
-            except OSError, e:
+            except OSError:
+                e = get_exception()
                 return (1, '', 'Failed to create %s: %s' % (ssh_dir, str(e)))
         if os.path.exists(ssh_key_file):
             return (None, 'Key already exists', '')
         cmd = [self.module.get_bin_path('ssh-keygen', True)]
         cmd.append('-t')
         cmd.append(self.ssh_type)
-        cmd.append('-b')
-        cmd.append(self.ssh_bits)
+        if self.ssh_bits > 0:
+            cmd.append('-b')
+            cmd.append(self.ssh_bits)
         cmd.append('-C')
         cmd.append(self.ssh_comment)
         cmd.append('-f')
@@ -657,12 +670,14 @@ class User(object):
             if os.path.exists(skeleton):
                 try:
                     shutil.copytree(skeleton, path, symlinks=True)
-                except OSError, e:
+                except OSError:
+                    e = get_exception()
                     self.module.exit_json(failed=True, msg="%s" % e)
         else:
             try:
                 os.makedirs(path)
-            except OSError, e:
+            except OSError:
+                e = get_exception()
                 self.module.exit_json(failed=True, msg="%s" % e)
 
     def chown_homedir(self, uid, gid, path):
@@ -673,7 +688,8 @@ class User(object):
                     os.chown(path, uid, gid)
                 for f in files:
                     os.chown(os.path.join(root, f), uid, gid)
-        except OSError, e:
+        except OSError:
+            e = get_exception()
             self.module.exit_json(failed=True, msg="%s" % e)
 
 
@@ -1222,6 +1238,29 @@ class SunOS(User):
     distribution = None
     SHADOWFILE = '/etc/shadow'
 
+    def get_password_defaults(self):
+        # Read password aging defaults
+        try:
+            minweeks = ''
+            maxweeks = ''
+            warnweeks = ''
+            for line in open("/etc/default/passwd", 'r'):
+                line = line.strip()
+                if (line.startswith('#') or line == ''):
+                    continue
+                key, value = line.split('=')
+                if key == "MINWEEKS":
+                    minweeks = value.rstrip('\n')
+                elif key == "MAXWEEKS":
+                    maxweeks = value.rstrip('\n')
+                elif key == "WARNWEEKS":
+                    warnweeks = value.rstrip('\n')
+        except Exception:
+            err = get_exception()
+            self.module.fail_json(msg="failed to read /etc/default/passwd: %s" % str(err))
+
+        return (minweeks, maxweeks, warnweeks)
+
     def remove_user(self):
         cmd = [self.module.get_bin_path('userdel', True)]
         if self.remove:
@@ -1279,6 +1318,7 @@ class SunOS(User):
         if not self.module.check_mode:
             # we have to set the password by editing the /etc/shadow file
             if self.password is not None:
+                minweeks, maxweeks, warnweeks = self.get_password_defaults()
                 try:
                     lines = []
                     for line in open(self.SHADOWFILE, 'rb').readlines():
@@ -1288,10 +1328,17 @@ class SunOS(User):
                             continue
                         fields[1] = self.password
                         fields[2] = str(int(time.time() / 86400))
+                        if minweeks:
+                            fields[3] = str(int(minweeks) * 7)
+                        if maxweeks:
+                            fields[4] = str(int(maxweeks) * 7)
+                        if warnweeks:
+                            fields[5] = str(int(warnweeks) * 7)
                         line = ':'.join(fields)
                         lines.append('%s\n' % line)
                     open(self.SHADOWFILE, 'w+').writelines(lines)
-                except Exception, err:
+                except Exception:
+                    err = get_exception()
                     self.module.fail_json(msg="failed to update users password: %s" % str(err))
 
         return (rc, out, err)
@@ -1365,6 +1412,7 @@ class SunOS(User):
         if self.update_password == 'always' and self.password is not None and info[1] != self.password:
             (rc, out, err) = (0, '', '')
             if not self.module.check_mode:
+                minweeks, maxweeks, warnweeks = self.get_password_defaults()
                 try:
                     lines = []
                     for line in open(self.SHADOWFILE, 'rb').readlines():
@@ -1374,11 +1422,18 @@ class SunOS(User):
                             continue
                         fields[1] = self.password
                         fields[2] = str(int(time.time() / 86400))
+                        if minweeks:
+                            fields[3] = str(int(minweeks) * 7)
+                        if maxweeks:
+                            fields[4] = str(int(maxweeks) * 7)
+                        if warnweeks:
+                            fields[5] = str(int(warnweeks) * 7)
                         line = ':'.join(fields)
                         lines.append('%s\n' % line)
                     open(self.SHADOWFILE, 'w+').writelines(lines)
                     rc = 0
-                except Exception, err:
+                except Exception:
+                    err = get_exception()
                     self.module.fail_json(msg="failed to update users password: %s" % str(err))
 
         return (rc, out, err)
@@ -1473,7 +1528,7 @@ class DarwinUser(User):
     def _change_user_password(self):
         '''Change password for SELF.NAME against SELF.PASSWORD.
 
-        Please note that password must be cleatext.
+        Please note that password must be cleartext.
         '''
         # some documentation on how is stored passwords on OSX:
         # http://blog.lostpassword.com/2012/07/cracking-mac-os-x-lion-accounts-passwords/
@@ -1505,7 +1560,7 @@ class DarwinUser(User):
 
     def __modify_group(self, group, action):
         '''Add or remove SELF.NAME to or from GROUP depending on ACTION.
-        ACTION can be 'add' or 'remove' otherwhise 'remove' is assumed. '''
+        ACTION can be 'add' or 'remove' otherwise 'remove' is assumed. '''
         if action == 'add':
             option = '-a'
         else:
@@ -1519,7 +1574,7 @@ class DarwinUser(User):
 
     def _modify_group(self):
         '''Add or remove SELF.NAME to or from GROUP depending on ACTION.
-        ACTION can be 'add' or 'remove' otherwhise 'remove' is assumed. '''
+        ACTION can be 'add' or 'remove' otherwise 'remove' is assumed. '''
 
         rc = 0
         out = ''
@@ -1532,12 +1587,13 @@ class DarwinUser(User):
         else:
             target = set([])
 
-        for remove in current - target:
-            (_rc, _err, _out) = self.__modify_group(remove, 'delete')
-            rc += rc
-            out += _out
-            err += _err
-            changed = True
+        if self.append is False:
+            for remove in current - target:
+                (_rc, _err, _out) = self.__modify_group(remove, 'delete')
+                rc += rc
+                out += _out
+                err += _err
+                changed = True
 
         for add in target - current:
             (_rc, _err, _out) = self.__modify_group(add, 'add')
@@ -1637,7 +1693,7 @@ class DarwinUser(User):
                 self.chown_homedir(int(self.uid), int(self.group), self.home)
 
         for field in self.fields:
-            if self.__dict__.has_key(field[0]) and self.__dict__[field[0]]:
+            if field[0] in self.__dict__ and self.__dict__[field[0]]:
 
                 cmd = self._get_dscl()
                 cmd += [ '-create', '/Users/%s' % self.name, field[1], self.__dict__[field[0]]]
@@ -1674,7 +1730,7 @@ class DarwinUser(User):
             self._make_group_numerical()
 
         for field in self.fields:
-            if self.__dict__.has_key(field[0]) and self.__dict__[field[0]]:
+            if field[0] in self.__dict__ and self.__dict__[field[0]]:
                 current = self._get_user_property(field[1])
                 if current is None or current != self.__dict__[field[0]]:
                     cmd = self._get_dscl()
@@ -2012,7 +2068,7 @@ class HPUX(User):
 
 def main():
     ssh_defaults = {
-            'bits': '2048',
+            'bits': 0,
             'type': 'rsa',
             'passphrase': None,
             'comment': 'ansible-generated on %s' % socket.gethostname()
@@ -2044,7 +2100,7 @@ def main():
             append=dict(default='no', type='bool'),
             # following are specific to ssh key generation
             generate_ssh_key=dict(type='bool'),
-            ssh_key_bits=dict(default=ssh_defaults['bits'], type='str'),
+            ssh_key_bits=dict(default=ssh_defaults['bits'], type='int'),
             ssh_key_type=dict(default=ssh_defaults['type'], type='str'),
             ssh_key_file=dict(default=None, type='path'),
             ssh_key_comment=dict(default=ssh_defaults['comment'], type='str'),

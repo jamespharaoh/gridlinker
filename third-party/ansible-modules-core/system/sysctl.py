@@ -76,10 +76,16 @@ author: "David CHANIAL (@davixx) <david.chanial@gmail.com>"
 
 EXAMPLES = '''
 # Set vm.swappiness to 5 in /etc/sysctl.conf
-- sysctl: name=vm.swappiness value=5 state=present
+- sysctl: 
+    name: vm.swappiness 
+    value: 5
+    state: present
 
 # Remove kernel.panic entry from /etc/sysctl.conf
-- sysctl: name=kernel.panic state=absent sysctl_file=/etc/sysctl.conf
+- sysctl:
+    name: kernel.panic
+    state: absent 
+    sysctl_file: /etc/sysctl.conf
 
 # Set kernel.panic to 3 in /tmp/test_sysctl.conf
 - sysctl: name=kernel.panic value=3 sysctl_file=/tmp/test_sysctl.conf reload=no
@@ -275,7 +281,8 @@ class SysctlModule(object):
                 f = open(self.sysctl_file, "r")
                 lines = f.readlines()
                 f.close()
-            except IOError, e:
+            except IOError:
+                e = get_exception()
                 self.module.fail_json(msg="Failed to open %s: %s" % (self.sysctl_file, str(e)))
 
         for line in lines:
@@ -325,7 +332,8 @@ class SysctlModule(object):
         try:
             for l in self.fixed_lines:
                 f.write(l.strip() + "\n")
-        except IOError, e:
+        except IOError:
+            e = get_exception()
             self.module.fail_json(msg="Failed to write to file %s: %s" % (tmp_path, str(e)))
         f.flush()
         f.close()

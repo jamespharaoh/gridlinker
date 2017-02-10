@@ -23,10 +23,11 @@ version_added: "2.1"
 author: "Peter Sprygada (@privateip)"
 short_description: Manage configuration on remote devices running Junos
 description:
-  - The M(junos_template) module will load a candidate configuration
+  - This module will load a candidate configuration
     from a template file onto a remote device running Junos.  The
     module will return the differences in configuration if the diff
     option is specified on the Ansible command line
+deprecated: Deprecated in 2.2. Use junos_config instead
 extends_documentation_fragment: junos
 options:
   src:
@@ -100,6 +101,10 @@ EXAMPLES = """
     src: config.j2
     action: overwrite
 """
+import ansible.module_utils.junos
+
+from ansible.module_utils.basic import get_exception
+from ansible.module_utils.network import NetworkModule, NetworkError
 
 DEFAULT_COMMENT = 'configured by junos_template'
 
@@ -115,37 +120,45 @@ def main():
         transport=dict(default='netconf', choices=['netconf'])
     )
 
-    module = get_module(argument_spec=argument_spec,
-                        supports_check_mode=True)
+    module = NetworkModule(argument_spec=argument_spec,
+                           supports_check_mode=True)
 
     comment = module.params['comment']
     confirm = module.params['confirm']
     commit = not module.check_mode
 
+    replace = False
+    overwrite = False
+
     action = module.params['action']
+    if action == 'overwrite':
+        overwrite = True
+    elif action == 'replace':
+        replace = True
 
     src = module.params['src']
     fmt = module.params['config_format']
 
     if action == 'overwrite' and fmt == 'set':
         module.fail_json(msg="overwrite cannot be used when format is "
-            "set per junos documentation")
+            "set per junos-pyez documentation")
 
     results = dict(changed=False)
-    results['_backup'] = str(module.get_config()).strip()
+    results['_backup'] = unicode(module.config.get_config()).strip()
 
-    diff = module.load_config(src, action=action, comment=comment,
-            format=fmt, commit=commit, confirm=confirm)
+    try:
+        diff = module.config.load_config(src, commit=commit, replace=replace,
+                confirm=confirm, comment=comment, config_format=fmt)
 
-    if diff:
-        results['changed'] = True
-        results['diff'] = dict(prepared=diff)
+        if diff:
+            results['changed'] = True
+            results['diff'] = dict(prepared=diff)
+    except NetworkError:
+        exc = get_exception()
+        module.fail_json(msg=str(exc), **exc.kwargs)
 
     module.exit_json(**results)
 
-
-from ansible.module_utils.basic import *
-from ansible.module_utils.junos import *
 
 if __name__ == '__main__':
     main()

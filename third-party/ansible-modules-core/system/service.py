@@ -74,6 +74,12 @@ options:
         description:
         - Additional arguments provided on the command line
         aliases: [ 'args' ]
+    use:
+        description:
+            - The service module actually uses system specific modules, normally through auto detection, this setting can force a specific module.
+            - Normally it uses the value of the 'ansible_service_mgr' fact and falls back to the old 'service' module when none matching is found.
+        default: 'auto'
+        version_added: 2.2
 '''
 
 EXAMPLES = '''
@@ -596,11 +602,9 @@ class LinuxService(Service):
             cleanout = status_stdout.lower().replace(self.name.lower(), '')
             if "stop" in cleanout:
                 self.running = False
-            elif "run" in cleanout and "not" in cleanout:
-                self.running = False
-            elif "run" in cleanout and "not" not in cleanout:
-                self.running = True
-            elif "start" in cleanout and "not" not in cleanout:
+            elif "run" in cleanout:
+                self.running = not ("not " in cleanout)
+            elif "start" in cleanout and "not " not in cleanout:
                 self.running = True
             elif 'could not access pid file' in cleanout:
                 self.running = False
@@ -782,24 +786,23 @@ class LinuxService(Service):
                     action = 'enable'
                     klinks = glob.glob('/etc/rc?.d/K??' + self.name)
                     if not klinks:
-                        (rc, out, err) = self.execute_command("%s %s defaults"  % (self.enable_cmd, self.name))
-                        if rc != 0:
-                            if err:
-                                self.module.fail_json(msg=err)
-                            else:
-                                self.module.fail_json(msg=out) % (self.enable_cmd, self.name, action)
+                        if not self.module.check_mode:
+                            (rc, out, err) = self.execute_command("%s %s defaults"  % (self.enable_cmd, self.name))
+                            if rc != 0:
+                                if err:
+                                    self.module.fail_json(msg=err)
+                                else:
+                                    self.module.fail_json(msg=out) % (self.enable_cmd, self.name, action)
                 else:
                     action = 'disable'
 
-                if self.module.check_mode:
-                    rc = 0
-                    return
-                (rc, out, err) = self.execute_command("%s %s %s"  % (self.enable_cmd, self.name, action))
-                if rc != 0:
-                    if err:
-                        self.module.fail_json(msg=err)
-                    else:
-                        self.module.fail_json(msg=out) % (self.enable_cmd, self.name, action)
+                if not self.module.check_mode:
+                    (rc, out, err) = self.execute_command("%s %s %s"  % (self.enable_cmd, self.name, action))
+                    if rc != 0:
+                        if err:
+                            self.module.fail_json(msg=err)
+                        else:
+                            self.module.fail_json(msg=out) % (self.enable_cmd, self.name, action)
             else:
                 self.changed = False
 
@@ -946,9 +949,10 @@ class FreeBsdService(Service):
 
     def get_service_tools(self):
         self.svc_cmd = self.module.get_bin_path('service', True)
-
         if not self.svc_cmd:
             self.module.fail_json(msg='unable to find service binary')
+
+        self.sysrc_cmd = self.module.get_bin_path('sysrc')
 
     def get_service_status(self):
         rc, stdout, stderr = self.execute_command("%s %s %s %s" % (self.svc_cmd, self.name, 'onestatus', self.arguments))
@@ -988,16 +992,45 @@ class FreeBsdService(Service):
         # and hope for the best.
         for rcvar in rcvars:
             if '=' in rcvar:
-                self.rcconf_key = rcvar.split('=')[0]
+                self.rcconf_key, default_rcconf_value = rcvar.split('=', 1)
                 break
 
         if self.rcconf_key is None:
             self.module.fail_json(msg="unable to determine rcvar", stdout=stdout, stderr=stderr)
 
-        try:
-            return self.service_enable_rcconf()
-        except Exception:
-            self.module.fail_json(msg='unable to set rcvar')
+        if self.sysrc_cmd: # FreeBSD >= 9.2
+
+            rc, current_rcconf_value, stderr = self.execute_command("%s -n %s" % (self.sysrc_cmd, self.rcconf_key))
+            # it can happen that rcvar is not set (case of a system coming from the ports collection)
+            # so we will fallback on the default
+            if rc != 0:
+                current_rcconf_value = default_rcconf_value
+
+            if current_rcconf_value.strip().upper() != self.rcconf_value:
+
+                self.changed = True
+
+                if self.module.check_mode:
+                    self.module.exit_json(changed=True, msg="changing service enablement")
+
+                rc, change_stdout, change_stderr = self.execute_command("%s %s=\"%s\"" % (self.sysrc_cmd, self.rcconf_key, self.rcconf_value ) )
+                if rc != 0:
+                    self.module.fail_json(msg="unable to set rcvar using sysrc", stdout=change_stdout, stderr=change_stderr)
+
+                # sysrc does not exit with code 1 on permission error => validate successful change using service(8)
+                rc, check_stdout, check_stderr = self.execute_command("%s %s %s" % (self.svc_cmd, self.name, "enabled"))
+                if self.enable != (rc == 0): # rc = 0 indicates enabled service, rc = 1 indicates disabled service
+                    self.module.fail_json(msg="unable to set rcvar: sysrc did not change value", stdout=change_stdout, stderr=change_stderr)
+
+            else:
+                self.changed = False
+
+        else: # Legacy (FreeBSD < 9.2)
+            try:
+                return self.service_enable_rcconf()
+            except Exception:
+                self.module.fail_json(msg='unable to set rcvar')
+
 
     def service_control(self):
 
@@ -1323,7 +1356,7 @@ class SunOSService(Service):
     def service_control(self):
         status = self.get_sunos_svcs_status()
 
-        # if starting or reloading, clear maintenace states
+        # if starting or reloading, clear maintenance states
         if self.action in ['start', 'reload', 'restart'] and status in ['maintenance', 'degraded']:
             rc, stdout, stderr = self.execute_command("%s clear %s" % (self.svcadm_cmd, self.name))
             if rc != 0:
@@ -1435,10 +1468,9 @@ def main():
             runlevel = dict(required=False, default='default'),
             arguments = dict(aliases=['args'], default=''),
         ),
-        supports_check_mode=True
+        supports_check_mode=True,
+        required_one_of=[['state', 'enabled']],
     )
-    if module.params['state'] is None and module.params['enabled'] is None:
-        module.fail_json(msg="Neither 'state' nor 'enabled' set")
 
     service = Service(module)
 

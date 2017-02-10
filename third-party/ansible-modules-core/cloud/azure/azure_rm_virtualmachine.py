@@ -158,7 +158,7 @@ options:
         required: false
     public_ip_allocation_method:
         description:
-            - If a public IP address is created when creating the VM (beacuse a Network Interface was not provided),
+            - If a public IP address is created when creating the VM (because a Network Interface was not provided),
               determines if the public IP address remains permanently associated with the Network Interface. If set
               to 'Dynamic' the public IP address may change any time the VM is rebooted or power cycled.
         choices:
@@ -241,8 +241,8 @@ EXAMPLES = '''
     storage_account: testaccount001
     admin_username: adminUser
     ssh_public_keys:
-      path: /home/adminUser/.ssh/authorized_keys
-      key_data: < insert yor ssh public key here... >
+      - path: /home/adminUser/.ssh/authorized_keys
+        key_data: < insert yor ssh public key here... >
     network_interfaces: testvm001
     image:
       offer: CentOS
@@ -300,7 +300,7 @@ deleted_network_interfaces:
     type: list
     example: ["testvm1001"]
 deleted_public_ips:
-    description: List of deleted publid IP addrees names.
+    description: List of deleted public IP address names.
     returned: 'on delete'
     type: list
     example: ["testvm1001"]
@@ -573,7 +573,7 @@ class AzureRMVirtualMachine(AzureRMModuleBase):
             # Verify parameters and resolve any defaults
 
             if self.vm_size and not self.vm_size_is_valid():
-                self.fail("Parameter error: vm_size {0} is not valid for your subscription and location.".foramt(
+                self.fail("Parameter error: vm_size {0} is not valid for your subscription and location.".format(
                     self.vm_size
                 ))
 
@@ -913,7 +913,7 @@ class AzureRMVirtualMachine(AzureRMModuleBase):
                     interface_dict['name'] = int_dict['networkInterfaces']
                     interface_dict['properties'] = nic_dict['properties']
 
-        # Expand public IPs to include config porperties
+        # Expand public IPs to include config properties
         for interface in  result['properties']['networkProfile']['networkInterfaces']:
             for config in interface['properties']['ipConfigurations']:
                 if config['properties'].get('publicIPAddress'):
@@ -1142,9 +1142,10 @@ class AzureRMVirtualMachine(AzureRMModuleBase):
         valid_name = False
 
         # Attempt to find a valid storage account name
+        storage_account_name_base = self.name[:20].lower()
         for i in range(0, 5):
             rand = random.randrange(1000, 9999)
-            storage_account_name = self.name[:20] + str(rand)
+            storage_account_name = storage_account_name_base + str(rand)
             if self.check_storage_account_name(storage_account_name):
                 valid_name = True
                 break

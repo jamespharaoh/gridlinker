@@ -113,9 +113,9 @@ options:
     version_added: "2.0"
   overwrite:
     description:
-      - Force overwrite either locally on the filesystem or remotely with the object/key. Used with PUT and GET operations. Boolean or one of [Always, Never, Different], new in 2.0
+      - Force overwrite either locally on the filesystem or remotely with the object/key. Used with PUT and GET operations. Boolean or one of [always, never, different], true is equal to 'always' and false is equal to 'never', new in 2.0
     required: false
-    default: true
+    default: 'always'
     version_added: "1.2"
   region:
     description:
@@ -131,9 +131,14 @@ options:
     version_added: "2.0"
   s3_url:
     description:
-      - S3 URL endpoint for usage with Eucalypus, fakes3, etc.  Otherwise assumes AWS
+      - S3 URL endpoint for usage with Ceph, Eucalypus, fakes3, etc.  Otherwise assumes AWS
     default: null
     aliases: [ S3_URL ]
+  rgw:
+    description:
+      - Enable Ceph RGW S3 support. This option requires an explicit url via s3_url.
+    default: false
+    version_added: "2.2"
   src:
     description:
       - The source file path when performing a PUT operation.
@@ -151,6 +156,9 @@ extends_documentation_fragment: aws
 EXAMPLES = '''
 # Simple PUT operation
 - s3: bucket=mybucket object=/my/desired/key.txt src=/usr/local/myfile.txt mode=put
+
+# Simple PUT operation in Ceph RGW S3
+- s3: bucket=mybucket object=/my/desired/key.txt src=/usr/local/myfile.txt mode=put rgw=true s3_url=http://localhost:8000
 
 # Simple GET operation
 - s3: bucket=mybucket object=/my/desired/key.txt dest=/usr/local/myfile.txt mode=get
@@ -187,7 +195,7 @@ EXAMPLES = '''
 '''
 
 import os
-import urlparse
+from ansible.module_utils.six.moves.urllib.parse import urlparse
 from ssl import SSLError
 
 try:
@@ -205,7 +213,7 @@ def key_check(module, s3, bucket, obj, version=None):
     try:
         bucket = s3.lookup(bucket)
         key_check = bucket.get_key(obj, version_id=version)
-    except s3.provider.storage_response_error, e:
+    except s3.provider.storage_response_error as e:
         if version is not None and e.status == 400: # If a specified version doesn't exist a 400 is returned.
             key_check = None
         else:
@@ -229,7 +237,7 @@ def keysum(module, s3, bucket, obj, version=None):
 def bucket_check(module, s3, bucket):
     try:
         result = s3.lookup(bucket)
-    except s3.provider.storage_response_error, e:
+    except s3.provider.storage_response_error as e:
         module.fail_json(msg= str(e))
     if result:
         return True
@@ -243,7 +251,7 @@ def create_bucket(module, s3, bucket, location=None):
         bucket = s3.create_bucket(bucket, location=location)
         for acl in module.params.get('permission'):
             bucket.set_acl(acl)
-    except s3.provider.storage_response_error, e:
+    except s3.provider.storage_response_error as e:
         module.fail_json(msg= str(e))
     if bucket:
         return True
@@ -251,7 +259,7 @@ def create_bucket(module, s3, bucket, location=None):
 def get_bucket(module, s3, bucket):
     try:
         return s3.lookup(bucket)
-    except s3.provider.storage_response_error, e:
+    except s3.provider.storage_response_error as e:
         module.fail_json(msg= str(e))
 
 def list_keys(module, bucket_object, prefix, marker, max_keys):
@@ -268,7 +276,7 @@ def delete_bucket(module, s3, bucket):
         bucket.delete_keys([key.name for key in bucket_contents])
         bucket.delete()
         return True
-    except s3.provider.storage_response_error, e:
+    except s3.provider.storage_response_error as e:
         module.fail_json(msg= str(e))
 
 def delete_key(module, s3, bucket, obj):
@@ -276,7 +284,7 @@ def delete_key(module, s3, bucket, obj):
         bucket = s3.lookup(bucket)
         bucket.delete_key(obj)
         module.exit_json(msg="Object deleted from bucket %s"%bucket, changed=True)
-    except s3.provider.storage_response_error, e:
+    except s3.provider.storage_response_error as e:
         module.fail_json(msg= str(e))
 
 def create_dirkey(module, s3, bucket, obj):
@@ -285,7 +293,7 @@ def create_dirkey(module, s3, bucket, obj):
         key = bucket.new_key(obj)
         key.set_contents_from_string('')
         module.exit_json(msg="Virtual directory %s created in bucket %s" % (obj, bucket.name), changed=True)
-    except s3.provider.storage_response_error, e:
+    except s3.provider.storage_response_error as e:
         module.fail_json(msg= str(e))
 
 def path_check(path):
@@ -308,7 +316,7 @@ def upload_s3file(module, s3, bucket, obj, src, expiry, metadata, encrypt, heade
             key.set_acl(acl)
         url = key.generate_url(expiry)
         module.exit_json(msg="PUT operation complete", url=url, changed=True)
-    except s3.provider.storage_copy_error, e:
+    except s3.provider.storage_copy_error as e:
         module.fail_json(msg= str(e))
 
 def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
@@ -320,7 +328,7 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
         try:
             key.get_contents_to_filename(dest)
             module.exit_json(msg="GET operation complete", changed=True)
-        except s3.provider.storage_copy_error, e:
+        except s3.provider.storage_copy_error as e:
             module.fail_json(msg= str(e))
         except SSLError as e:
             # actually fail on last pass through the loop.
@@ -335,7 +343,7 @@ def download_s3str(module, s3, bucket, obj, version=None):
         key = bucket.get_key(obj, version_id=version)
         contents = key.get_contents_as_string()
         module.exit_json(msg="GET operation complete", contents=contents, changed=True)
-    except s3.provider.storage_copy_error, e:
+    except s3.provider.storage_copy_error as e:
         module.fail_json(msg= str(e))
 
 def get_download_url(module, s3, bucket, obj, expiry, changed=True):
@@ -344,7 +352,7 @@ def get_download_url(module, s3, bucket, obj, expiry, changed=True):
         key = bucket.lookup(obj)
         url = key.generate_url(expiry)
         module.exit_json(msg="Download url:", url=url, expiry=expiry, changed=changed)
-    except s3.provider.storage_response_error, e:
+    except s3.provider.storage_response_error as e:
         module.fail_json(msg= str(e))
 
 def is_fakes3(s3_url):
@@ -384,6 +392,7 @@ def main():
             prefix         = dict(default=None),
             retries        = dict(aliases=['retry'], type='int', default=0),
             s3_url         = dict(aliases=['S3_URL']),
+            rgw            = dict(default='no', type='bool'),
             src            = dict(),
         ),
     )
@@ -408,6 +417,7 @@ def main():
     prefix = module.params.get('prefix')
     retries = module.params.get('retries')
     s3_url = module.params.get('s3_url')
+    rgw = module.params.get('rgw')
     src = module.params.get('src')
 
     for acl in module.params.get('permission'):
@@ -437,6 +447,10 @@ def main():
     if not s3_url and 'S3_URL' in os.environ:
         s3_url = os.environ['S3_URL']
 
+    # rgw requires an explicit url
+    if rgw and not s3_url:
+        module.fail_json(msg='rgw flavour requires s3_url')
+
     # bucket names with .'s in them need to use the calling_format option,
     # otherwise the connection will fail. See https://github.com/boto/boto/issues/2836
     # for more details.
@@ -444,9 +458,18 @@ def main():
         aws_connect_kwargs['calling_format'] = OrdinaryCallingFormat()
 
     # Look at s3_url and tweak connection settings
-    # if connecting to Walrus or fakes3
+    # if connecting to RGW, Walrus or fakes3
     try:
-        if is_fakes3(s3_url):
+        if s3_url and rgw:
+            rgw = urlparse.urlparse(s3_url)
+            s3 = boto.connect_s3(
+                is_secure=rgw.scheme == 'https',
+                host=rgw.hostname,
+                port=rgw.port,
+                calling_format=OrdinaryCallingFormat(),
+                **aws_connect_kwargs
+            )
+        elif is_fakes3(s3_url):
             fakes3 = urlparse.urlparse(s3_url)
             s3 = S3Connection(
                 is_secure=fakes3.scheme == 'fakes3s',
@@ -466,9 +489,9 @@ def main():
                 # use this as fallback because connect_to_region seems to fail in boto + non 'classic' aws accounts in some cases
                 s3 = boto.connect_s3(**aws_connect_kwargs)
 
-    except boto.exception.NoAuthHandlerFound, e:
+    except boto.exception.NoAuthHandlerFound as e:
         module.fail_json(msg='No Authentication Handler found: %s ' % str(e))
-    except Exception, e:
+    except Exception as e:
         module.fail_json(msg='Failed to connect to S3: %s' % str(e))
 
     if s3 is None: # this should never happen

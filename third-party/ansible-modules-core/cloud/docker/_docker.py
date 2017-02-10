@@ -26,6 +26,7 @@ DOCUMENTATION = '''
 module: docker
 version_added: "1.4"
 short_description: manage docker containers
+deprecated: In 2.2 use M(docker_container) and M(docker_image) instead.
 description:
   - This is the original Ansible module for managing the Docker container life cycle.
   - "NOTE: Additional and newer modules are available. For the latest on orchestrating containers with Ansible
@@ -746,10 +747,6 @@ class DockerManager(object):
         if self.module.params.get('links'):
             self.links = self.get_links(self.module.params.get('links'))
 
-        env = self.module.params.get('env', None)
-        env_file = self.module.params.get('env_file', None)
-        self.environment = self.get_environment(env, env_file)
-
         self.ulimits = None
         if self.module.params.get('ulimits'):
             self.ulimits = []
@@ -848,6 +845,10 @@ class DockerManager(object):
 
         self.docker_py_versioninfo = get_docker_py_versioninfo()
 
+        env = self.module.params.get('env', None)
+        env_file = self.module.params.get('env_file', None)
+        self.environment = self.get_environment(env, env_file)
+
     def _check_capabilities(self):
         """
         Create a list of available capabilities
@@ -897,11 +898,11 @@ class DockerManager(object):
             self.ensure_capability('env_file')
             parsed_env_file = docker.utils.parse_env_file(env_file)
 
-            for name, value in parsed_env_file.iteritems():
+            for name, value in parsed_env_file.items():
                 final_env[name] = str(value)
 
         if env:
-            for name, value in env.iteritems():
+            for name, value in env.items():
                 final_env[name] = str(value)
 
         return final_env
@@ -993,7 +994,7 @@ class DockerManager(object):
             self.ensure_capability('log_driver')
             log_config = docker.utils.LogConfig(type=docker.utils.LogConfig.types.JSON)
             if optionals['log_opt'] is not None:
-                for k, v in optionals['log_opt'].iteritems():
+                for k, v in optionals['log_opt'].items():
                     log_config.set_config_value(k, v)
             log_config.type = optionals['log_driver']
             params['log_config'] = log_config
@@ -1068,7 +1069,7 @@ class DockerManager(object):
         '''
 
         parts = []
-        for k, v in self.counters.iteritems():
+        for k, v in self.counters.items():
             if v == 0:
                 continue
 
@@ -1095,7 +1096,7 @@ class DockerManager(object):
 
     def get_summary_counters_msg(self):
         msg = ""
-        for k, v in self.counters.iteritems():
+        for k, v in self.counters.items():
             msg = msg + "%s %d " % (k, v)
 
         return msg
@@ -1104,7 +1105,7 @@ class DockerManager(object):
         self.counters[name] = self.counters[name] + 1
 
     def has_changed(self):
-        for k, v in self.counters.iteritems():
+        for k, v in self.counters.items():
             if v > 0:
                 return True
 
@@ -1282,7 +1283,7 @@ class DockerManager(object):
                 expected_env[name] = value
 
             if self.environment:
-                for name, value in self.environment.iteritems():
+                for name, value in self.environment.items():
                     expected_env[name] = str(value)
 
             actual_env = {}
@@ -1299,11 +1300,10 @@ class DockerManager(object):
             # LABELS
 
             expected_labels = {}
-            for name, value in self.module.params.get('labels').iteritems():
+            for name, value in self.module.params.get('labels').items():
                 expected_labels[name] = str(value)
 
-            actual_labels = {}
-            if isinstance(container['Config']['Labels'], dict):
+            if type(container['Config']['Labels']) is dict:
                 actual_labels = container['Config']['Labels']
             else:
                 for container_label in container['Config']['Labels'] or []:
@@ -1347,7 +1347,7 @@ class DockerManager(object):
             # STDIN_OPEN
 
             expected_stdin_open = self.module.params.get('stdin_open')
-            actual_stdin_open = container['Config']['AttachStdin']
+            actual_stdin_open = container['Config']['OpenStdin']
             if actual_stdin_open != expected_stdin_open:
                 self.reload_reasons.append('stdin_open ({0} => {1})'.format(actual_stdin_open, expected_stdin_open))
                 differing.append(container)
@@ -1397,7 +1397,7 @@ class DockerManager(object):
 
             expected_bound_ports = {}
             if self.port_bindings:
-                for container_port, config in self.port_bindings.iteritems():
+                for container_port, config in self.port_bindings.items():
                     if isinstance(container_port, int):
                         container_port = "{0}/tcp".format(container_port)
                     if len(config) == 1:
@@ -1433,7 +1433,7 @@ class DockerManager(object):
             # LINKS
 
             expected_links = set()
-            for link, alias in (self.links or {}).iteritems():
+            for link, alias in (self.links or {}).items():
                 expected_links.add("/{0}:{1}/{2}".format(link, container["Name"], alias))
 
             actual_links = set(container['HostConfig']['Links'] or [])

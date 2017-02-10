@@ -40,9 +40,10 @@ options:
   db_engine:
     description:
       - The type of database.  Used only when command=create.
+      - mariadb was added in version 2.2
     required: false
     default: null
-    choices: [ 'MySQL', 'oracle-se1', 'oracle-se', 'oracle-ee', 'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web', 'postgres']
+    choices: [ 'mariadb', 'MySQL', 'oracle-se1', 'oracle-se', 'oracle-ee', 'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web', 'postgres', 'aurora']
   size:
     description:
       - Size in gigabytes of the initial storage for the DB instance. Used only when command=create or command=modify.
@@ -114,7 +115,7 @@ options:
     description:
       - Port number that the DB instance uses for connections. Used only when command=create or command=replicate.
       - Prior to 2.0 it always defaults to null and the API would use 3306, it had to be set to other DB default values when not using MySql.
-        Starting at 2.0 it auotmaticaly defaults to what is expected for each c(db_engine).
+        Starting at 2.0 it automatically defaults to what is expected for each c(db_engine).
     required: false
     default: 3306 for mysql, 1521 for Oracle, 1433 for SQL Server, 5432 for PostgreSQL.
   upgrade:
@@ -319,6 +320,8 @@ except ImportError:
     has_rds2 = False
 
 DEFAULT_PORTS= {
+    'aurora': 3306,
+    'mariadb': 3306,
     'mysql': 3306,
     'oracle': 1521,
     'sqlserver': 1433,
@@ -342,19 +345,19 @@ class RDSConnection:
     def __init__(self, module, region, **aws_connect_params):
         try:
             self.connection  = connect_to_aws(boto.rds, region, **aws_connect_params)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
              module.fail_json(msg=e.error_message)
 
     def get_db_instance(self, instancename):
         try:
             return RDSDBInstance(self.connection.get_all_dbinstances(instancename)[0])
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             return None
 
     def get_db_snapshot(self, snapshotid):
         try:
             return RDSSnapshot(self.connection.get_all_dbsnapshots(snapshot_id=snapshotid)[0])
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             return None
 
     def create_db_instance(self, instance_name, size, instance_class, db_engine,
@@ -364,63 +367,63 @@ class RDSConnection:
             result = self.connection.create_dbinstance(instance_name, size, instance_class,
                     username, password, **params)
             return RDSDBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def create_db_instance_read_replica(self, instance_name, source_instance, **params):
         try:
             result = self.connection.createdb_instance_read_replica(instance_name, source_instance, **params)
             return RDSDBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def delete_db_instance(self, instance_name, **params):
         try:
             result = self.connection.delete_dbinstance(instance_name, **params)
             return RDSDBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def delete_db_snapshot(self, snapshot):
         try:
             result = self.connection.delete_dbsnapshot(snapshot)
             return RDSSnapshot(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def modify_db_instance(self, instance_name, **params):
         try:
             result = self.connection.modify_dbinstance(instance_name, **params)
             return RDSDBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def reboot_db_instance(self, instance_name, **params):
         try:
             result = self.connection.reboot_dbinstance(instance_name)
             return RDSDBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def restore_db_instance_from_db_snapshot(self, instance_name, snapshot, instance_type, **params):
         try:
             result = self.connection.restore_dbinstance_from_dbsnapshot(snapshot, instance_name, instance_type, **params)
             return RDSDBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def create_db_snapshot(self, snapshot, instance_name, **params):
         try:
             result = self.connection.create_dbsnapshot(snapshot, instance_name)
             return RDSSnapshot(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def promote_read_replica(self, instance_name, **params):
         try:
             result = self.connection.promote_read_replica(instance_name, **params)
             return RDSDBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
 
@@ -428,7 +431,7 @@ class RDS2Connection:
     def __init__(self, module, region, **aws_connect_params):
         try:
             self.connection  = connect_to_aws(boto.rds2, region, **aws_connect_params)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
              module.fail_json(msg=e.error_message)
 
     def get_db_instance(self, instancename):
@@ -436,9 +439,9 @@ class RDS2Connection:
             dbinstances = self.connection.describe_db_instances(db_instance_identifier=instancename)['DescribeDBInstancesResponse']['DescribeDBInstancesResult']['DBInstances']
             result =  RDS2DBInstance(dbinstances[0])
             return result
-        except boto.rds2.exceptions.DBInstanceNotFound, e:
+        except boto.rds2.exceptions.DBInstanceNotFound as e:
             return None
-        except Exception, e:
+        except Exception as e:
             raise e
 
     def get_db_snapshot(self, snapshotid):
@@ -446,7 +449,7 @@ class RDS2Connection:
             snapshots = self.connection.describe_db_snapshots(db_snapshot_identifier=snapshotid, snapshot_type='manual')['DescribeDBSnapshotsResponse']['DescribeDBSnapshotsResult']['DBSnapshots']
             result = RDS2Snapshot(snapshots[0])
             return result
-        except boto.rds2.exceptions.DBSnapshotNotFound, e:
+        except boto.rds2.exceptions.DBSnapshotNotFound as e:
             return None
 
     def create_db_instance(self, instance_name, size, instance_class, db_engine,
@@ -455,63 +458,63 @@ class RDS2Connection:
             result = self.connection.create_db_instance(instance_name, size, instance_class,
                 db_engine, username, password, **params)['CreateDBInstanceResponse']['CreateDBInstanceResult']['DBInstance']
             return RDS2DBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def create_db_instance_read_replica(self, instance_name, source_instance, **params):
         try:
             result = self.connection.create_db_instance_read_replica(instance_name, source_instance, **params)['CreateDBInstanceReadReplicaResponse']['CreateDBInstanceReadReplicaResult']['DBInstance']
             return RDS2DBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def delete_db_instance(self, instance_name, **params):
         try:
             result = self.connection.delete_db_instance(instance_name, **params)['DeleteDBInstanceResponse']['DeleteDBInstanceResult']['DBInstance']
             return RDS2DBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def delete_db_snapshot(self, snapshot):
         try:
             result = self.connection.delete_db_snapshot(snapshot)['DeleteDBSnapshotResponse']['DeleteDBSnapshotResult']['DBSnapshot']
             return RDS2Snapshot(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def modify_db_instance(self, instance_name, **params):
         try:
             result = self.connection.modify_db_instance(instance_name, **params)['ModifyDBInstanceResponse']['ModifyDBInstanceResult']['DBInstance']
             return RDS2DBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def reboot_db_instance(self, instance_name, **params):
         try:
             result = self.connection.reboot_db_instance(instance_name, **params)['RebootDBInstanceResponse']['RebootDBInstanceResult']['DBInstance']
             return RDS2DBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def restore_db_instance_from_db_snapshot(self, instance_name, snapshot, instance_type, **params):
         try:
             result = self.connection.restore_db_instance_from_db_snapshot(instance_name, snapshot, **params)['RestoreDBInstanceFromDBSnapshotResponse']['RestoreDBInstanceFromDBSnapshotResult']['DBInstance']
             return RDS2DBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def create_db_snapshot(self, snapshot, instance_name, **params):
         try:
             result = self.connection.create_db_snapshot(snapshot, instance_name, **params)['CreateDBSnapshotResponse']['CreateDBSnapshotResult']['DBSnapshot']
             return RDS2Snapshot(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
     def promote_read_replica(self, instance_name, **params):
         try:
             result = self.connection.promote_read_replica(instance_name, **params)['PromoteReadReplicaResponse']['PromoteReadReplicaResult']['DBInstance']
             return RDS2DBInstance(result)
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             raise RDSException(e)
 
 
@@ -552,7 +555,7 @@ class RDSDBInstance:
         # ReadReplicaSourceDBInstanceIdentifier may or may not exist
         try:
             d["replication_source"] = self.instance.ReadReplicaSourceDBInstanceIdentifier
-        except Exception, e:
+        except Exception as e:
             d["replication_source"] = None
         return d
 
@@ -687,7 +690,7 @@ def create_db_instance(module, conn):
                     module.params.get('instance_type'), module.params.get('db_engine'),
                     module.params.get('username'), module.params.get('password'), **params)
             changed = True
-        except RDSException, e:
+        except RDSException as e:
             module.fail_json(msg="Failed to create instance: %s" % e.message)
 
     if module.params.get('wait'):
@@ -714,7 +717,7 @@ def replicate_db_instance(module, conn):
         try:
             result = conn.create_db_instance_read_replica(instance_name, source_instance, **params)
             changed = True
-        except RDSException, e:
+        except RDSException as e:
             module.fail_json(msg="Failed to create replica instance: %s " % e.message)
 
     if module.params.get('wait'):
@@ -753,7 +756,7 @@ def delete_db_instance_or_snapshot(module, conn):
             result = conn.delete_db_instance(instance_name, **params)
         else:
             result = conn.delete_db_snapshot(snapshot)
-    except RDSException, e:
+    except RDSException as e:
         module.fail_json(msg="Failed to delete instance: %s" % e.message)
 
     # If we're not waiting for a delete to complete then we're all done
@@ -763,12 +766,12 @@ def delete_db_instance_or_snapshot(module, conn):
     try:
         resource = await_resource(conn, result, 'deleted', module)
         module.exit_json(changed=True)
-    except RDSException, e:
+    except RDSException as e:
         if e.code == 'DBInstanceNotFound':
             module.exit_json(changed=True)
         else:
             module.fail_json(msg=e.message)
-    except Exception, e:
+    except Exception as e:
         module.fail_json(msg=str(e))
 
 
@@ -806,7 +809,7 @@ def modify_db_instance(module, conn):
 
     try:
         result = conn.modify_db_instance(instance_name, **params)
-    except RDSException, e:
+    except RDSException as e:
         module.fail_json(msg=e.message)
     if params.get('apply_immediately'):
         if new_instance_name:
@@ -844,7 +847,7 @@ def promote_db_instance(module, conn):
         try:
             result = conn.promote_read_replica(instance_name, **params)
             changed = True
-        except RDSException, e:
+        except RDSException as e:
             module.fail_json(msg=e.message)
     else:
         changed = False
@@ -869,7 +872,7 @@ def snapshot_db_instance(module, conn):
         try:
             result = conn.create_db_snapshot(snapshot, instance_name, **params)
             changed = True
-        except RDSException, e:
+        except RDSException as e:
             module.fail_json(msg=e.message)
 
     if module.params.get('wait'):
@@ -894,7 +897,7 @@ def reboot_db_instance(module, conn):
     try:
         result = conn.reboot_db_instance(instance_name, **params)
         changed = True
-    except RDSException, e:
+    except RDSException as e:
         module.fail_json(msg=e.message)
 
     if module.params.get('wait'):
@@ -925,7 +928,7 @@ def restore_db_instance(module, conn):
         try:
             result = conn.restore_db_instance_from_db_snapshot(instance_name, snapshot, instance_type, **params)
             changed = True
-        except RDSException, e:
+        except RDSException as e:
             module.fail_json(msg=e.message)
 
     if module.params.get('wait'):
@@ -1023,7 +1026,7 @@ def main():
             command           = dict(choices=['create', 'replicate', 'delete', 'facts', 'modify', 'promote', 'snapshot', 'reboot', 'restore'], required=True),
             instance_name     = dict(required=False),
             source_instance   = dict(required=False),
-            db_engine         = dict(choices=['MySQL', 'oracle-se1', 'oracle-se', 'oracle-ee', 'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web', 'postgres'], required=False),
+            db_engine         = dict(choices=['mariadb', 'MySQL', 'oracle-se1', 'oracle-se', 'oracle-ee', 'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web', 'postgres', 'aurora'], required=False),
             size              = dict(required=False),
             instance_type     = dict(aliases=['type'], required=False),
             username          = dict(required=False),
