@@ -1,0 +1,11 @@
+---
+
+- include: "install-haskell-ghc.yml"
+  when: "haskell_ghc_install == 'yes'"
+  tags:
+
+    - "haskell-ghc-install"
+    - "haskell-ghc"
+    - "haskell"
+
+# ex: et ts=2 filetype=yaml

@@ -1,0 +1,44 @@
+---
+
+- name: "install node.js"
+  args:
+
+    executable: "/bin/bash"
+    creates: "{{ nodejs_flag }}"
+
+  become: "yes"
+  shell:
+
+    set -euf -o pipefail;
+
+    rm -rf {{ nodejs_tmp }};
+    mkdir {{ nodejs_tmp }};
+    cd {{ nodejs_tmp }};
+
+    wget {{ nodejs_url }};
+
+    rm -rf {{ nodejs_name }};
+    tar --extract --xz --file {{ nodejs_archive }};
+
+    rsync --archive --delete {{ nodejs_name }}/ {{ nodejs_target }}/;
+
+    rm -rf {{ nodejs_tmp }};
+    touch {{ nodejs_flag }};
+
+- name: "nodejs install directories"
+  become: "yes"
+  action:
+
+    module: "file"
+    path: "{{ nodejs_target }}/etc"
+    state: "directory"
+
+- name: "write npmrc"
+  become: "yes"
+  action:
+
+    module: "template"
+    dest: "{{ nodejs_target }}/etc/npmrc"
+    src: "nodejs-npmrc"
+
+# ex: et ts=2 filetype=yaml

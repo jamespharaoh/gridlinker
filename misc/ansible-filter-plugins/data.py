@@ -4,7 +4,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import itertools
+import re
 import types
+
+__all__ = [
+	"FilterModule",
+]
 
 def flatten_hash (values, * inner_names):
 
@@ -91,19 +96,13 @@ def dict_map (keys, mapping):
 		for key in keys
 	]
 
-def prepend_list (items, string):
+def index_by (items, index_key):
 
-	return [
-		string + item
-		for item in items
-	]
-
-def append_list (items, string):
-
-	return [
-		item + string
-		for item in items
-	]
+	return dict ([
+		(item [index_key], item)
+		for item
+		in items
+	])
 
 def flatten_list (lists):
 
@@ -112,7 +111,65 @@ def flatten_list (lists):
 		for list in lists
 		for item in list
 	]
- 
+
+def keys (item):
+
+	return item.keys ();
+
+def values (source):
+
+	if isinstance (source, list):
+
+		return map (
+			lambda item: item [1],
+			source)
+
+	else:
+
+		return source.values ()
+
+def items (item):
+
+	return item.items ();
+
+def bytes (source):
+
+	units = {
+		"": 1,
+		"B": 1,
+		"KB": 1000,
+		"MB": 1000 * 1000,
+		"GB": 1000 * 1000 * 1000,
+		"TB": 1000 * 1000 * 1000 * 1000,
+		"KiB": 1024,
+		"MiB": 1024 * 1024,
+		"GiB": 1024 * 1024 * 1024,
+		"TiB": 1024 * 1024 * 1024 * 1024,
+	}
+
+	match = (
+		re.match (
+			r"^\s*([0-9]+)\s*(%s)?\s*$" % (
+				"|".join (units.keys ())),
+			source))
+
+	if not match:
+
+		raise Exception (
+			"Cannot convert '%s' to bytes'" % (
+				source))
+
+	size = int (match.group (1))
+	unit = match.group (2)
+
+	scale = units [unit]
+
+	return size * scale
+
+def to_dict (items):
+
+	return dict (items)
+
 class FilterModule (object):
 
     def filters (self):
@@ -123,8 +180,15 @@ class FilterModule (object):
 			"flatten_list": flatten_list,
 			"list_to_map": list_to_map,
 			"dict_map": dict_map,
+			"index_by": index_by,
 
-			"prepend_list": prepend_list,
-			"append_list": append_list,
+			"keys": keys,
+			"values": values,
+			"items": items,
+			"to_dict": to_dict,
+
+			"bytes": bytes,
 
 		}
+
+# ex: noet ts=4 filetype=python

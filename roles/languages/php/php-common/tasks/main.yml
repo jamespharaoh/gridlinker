@@ -1,0 +1,10 @@
+---
+
+- include: "php-common.yml"
+  when: "php_install == 'yes'"
+  tags:
+
+    - "php-common"
+    - "php"
+
+# ex: et ts=2 filetype=yaml

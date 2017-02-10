@@ -1,0 +1,51 @@
+# ---------- locations
+
+data_directory = '/var/lib/postgresql/{{ postgresql_installed_version }}/main'
+hba_file = '/etc/postgresql/{{ postgresql_installed_version }}/main/pg_hba.conf'
+ident_file = '/etc/postgresql/{{ postgresql_installed_version }}/main/pg_ident.conf'
+external_pid_file = '/var/run/postgresql/{{ postgresql_installed_version }}-main.pid'
+
+# ---------- connections
+
+listen_addresses = '*'
+port = 5432
+max_connections = {{ postgresql_max_connections }}
+superuser_reserved_connections = {{ postgresql_superuser_reserved_connections }}
+unix_socket_directories = '/var/run/postgresql'
+
+# ---------- security
+
+authentication_timeout = {{ postgresql_authentication_timeout }}
+ssl = true
+ssl_cert_file = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
+ssl_key_file = '/etc/ssl/private/ssl-cert-snakeoil.key'
+password_encryption = on
+db_user_namespace = off
+
+# ---------- memory
+
+shared_buffers = {{ postgresql_shared_buffers }}
+temp_buffers = {{ postgresql_temp_buffers }}
+work_mem = {{ postgresql_work_mem }}
+maintenance_work_mem = {{ postgresql_maintenance_work_mem }}
+max_stack_depth = {{ postgresql_max_stack_depth }}
+
+# ---------- logging
+
+log_line_prefix = '{{ postgresql_log_line_prefix }}'
+log_timezone = '{{ postgresql_log_timezone }}'
+log_min_duration_statement = {{ postgresql_log_min_duration_statement }}
+
+# ---------- locale
+
+datestyle = '{{ postgresql_datestyle }}'
+timezone = '{{ postgresql_timezone }}'
+
+lc_messages = '{{ postgresql_lc_messages }}'
+lc_monetary = '{{ postgresql_lc_monetary }}'
+lc_numeric = '{{ postgresql_lc_numeric }}'
+lc_time = '{{ postgresql_lc_time }}'
+
+default_text_search_config = '{{ postgresql_default_text_search_config }}'
+
+# ex: noet ts=4 filetype=postgresql

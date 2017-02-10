@@ -1,0 +1,13 @@
+---
+
+- include: "postgresql-setup.yml"
+  when: "
+    postgresql_install == 'yes'
+    and postgresql_state in [ 'installed', 'enabled', 'disabled' ]
+  "
+  tags:
+
+    - "postgresql-setup"
+    - "postgresql"
+
+# ex: et ts=2 filetype=yaml

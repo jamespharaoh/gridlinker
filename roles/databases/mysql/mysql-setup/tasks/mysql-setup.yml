@@ -1,0 +1,31 @@
+---
+
+- name: "install mysql config"
+  with_items: "{{ mysql_config_templates }}"
+  register: "mysql_setup_config_result"
+  become: "yes"
+  action:
+
+    module: "template"
+    src: "{{ item.template }}"
+    dest: "{{ item.target }}"
+
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+
+- name: "set mysql.needs_restart to 'yes'"
+  when: "mysql_setup_config_result | changed"
+  update_resource:
+
+    mysql.needs_restart: "yes"
+
+  register: "mysql_setup_config_result"
+
+- name: "set mysql.state to 'enabled'"
+  when: "mysql_state == 'installed'"
+  update_resource:
+
+    mysql.state: "enabled"
+
+# ex: et ts=2 filetype=yaml

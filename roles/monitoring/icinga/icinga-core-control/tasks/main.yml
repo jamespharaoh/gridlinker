@@ -1,0 +1,25 @@
+---
+
+- include: "icinga-core-control-upstart.yml"
+  when: "
+    icinga_core_state in [ 'enabled', 'disabled' ]
+    and system_init == 'upstart'
+  "
+  tags:
+
+    - "icinga-core-control"
+    - "icinga-core"
+    - "icinga"
+
+- include: "icinga-core-control-systemd.yml"
+  when: "
+    icinga_core_state in [ 'enabled', 'disabled' ]
+    and system_init == 'systemd'
+  "
+  tags:
+
+    - "icinga-core-control"
+    - "icinga-core"
+    - "icinga"
+
+# ex: et ts=2 filetype=yaml
