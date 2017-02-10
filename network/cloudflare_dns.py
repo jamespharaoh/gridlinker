@@ -18,20 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-try:
-    import json
-except ImportError:
-    try:
-        import simplejson as json
-    except ImportError:
-        # Let snippet from module_utils/basic.py return a proper error in this case
-        pass
-import urllib
-
 DOCUMENTATION = '''
 ---
 module: cloudflare_dns
 author: "Michael Gruener (@mgruener)"
+requirements:
+   - "python >= 2.6"
 version_added: "2.1"
 short_description: manage Cloudflare DNS records
 description:
@@ -87,7 +79,7 @@ options:
     default: 30
   ttl:
     description:
-      - The TTL to give the new record. Min 1 (automatic), max 2147483647
+      - The TTL to give the new record. Must be between 120 and 2,147,483,647 seconds, or 1 for automatic.
     required: false
     default: 1 (automatic)
   type:
@@ -186,7 +178,7 @@ record:
             description: the record content (details depend on record type)
             returned: success
             type: string
-            sample: 192.168.100.20
+            sample: 192.0.2.91
         created_on:
             description: the record creation date
             returned: success
@@ -267,6 +259,22 @@ record:
             sample: sample.com
 '''
 
+try:
+    import json
+except ImportError:
+    try:
+        import simplejson as json
+    except ImportError:
+        # Let snippet from module_utils/basic.py return a proper error in this case
+        pass
+
+import urllib
+
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.pycompat24 import get_exception
+from ansible.module_utils.urls import fetch_url
+
+
 class CloudflareAPI(object):
 
     cf_api_endpoint = 'https://api.cloudflare.com/client/v4'
@@ -313,8 +321,9 @@ class CloudflareAPI(object):
         if payload:
             try:
                 data = json.dumps(payload)
-            except Exception, e:
-                self.module.fail_json(msg="Failed to encode payload as JSON: {0}".format(e))
+            except Exception:
+                e = get_exception()
+                self.module.fail_json(msg="Failed to encode payload as JSON: %s " % str(e))
 
         resp, info = fetch_url(self.module,
                                self.cf_api_endpoint + api_call,
@@ -349,11 +358,17 @@ class CloudflareAPI(object):
         result = None
         try:
             content = resp.read()
-            result = json.loads(content)
         except AttributeError:
-            error_msg += "; The API response was empty"
-        except json.JSONDecodeError:
-            error_msg += "; Failed to parse API response: {0}".format(content)
+            if info['body']:
+                content = info['body']
+            else:
+                error_msg += "; The API response was empty"
+
+        if content:
+            try:
+                result = json.loads(content)
+            except json.JSONDecodeError:
+                error_msg += "; Failed to parse API response: {0}".format(content)
 
         # received an error status but no data with details on what failed
         if  (info['status'] not in [200,304]) and (result is None):
@@ -628,9 +643,6 @@ def main():
         changed = cf_api.delete_dns_records(solo=False)
         module.exit_json(changed=changed)
 
-# import module snippets
-from ansible.module_utils.basic import *
-from ansible.module_utils.urls import *
 
 if __name__ == '__main__':
     main()

@@ -33,7 +33,7 @@ options:
     required: true
   state:
     description:
-      - Whether to create (C(present)), or remove (C(absent)) a 
+      - Whether to create (C(present)), or remove (C(absent)) a
         file system, snapshot or volume. All parents/children
         will be created/destroyed as needed to reach the desired state.
     choices: ['present', 'absent']
@@ -83,14 +83,27 @@ class Zfs(object):
         self.name = name
         self.properties = properties
         self.changed = False
-        self.is_solaris = os.uname()[0] == 'SunOS'
-        self.pool = name.split('/')[0]
         self.zfs_cmd = module.get_bin_path('zfs', True)
         self.zpool_cmd = module.get_bin_path('zpool', True)
+        self.pool = name.split('/')[0]
+        self.is_solaris = os.uname()[0] == 'SunOS'
+        self.is_openzfs = self.check_openzfs()
         self.enhanced_sharing = self.check_enhanced_sharing()
 
+    def check_openzfs(self):
+        cmd = [self.zpool_cmd]
+        cmd.extend(['get', 'version'])
+        cmd.append(self.pool)
+        (rc, out, err) = self.module.run_command(cmd, check_rc=True)
+        version = out.splitlines()[-1].split()[2]
+        if version == '-':
+            return True
+        if int(version) == 5000:
+            return True
+        return False
+
     def check_enhanced_sharing(self):
-        if os.uname()[0] == 'SunOS':
+        if self.is_solaris and not self.is_openzfs:
             cmd = [self.zpool_cmd]
             cmd.extend(['get', 'version'])
             cmd.append(self.pool)
@@ -135,7 +148,7 @@ class Zfs(object):
         if volblocksize:
             cmd += ['-b', 'volblocksize']
         if properties:
-            for prop, value in properties.iteritems():
+            for prop, value in properties.items():
                 cmd += ['-o', '%s="%s"' % (prop, value)]
         if origin:
             cmd.append(origin)
@@ -170,7 +183,7 @@ class Zfs(object):
 
     def set_properties_if_changed(self):
         current_properties = self.get_current_properties()
-        for prop, value in self.properties.iteritems():
+        for prop, value in self.properties.items():
             if current_properties.get(prop, None) != value:
                 self.set_property(prop, value)
 
@@ -209,7 +222,7 @@ def main():
 
     # Get all valid zfs-properties
     properties = dict()
-    for prop, value in module.params.iteritems():
+    for prop, value in module.params.items():
         # All freestyle params are zfs properties
         if prop not in module.argument_spec:
             # Reverse the boolification of freestyle zfs properties

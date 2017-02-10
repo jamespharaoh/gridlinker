@@ -179,7 +179,7 @@ def _base(module, conf_file, disable_gpg_check, disablerepo, enablerepo):
     base = dnf.Base()
     _configure_base(module, base, conf_file, disable_gpg_check)
     _specify_repositories(base, disablerepo, enablerepo)
-    base.fill_sack()
+    base.fill_sack(load_system_repo='auto')
     return base
 
 
@@ -232,46 +232,105 @@ def _mark_package_install(module, base, pkg_spec):
         module.fail_json(msg="No package {} available.".format(pkg_spec))
 
 
+def _parse_spec_group_file(names):
+    pkg_specs, grp_specs, filenames = [], [], []
+    for name in names:
+        if name.endswith(".rpm"):
+            filenames.append(name)
+        elif name.startswith("@"):
+            grp_specs.append(name[1:])
+        else:
+            pkg_specs.append(name)
+    return pkg_specs, grp_specs, filenames
+
+
+def _install_remote_rpms(base, filenames):
+    if int(dnf.__version__.split(".")[0]) >= 2:
+        pkgs = list(sorted(base.add_remote_rpms(list(filenames)), reverse=True))
+    else:
+        pkgs = []
+        for filename in filenames:
+            pkgs.append(base.add_remote_rpm(filename))
+    for pkg in pkgs:
+        base.package_install(pkg)
+
+
 def ensure(module, base, state, names):
+    # Accumulate failures.  Package management modules install what they can
+    # and fail with a message about what they can't.
+    failures = []
     allow_erasing = False
     if names == ['*'] and state == 'latest':
         base.upgrade_all()
     else:
-        pkg_specs, group_specs, filenames = cli.commands.parse_spec_group_file(
-            names)
+        pkg_specs, group_specs, filenames = _parse_spec_group_file(names)
         if group_specs:
             base.read_comps()
 
+        pkg_specs = [p.strip() for p in pkg_specs]
+        filenames = [f.strip() for f in filenames]
         groups = []
-        for group_spec in group_specs:
+        environments = []
+        for group_spec in (g.strip() for g in group_specs):
             group = base.comps.group_by_pattern(group_spec)
             if group:
                 groups.append(group)
             else:
-                module.fail_json(
-                    msg="No group {} available.".format(group_spec))
+                environment = base.comps.environment_by_pattern(group_spec)
+                if environment:
+                    environments.append(environment.id)
+                else:
+                    module.fail_json(
+                        msg="No group {} available.".format(group_spec))
 
         if state in ['installed', 'present']:
             # Install files.
-            for filename in filenames:
-                base.package_install(base.add_remote_rpm(filename))
+            _install_remote_rpms(base, filenames)
+
             # Install groups.
             for group in groups:
-                base.group_install(group, const.GROUP_PACKAGE_TYPES)
+                try:
+                    base.group_install(group, const.GROUP_PACKAGE_TYPES)
+                except exceptions.Error as e:
+                    # In dnf 2.0 if all the mandatory packages in a group do
+                    # not install, an error is raised.  We want to capture
+                    # this but still install as much as possible.
+                    failures.append((group, e))
+
+            for environment in environments:
+                try:
+                    base.environment_install(environment, const.GROUP_PACKAGE_TYPES)
+                except exceptions.Error as e:
+                    failures.append((group, e))
+
             # Install packages.
             for pkg_spec in pkg_specs:
                 _mark_package_install(module, base, pkg_spec)
 
         elif state == 'latest':
             # "latest" is same as "installed" for filenames.
-            for filename in filenames:
-                base.package_install(base.add_remote_rpm(filename))
+            _install_remote_rpms(base, filenames)
+
             for group in groups:
                 try:
-                    base.group_upgrade(group)
-                except exceptions.CompsError:
-                    # If not already installed, try to install.
-                    base.group_install(group, const.GROUP_PACKAGE_TYPES)
+                    try:
+                        base.group_upgrade(group)
+                    except exceptions.CompsError:
+                        # If not already installed, try to install.
+                        base.group_install(group, const.GROUP_PACKAGE_TYPES)
+                except exceptions.Error as e:
+                    failures.append((group, e))
+
+            for environment in environments:
+                try:
+                    try:
+                        base.environment_upgrade(environment)
+                    except exceptions.CompsError:
+                        # If not already installed, try to install.
+                        base.environment_install(group, const.GROUP_PACKAGE_TYPES)
+                except exceptions.Error as e:
+                    failures.append((group, e))
+
             for pkg_spec in pkg_specs:
                 # best effort causes to install the latest package
                 # even if not previously installed
@@ -284,30 +343,52 @@ def ensure(module, base, state, names):
                 module.fail_json(
                     msg="Cannot remove paths -- please specify package name.")
 
-            installed = base.sack.query().installed()
             for group in groups:
-                if installed.filter(name=group.name):
+                try:
                     base.group_remove(group)
+                except dnf.exceptions.CompsError:
+                    # Group is already uninstalled.
+                    pass
+
+            for envioronment in environments:
+                try:
+                    base.environment_remove(environment)
+                except dnf.exceptions.CompsError:
+                    # Environment is already uninstalled.
+                    pass
+
+            installed = base.sack.query().installed()
             for pkg_spec in pkg_specs:
                 if installed.filter(name=pkg_spec):
                     base.remove(pkg_spec)
+
             # Like the dnf CLI we want to allow recursive removal of dependent
             # packages
             allow_erasing = True
 
     if not base.resolve(allow_erasing=allow_erasing):
+        if failures:
+            module.fail_json(msg='Failed to install some of the specified packages',
+                    failures=failures)
         module.exit_json(msg="Nothing to do")
     else:
         if module.check_mode:
+            if failures:
+                module.fail_json(msg='Failed to install some of the specified packages',
+                        failures=failures)
             module.exit_json(changed=True)
+
         base.download_packages(base.transaction.install_set)
         base.do_transaction()
         response = {'changed': True, 'results': []}
         for package in base.transaction.install_set:
-            response['results'].append("Installed: {}".format(package))
+            response['results'].append("Installed: {0}".format(package))
         for package in base.transaction.remove_set:
-            response['results'].append("Removed: {}".format(package))
+            response['results'].append("Removed: {0}".format(package))
 
+        if failures:
+            module.fail_json(msg='Failed to install some of the specified packages',
+                    failures=failures)
         module.exit_json(**response)
 
 

@@ -27,6 +27,8 @@ DOCUMENTATION = '''
 ---
 module: pam_limits
 version_added: "2.0"
+authors:
+    - "Sebastien Rohaut (@usawa)"
 short_description: Modify Linux PAM limits
 description:
      - The M(pam_limits) module modify PAM limits, default in /etc/security/limits.conf.
@@ -152,7 +154,7 @@ def main():
     message = ''
     f = open (limits_conf, 'r')
     # Tempfile
-    nf = tempfile.NamedTemporaryFile(delete = False)
+    nf = tempfile.NamedTemporaryFile()
 
     found = False
     new_value = value

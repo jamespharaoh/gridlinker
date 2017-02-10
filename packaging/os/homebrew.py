@@ -27,6 +27,8 @@ author:
     - "Indrajit Raychaudhuri (@indrajitr)"
     - "Daniel Jaouen (@danieljaouen)"
     - "Andrew Dunham (@andrew-d)"
+requirements:
+   - "python >= 2.6"
 short_description: Package manager for Homebrew
 description:
     - Manages Homebrew packages
@@ -37,6 +39,7 @@ options:
             - name of package to install/remove
         required: false
         default: None
+        aliases: ['pkg', 'package', 'formula']
     path:
         description:
             - "':' separated list of paths to search for 'brew' executable. Since A package (I(formula) in homebrew parlance) location is prefixed relative to the actual path of I(brew) command, providing an alternative I(brew) path enables managing different set of packages in an alternative location in the system."
@@ -54,17 +57,20 @@ options:
         required: false
         default: no
         choices: [ "yes", "no" ]
+        aliases: ['update-brew']
     upgrade_all:
         description:
             - upgrade all homebrew packages
         required: false
         default: no
         choices: [ "yes", "no" ]
+        aliases: ['upgrade']
     install_options:
         description:
             - options flags to install a package
         required: false
         default: null
+        aliases: ['options']
         version_added: "1.4"
 notes:  []
 '''
@@ -94,6 +100,8 @@ EXAMPLES = '''
 
 import os.path
 import re
+
+from ansible.module_utils.six import iteritems
 
 
 # exceptions -------------------------------------------------------------- {{{
@@ -342,7 +350,7 @@ class Homebrew(object):
         self.message = ''
 
     def _setup_instance_vars(self, **kwargs):
-        for key, val in kwargs.iteritems():
+        for key, val in iteritems(kwargs):
             setattr(self, key, val)
 
     def _prep(self):
@@ -785,6 +793,7 @@ def main():
             path=dict(
                 default="/usr/local/bin",
                 required=False,
+                type='path',
             ),
             state=dict(
                 default="present",

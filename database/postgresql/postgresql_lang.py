@@ -217,12 +217,13 @@ def main():
         "port":"port",
         "db":"database"
     }
-    kw = dict( (params_map[k], v) for (k, v) in module.params.iteritems()
+    kw = dict( (params_map[k], v) for (k, v) in module.params.items()
               if k in params_map and v != "" )
     try:
         db_connection = psycopg2.connect(**kw)
         cursor = db_connection.cursor()
-    except Exception, e:
+    except Exception:
+        e = get_exception()
         module.fail_json(msg="unable to connect to database: %s" % e)
     changed = False
     lang_dropped = False
@@ -267,4 +268,5 @@ def main():
 
 # import module snippets
 from ansible.module_utils.basic import *
+from ansible.module_utils.pycompat24 import get_exception
 main()

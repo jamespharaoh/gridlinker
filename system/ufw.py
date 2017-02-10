@@ -153,6 +153,9 @@ ufw: rule=allow name=OpenSSH delete=yes
 # Deny all access to port 53:
 ufw: rule=deny port=53
 
+# Allow port range 60000-61000
+ufw: rule=allow port=60000:61000
+
 # Allow all access to tcp port 80:
 ufw: rule=allow port=80 proto=tcp
 
@@ -236,7 +239,7 @@ def main():
     (_, pre_rules, _) = module.run_command("grep '^### tuple' /lib/ufw/user*.rules")
 
     # Execute commands
-    for (command, value) in commands.iteritems():
+    for (command, value) in commands.items():
         cmd = [[ufw_bin], [module.check_mode, '--dry-run']]
 
         if command == 'state':

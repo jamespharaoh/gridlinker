@@ -247,7 +247,7 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             server=dict(default='localhost'),
-            port=dict(default=6667),
+            port=dict(type='int', default=6667),
             nick=dict(default='ansible'),
             nick_to=dict(required=False, type='list'),
             msg=dict(required=True),
@@ -289,7 +289,8 @@ def main():
 
     try:
         send_msg(msg, server, port, channel, nick_to, key, topic, nick, color, passwd, timeout, use_ssl, part, style)
-    except Exception, e:
+    except Exception:
+        e = get_exception()
         module.fail_json(msg="unable to send to IRC: %s" % e)
 
     module.exit_json(changed=False, channel=channel, nick=nick,
@@ -297,4 +298,5 @@ def main():
 
 # import module snippets
 from ansible.module_utils.basic import *
+from ansible.module_utils.pycompat24 import get_exception
 main()

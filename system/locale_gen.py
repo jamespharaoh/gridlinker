@@ -15,10 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
-import os
-import os.path
-from subprocess import Popen, PIPE, call
-import re
 
 DOCUMENTATION = '''
 ---
@@ -47,6 +43,15 @@ EXAMPLES = '''
 # Ensure a locale exists.
 - locale_gen: name=de_CH.UTF-8 state=present
 '''
+
+import os
+import os.path
+from subprocess import Popen, PIPE, call
+import re
+
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.pycompat24 import get_exception
+from ansible.module_utils._text import to_native
 
 LOCALE_NORMALIZATION = {
     ".utf8": ".UTF-8",
@@ -89,12 +94,13 @@ def is_available(name, ubuntuMode):
 def is_present(name):
     """Checks if the given locale is currently installed."""
     output = Popen(["locale", "-a"], stdout=PIPE).communicate()[0]
+    output = to_native(output)
     return any(fix_case(name) == fix_case(line) for line in output.splitlines())
 
 def fix_case(name):
     """locale -a might return the encoding in either lower or upper case.
     Passing through this function makes them uniform for comparisons."""
-    for s, r in LOCALE_NORMALIZATION.iteritems():
+    for s, r in LOCALE_NORMALIZATION.items():
         name = name.replace(s, r)
     return name
 
@@ -225,12 +231,11 @@ def main():
                     apply_change(state, name)
                 else:
                     apply_change_ubuntu(state, name)
-            except EnvironmentError, e:
+            except EnvironmentError:
+                e = get_exception()
                 module.fail_json(msg=e.strerror, exitValue=e.errno)
 
         module.exit_json(name=name, changed=changed, msg="OK")
 
-# import module snippets
-from ansible.module_utils.basic import *
 
 main()
