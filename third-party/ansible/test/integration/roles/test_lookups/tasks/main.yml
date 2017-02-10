@@ -170,7 +170,7 @@
 
 - name: use bare interpolation
   debug: msg="got {{item}}"
-  with_items: things1
+  with_items: "{{things1}}"
   register: bare_var
 
 - name: verify that list was interpolated
@@ -187,7 +187,7 @@
 
 - name: use list with undefined var in it
   debug: msg={{item}}
-  with_items: things2
+  with_items: "{{things2}}"
   ignore_errors: True
 
 
@@ -268,3 +268,14 @@
         - product.results[6]['item'] == ["C", "1"]
         - product.results[7]['item'] == ["C", "2"]
         - product.results[8]['item'] == ["C", "3"]
+
+# Template lookups
+
+# ref #18526
+- name: Test that we have a proper jinja search path in template lookup
+  set_fact:
+    hello_world: "{{ lookup('template', 'hello.txt') }}"
+
+- assert:
+    that:
+      - "hello_world|trim == 'Hello world!'"

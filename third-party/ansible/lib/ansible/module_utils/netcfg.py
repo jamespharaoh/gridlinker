@@ -26,13 +26,42 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import re
 import itertools
-import shlex
+import re
 
-from ansible.module_utils.basic import BOOLEANS_TRUE, BOOLEANS_FALSE
+from ansible.module_utils.six import string_types
+from ansible.module_utils.six.moves import zip, zip_longest
 
-DEFAULT_COMMENT_TOKENS = ['#', '!']
+DEFAULT_COMMENT_TOKENS = ['#', '!', '/*', '*/']
+
+
+def to_list(val):
+    if isinstance(val, (list, tuple)):
+        return list(val)
+    elif val is not None:
+        return [val]
+    else:
+        return list()
+
+
+class Config(object):
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def __call__(self, commands, **kwargs):
+        lines = to_list(commands)
+        return self.connection.configure(lines, **kwargs)
+
+    def load_config(self, commands, **kwargs):
+        commands = to_list(commands)
+        return self.connection.load_config(commands, **kwargs)
+
+    def get_config(self, **kwargs):
+        return self.connection.get_config(**kwargs)
+
+    def save_config(self):
+        return self.connection.save_config()
 
 class ConfigLine(object):
 
@@ -42,12 +71,17 @@ class ConfigLine(object):
         self.parents = list()
         self.raw = None
 
+    @property
+    def line(self):
+        line = [p.text for p in self.parents]
+        line.append(self.text)
+        return ' '.join(line)
+
     def __str__(self):
         return self.raw
 
     def __eq__(self, other):
-        if self.text == other.text:
-            return self.parents == other.parents
+        return self.line == other.line
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -57,16 +91,20 @@ def ignore_line(text, tokens=None):
         if text.startswith(item):
             return True
 
+def get_next(iterable):
+    item, next_item = itertools.tee(iterable, 2)
+    next_item = itertools.islice(next_item, 1, None)
+    return zip_longest(item, next_item)
+
 def parse(lines, indent, comment_tokens=None):
     toplevel = re.compile(r'\S')
     childline = re.compile(r'^\s*(.+)$')
-    repl = r'([{|}|;])'
 
     ancestors = list()
     config = list()
 
     for line in str(lines).split('\n'):
-        text = str(re.sub(repl, '', line)).strip()
+        text = str(re.sub(r'([{};])', '', line)).strip()
 
         cfg = ConfigLine(text)
         cfg.raw = line
@@ -101,6 +139,21 @@ def parse(lines, indent, comment_tokens=None):
 
     return config
 
+def dumps(objects, output='block'):
+    if output == 'block':
+        items = [c.raw for c in objects]
+    elif output == 'commands':
+        items = [c.text for c in objects]
+    elif output == 'lines':
+        items = list()
+        for obj in objects:
+            line = list()
+            line.extend([p.text for p in obj.parents])
+            line.append(obj.text)
+            items.append(' '.join(line))
+    else:
+        raise TypeError('unknown value supplied for keyword output')
+    return '\n'.join(items)
 
 class NetworkConfig(object):
 
@@ -108,6 +161,10 @@ class NetworkConfig(object):
         self.indent = indent or 1
         self._config = list()
         self._device_os = device_os
+        self._syntax = 'block' # block, lines, junos
+
+        if self._device_os == 'junos':
+            self._syntax = 'junos'
 
         if contents:
             self.load(contents)
@@ -118,23 +175,44 @@ class NetworkConfig(object):
 
     def __str__(self):
         if self._device_os == 'junos':
-            return self.to_lines(self.expand(self.items))
-        return self.to_block(self.expand(self.items))
+            return dumps(self.expand_line(self.items), 'lines')
+        return dumps(self.expand_line(self.items))
 
     def load(self, contents):
-        self._config = parse(contents, indent=self.indent)
+        # Going to start adding device profiles post 2.2
+        tokens = list(DEFAULT_COMMENT_TOKENS)
+        if self._device_os == 'sros':
+            tokens.append('echo')
+            self._config = parse(contents, indent=4, comment_tokens=tokens)
+        else:
+            self._config = parse(contents, indent=self.indent)
 
     def load_from_file(self, filename):
         self.load(open(filename).read())
 
     def get(self, path):
-        if isinstance(path, basestring):
+        if isinstance(path, string_types):
             path = [path]
         for item in self._config:
             if item.text == path[-1]:
                 parents = [p.text for p in item.parents]
                 if parents == path[:-1]:
                     return item
+
+    def get_object(self, path):
+        for item in self.items:
+            if item.text == path[-1]:
+                parents = [p.text for p in item.parents]
+                if parents == path[:-1]:
+                    return item
+
+    def get_section_objects(self, path):
+        if not isinstance(path, list):
+            path = [path]
+        obj = self.get_object(path)
+        if not obj:
+            raise ValueError('path does not exist in config')
+        return self.expand_section(obj)
 
     def search(self, regexp, path=None):
         regex = re.compile(r'^%s' % regexp, re.M)
@@ -161,19 +239,7 @@ class NetworkConfig(object):
         regexp = r'%s' % regexp
         return re.findall(regexp, str(self))
 
-    def to_lines(self, section):
-        lines = list()
-        for entry in section[1:]:
-            line = ['set']
-            line.extend([p.text for p in entry.parents])
-            line.append(entry.text)
-            lines.append(' '.join(line))
-        return lines
-
-    def to_block(self, section):
-        return '\n'.join([item.raw for item in section])
-
-    def expand(self, objs):
+    def expand_line(self, objs):
         visited = set()
         expanded = list()
         for o in objs:
@@ -185,224 +251,163 @@ class NetworkConfig(object):
             visited.add(o)
         return expanded
 
-    def get_object(self, path):
-        for item in self.items:
-            if item.text == path[-1]:
-                parents = [p.text for p in item.parents]
-                if parents == path[:-1]:
-                    return item
+    def expand_section(self, configobj, S=None):
+        if S is None:
+            S = list()
+        S.append(configobj)
+        for child in configobj.children:
+            if child in S:
+                continue
+            self.expand_section(child, S)
+        return S
 
-    def get_children(self, path):
-        obj = self.get_object(path)
-        if obj:
-            return obj.children
+    def expand_block(self, objects, visited=None):
+        items = list()
+
+        if not visited:
+            visited = set()
+
+        for o in objects:
+            items.append(o)
+            visited.add(o)
+            for child in o.children:
+                items.extend(self.expand_block([child], visited))
+
+        return items
+
+    def diff_line(self, other, path=None):
+        diff = list()
+        for item in self.items:
+            if item not in other:
+                diff.append(item)
+        return diff
+
+    def diff_strict(self, other, path=None):
+        diff = list()
+        for index, item in enumerate(self.items):
+            try:
+                if item != other[index]:
+                    diff.append(item)
+            except IndexError:
+                diff.append(item)
+        return diff
+
+    def diff_exact(self, other, path=None):
+        diff = list()
+        if len(other) != len(self.items):
+            diff.extend(self.items)
+        else:
+            for ours, theirs in zip(self.items, other):
+                if ours != theirs:
+                    diff.extend(self.items)
+                    break
+        return diff
 
     def difference(self, other, path=None, match='line', replace='line'):
-        updates = list()
-
-        config = self.items
-        if path:
-            config = self.get_children(path) or list()
-
-        if match == 'line':
-            for item in config:
-                if item not in other.items:
-                    updates.append(item)
-
-        elif match == 'strict':
-            if path:
-                current = other.get_children(path) or list()
-            else:
-                current = other.items
-
-            for index, item in enumerate(config):
+        try:
+            if path and match != 'line':
                 try:
-                    if item != current[index]:
-                        updates.append(item)
-                except IndexError:
-                    updates.append(item)
-
-        elif match == 'exact':
-            if path:
-                current = other.get_children(path) or list()
+                    other = other.get_section_objects(path)
+                except ValueError:
+                    other = list()
             else:
-                current = other.items
-
-            if len(current) != len(config):
-                updates.extend(config)
-            else:
-                for ours, theirs in itertools.izip(config, current):
-                    if ours != theirs:
-                        updates.extend(config)
-                        break
+                other = other.items
+            func = getattr(self, 'diff_%s' % match)
+            updates = func(other, path=path)
+        except AttributeError:
+            raise
+            raise TypeError('invalid value for match keyword')
 
         if self._device_os == 'junos':
             return updates
 
-        changes = list()
-        for update in updates:
-            if replace == 'block':
-                if update.parents:
-                    changes.append(update.parents[-1])
-                    for child in update.parents[-1].children:
-                        changes.append(child)
+        if replace == 'block':
+            parents = list()
+            for u in updates:
+                if u.parents is None:
+                    if u not in parents:
+                        parents.append(u)
                 else:
-                    changes.append(update)
-            else:
-                changes.append(update)
-        updates = self.expand(changes)
+                    for p in u.parents:
+                        if p not in parents:
+                            parents.append(p)
 
-        return [item.text for item in self.expand(updates)]
+            return self.expand_block(parents)
 
-    def _build_children(self, children, parents=None, offset=0):
-        for item in children:
-            line = ConfigLine(item)
-            line.raw = item.rjust(len(item) + offset)
-            if parents:
-                line.parents = parents
-                parents[-1].children.append(line)
-            yield line
+        return self.expand_line(updates)
+
+    def replace(self, patterns, repl, parents=None, add_if_missing=False,
+                ignore_whitespace=True):
+
+        match = None
+
+        parents = to_list(parents) or list()
+        patterns = [re.compile(r, re.I) for r in to_list(patterns)]
+
+        for item in self.items:
+            for regexp in patterns:
+                text = item.text
+                if not ignore_whitespace:
+                    text = item.raw
+                if regexp.search(text):
+                    if item.text != repl:
+                        if parents == [p.text for p in item.parents]:
+                            match = item
+                            break
+
+        if match:
+            match.text = repl
+            indent = len(match.raw) - len(match.raw.lstrip())
+            match.raw = repl.rjust(len(repl) + indent)
+
+        elif add_if_missing:
+            self.add(repl, parents=parents)
+
 
     def add(self, lines, parents=None):
+        """Adds one or lines of configuration
+        """
+
+        ancestors = list()
         offset = 0
+        obj = None
 
-        config = list()
-        parent = None
-        parents = parents or list()
+        ## global config command
+        if not parents:
+            for line in to_list(lines):
+                item = ConfigLine(line)
+                item.raw = line
+                if item not in self.items:
+                    self.items.append(item)
 
-        for item in parents:
-            line = ConfigLine(item)
-            line.raw = item.rjust(len(item) + offset)
-            config.append(line)
-            if parent:
-                parent.children.append(line)
-                if parent.parents:
-                    line.parents.append(*parent.parents)
-                line.parents.append(parent)
-            parent = line
-            offset += self.indent
-
-        self._config.extend(config)
-        self._config.extend(list(self._build_children(lines, config, offset)))
-
-
-
-class Conditional(object):
-    """Used in command modules to evaluate waitfor conditions
-    """
-
-    OPERATORS = {
-        'eq': ['eq', '=='],
-        'neq': ['neq', 'ne', '!='],
-        'gt': ['gt', '>'],
-        'ge': ['ge', '>='],
-        'lt': ['lt', '<'],
-        'le': ['le', '<='],
-        'contains': ['contains']
-    }
-
-    def __init__(self, conditional, encoding='json'):
-        self.raw = conditional
-        self.encoding = encoding
-
-        key, op, val = shlex.split(conditional)
-        self.key = key
-        self.func = self.func(op)
-        self.value = self._cast_value(val)
-
-    def __call__(self, data):
-        value = self.get_value(dict(result=data))
-        return self.func(value)
-
-    def _cast_value(self, value):
-        if value in BOOLEANS_TRUE:
-            return True
-        elif value in BOOLEANS_FALSE:
-            return False
-        elif re.match(r'^\d+\.d+$', value):
-            return float(value)
-        elif re.match(r'^\d+$', value):
-            return int(value)
         else:
-            return unicode(value)
+            for index, p in enumerate(parents):
+                try:
+                    i = index + 1
+                    obj = self.get_section_objects(parents[:i])[0]
+                    ancestors.append(obj)
 
-    def func(self, oper):
-        for func, operators in self.OPERATORS.items():
-            if oper in operators:
-                return getattr(self, func)
-        raise AttributeError('unknown operator: %s' % oper)
+                except ValueError:
+                    # add parent to config
+                    offset = index * self.indent
+                    obj = ConfigLine(p)
+                    obj.raw = p.rjust(len(p) + offset)
+                    if ancestors:
+                        obj.parents = list(ancestors)
+                        ancestors[-1].children.append(obj)
+                    self.items.append(obj)
+                    ancestors.append(obj)
 
-    def get_value(self, result):
-        if self.encoding in ['json', 'text']:
-            return self.get_json(result)
-        elif self.encoding == 'xml':
-            return self.get_xml(result.get('result'))
-
-    def get_xml(self, result):
-        parts = self.key.split('.')
-
-        value_index = None
-        match = re.match(r'^\S+(\[)(\d+)\]', parts[-1])
-        if match:
-            start, end = match.regs[1]
-            parts[-1] = parts[-1][0:start]
-            value_index = int(match.group(2))
-
-        path = '/'.join(parts[1:])
-        path = '/%s' % path
-        path += '/text()'
-
-        index = int(re.match(r'result\[(\d+)\]', parts[0]).group(1))
-        values = result[index].xpath(path)
-
-        if value_index is not None:
-            return values[value_index].strip()
-        return [v.strip() for v in values]
-
-    def get_json(self, result):
-        parts = re.split(r'\.(?=[^\]]*(?:\[|$))', self.key)
-        for part in parts:
-            match = re.findall(r'\[(\S+?)\]', part)
-            if match:
-                key = part[:part.find('[')]
-                result = result[key]
-                for m in match:
-                    try:
-                        m = int(m)
-                    except ValueError:
-                        m = str(m)
-                    result = result[m]
-            else:
-                result = result.get(part)
-        return result
-
-    def number(self, value):
-        if '.' in str(value):
-            return float(value)
-        else:
-            return int(value)
-
-    def eq(self, value):
-        return value == self.value
-
-    def neq(self, value):
-        return value != self.value
-
-    def gt(self, value):
-        return self.number(value) > self.value
-
-    def ge(self, value):
-        return self.number(value) >= self.value
-
-    def lt(self, value):
-        return self.number(value) < self.value
-
-    def le(self, value):
-        return self.number(value) <= self.value
-
-    def contains(self, value):
-        return str(self.value) in value
-
-
-
-
+            # add child objects
+            for line in to_list(lines):
+                # check if child already exists
+                for child in ancestors[-1].children:
+                    if child.text == line:
+                        break
+                else:
+                    offset = len(parents) * self.indent
+                    item = ConfigLine(line)
+                    item.raw = line.rjust(len(line) + offset)
+                    item.parents = ancestors
+                    ancestors[-1].children.append(item)
+                    self.items.append(item)

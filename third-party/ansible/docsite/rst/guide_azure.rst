@@ -255,7 +255,7 @@ For a given host, the inventory script provides the following host variables:
         "version": "latest"
       },
       "location": "westus",
-      "mac_address": "00-0D-3A-31-2C-EC",
+      "mac_address": "00-00-5E-00-53-FE",
       "name": "object-name",
       "network_interface": "interface-name",
       "network_interface_id": "/subscriptions/subscription-id/resourceGroups/galaxy-production/providers/Microsoft.Network/networkInterfaces/object-name1",
@@ -336,6 +336,7 @@ A sample azure_rm.ini file is included along with the inventory script in contri
 file will contain the following:
 
 .. code-block:: ini
+
     [azure]
     # Control which resource groups are included. By default all resources groups are included.
     # Set resource_groups to a comma separated list of resource groups names.

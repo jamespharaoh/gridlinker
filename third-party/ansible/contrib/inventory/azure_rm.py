@@ -76,7 +76,7 @@ required. For a specific host, this script returns the following variables:
     "version": "latest"
   },
   "location": "westus",
-  "mac_address": "00-0D-3A-31-2C-EC",
+  "mac_address": "00-00-5E-00-53-FE",
   "name": "object-name",
   "network_interface": "interface-name",
   "network_interface_id": "/subscriptions/subscription-id/resourceGroups/galaxy-production/providers/Microsoft.Network/networkInterfaces/object-name1",
@@ -142,11 +142,13 @@ If you don't need the powerstate, you can improve performance by turning off pow
 AZURE_INCLUDE_POWERSTATE=no
 
 azure_rm.ini
-----------------------
-As mentioned above you can control execution using environment variables or an .ini file. A sample
+------------
+As mentioned above, you can control execution using environment variables or a .ini file. A sample
 azure_rm.ini is included. The name of the .ini file is the basename of the inventory script (in this case
-'azure_rm') with a .ini extension. This provides you with the flexibility of copying and customizing this
-script and having matching .ini files. Go forth and customize your Azure inventory!
+'azure_rm') with a .ini extension. It also assumes the .ini file is alongside the script. To specify
+a different path for the .ini file, define the AZURE_INI_PATH environment variable:
+
+  export AZURE_INI_PATH=/path/to/custom.ini
 
 Powerstate:
 -----------
@@ -307,7 +309,7 @@ class AzureRM(object):
 
     def _get_env_credentials(self):
         env_credentials = dict()
-        for attribute, env_variable in AZURE_CREDENTIAL_ENV_MAPPING.iteritems():
+        for attribute, env_variable in AZURE_CREDENTIAL_ENV_MAPPING.items():
             env_credentials[attribute] = os.environ.get(env_variable, None)
 
         if env_credentials['profile'] is not None:
@@ -326,7 +328,7 @@ class AzureRM(object):
         self.log('Getting credentials')
 
         arg_credentials = dict()
-        for attribute, env_variable in AZURE_CREDENTIAL_ENV_MAPPING.iteritems():
+        for attribute, env_variable in AZURE_CREDENTIAL_ENV_MAPPING.items():
             arg_credentials[attribute] = getattr(params, attribute)
 
         # try module params
@@ -662,7 +664,7 @@ class AzureInventory(object):
         self._inventory['azure'].append(host_name)
 
         if self.group_by_tag and vars.get('tags'):
-            for key, value in vars['tags'].iteritems():
+            for key, value in vars['tags'].items():
                 safe_key = self._to_safe(key)
                 safe_value = safe_key + '_' + self._to_safe(value)
                 if not self._inventory.get(safe_key):
@@ -722,13 +724,14 @@ class AzureInventory(object):
 
     def _get_env_settings(self):
         env_settings = dict()
-        for attribute, env_variable in AZURE_CONFIG_SETTINGS.iteritems():
+        for attribute, env_variable in AZURE_CONFIG_SETTINGS.items():
             env_settings[attribute] = os.environ.get(env_variable, None)
         return env_settings
 
     def _load_settings(self):
         basename = os.path.splitext(os.path.basename(__file__))[0]
-        path = basename + '.ini'
+        default_path = os.path.join(os.path.dirname(__file__), (basename + '.ini'))
+        path = os.path.expanduser(os.path.expandvars(os.environ.get('AZURE_INI_PATH', default_path)))
         config = None
         settings = None
         try:

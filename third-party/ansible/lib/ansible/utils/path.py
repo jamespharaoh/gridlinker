@@ -19,9 +19,12 @@ __metaclass__ = type
 
 import os
 from errno import EEXIST
-from ansible.utils.unicode import to_bytes
+from ansible.errors import AnsibleError
+from ansible.module_utils._text import to_bytes, to_native, to_text
 
-__all__ = ['unfrackpath']
+
+__all__ = ['unfrackpath', 'makedirs_safe']
+
 
 def unfrackpath(path, follow=True):
     '''
@@ -39,20 +42,29 @@ def unfrackpath(path, follow=True):
     '''
 
     if follow:
-        final_path = os.path.normpath(os.path.realpath(os.path.expanduser(os.path.expandvars(path))))
+        final_path = os.path.normpath(os.path.realpath(os.path.expanduser(os.path.expandvars(to_bytes(path, errors='surrogate_or_strict')))))
     else:
-        final_path = os.path.normpath(os.path.abspath(os.path.expanduser(os.path.expandvars(path))))
+        final_path = os.path.normpath(os.path.abspath(os.path.expanduser(os.path.expandvars(to_bytes(path, errors='surrogate_or_strict')))))
 
-    return final_path
+    return to_text(final_path, errors='surrogate_or_strict')
 
 def makedirs_safe(path, mode=None):
-    '''Safe way to create dirs in muliprocess/thread environments'''
-    if not os.path.exists(to_bytes(path, errors='strict')):
+    '''Safe way to create dirs in muliprocess/thread environments.
+
+    :arg path: A byte or text string representing a directory to be created
+    :kwarg mode: If given, the mode to set the directory to
+    :raises AnsibleError: If the directory cannot be created and does not already exists.
+    :raises UnicodeDecodeError: if the path is not decodable in the utf-8 encoding.
+    '''
+
+    rpath = unfrackpath(path)
+    b_rpath = to_bytes(rpath)
+    if not os.path.exists(b_rpath):
         try:
             if mode:
-                os.makedirs(path, mode)
+                os.makedirs(b_rpath, mode)
             else:
-                os.makedirs(path)
+                os.makedirs(b_rpath)
         except OSError as e:
             if e.errno != EEXIST:
-                raise
+                raise AnsibleError("Unable to create local directories(%s): %s" % (to_native(rpath), to_native(e)))

@@ -29,6 +29,7 @@ from ansible.compat.six import text_type
 from ansible.errors import AnsibleError, AnsibleUndefinedVariable
 from ansible.playbook.attribute import FieldAttribute
 from ansible.template import Templar
+from ansible.module_utils._text import to_native
 
 LOOKUP_REGEX = re.compile(r'lookup\s*\(')
 VALID_VAR_REGEX = re.compile("^[_A-Za-z][_a-zA-Z0-9]*$")
@@ -57,6 +58,17 @@ class Conditional:
         if not isinstance(value, list):
             setattr(self, name, [ value ])
 
+    def _get_attr_when(self):
+        '''
+        Override for the 'tags' getattr fetcher, used from Base.
+        '''
+        when = self._attributes['when']
+        if when is None:
+            when = []
+        if hasattr(self, '_get_parent_attribute'):
+            when = self._get_parent_attribute('when', extend=True, prepend=True)
+        return when
+
     def evaluate_conditional(self, templar, all_vars):
         '''
         Loops through the conditionals set on this object, returning
@@ -71,11 +83,15 @@ class Conditional:
             ds = getattr(self, '_ds')
 
         try:
+            # this allows for direct boolean assignments to conditionals "when: False"
+            if isinstance(self.when, bool):
+                return self.when
+
             for conditional in self.when:
                 if not self._check_conditional(conditional, templar, all_vars):
                     return False
         except Exception as e:
-            raise AnsibleError("The conditional check '%s' failed. The error was: %s" % (conditional, e), obj=ds)
+            raise AnsibleError("The conditional check '%s' failed. The error was: %s" % (to_native(conditional), to_native(e)), obj=ds)
 
         return True
 
@@ -155,10 +171,10 @@ class Conditional:
             # variable was undefined. If we happened to be
             # looking for an undefined variable, return True,
             # otherwise fail
-            if "is undefined" in original:
+            if "is undefined" in original or "is not defined" in original or "not is defined" in original:
                 return True
-            elif "is defined" in original:
+            elif "is defined" in original or "is not undefined" in original or "not is undefined" in original:
                 return False
             else:
-                raise AnsibleError("error while evaluating conditional (%s): %s" % (original, e))
+                raise AnsibleUndefinedVariable("error while evaluating conditional (%s): %s" % (original, e))
 

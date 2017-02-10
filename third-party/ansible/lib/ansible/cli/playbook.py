@@ -110,7 +110,7 @@ class PlaybookCLI(CLI):
             vault_pass = CLI.read_vault_password_file(self.options.vault_password_file, loader=loader)
             loader.set_vault_password(vault_pass)
         elif self.options.ask_vault_pass:
-            vault_pass = self.ask_vault_passwords()[0]
+            vault_pass = self.ask_vault_passwords()
             loader.set_vault_password(vault_pass)
 
         # initial error check, to make sure all specified playbooks are accessible
@@ -147,6 +147,11 @@ class PlaybookCLI(CLI):
         if len(inventory.list_hosts()) == 0 and no_hosts is False:
             # Invalid limit
             raise AnsibleError("Specified --limit does not match any hosts")
+
+        # flush fact cache if requested
+        if self.options.flush_cache:
+            for host in inventory.list_hosts():
+                variable_manager.clear_facts(host)
 
         # create the playbook executor, which manages running the plays via a task queue manager
         pbex = PlaybookExecutor(playbooks=self.args, inventory=inventory, variable_manager=variable_manager, loader=loader, options=self.options, passwords=passwords)
