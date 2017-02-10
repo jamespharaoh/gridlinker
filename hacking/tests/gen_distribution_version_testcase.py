@@ -12,6 +12,7 @@ import platform
 import os.path
 import subprocess
 import json
+import sys
 
 filelist = [
         '/etc/oracle-release',
@@ -45,12 +46,23 @@ for f in filelist:
 dist = platform.dist()
 
 
-facts = ['distribution', 'distribution_version', 'distribution_release', 'distribution_major_version']
-ansible_out = subprocess.check_output(['ansible', 'localhost', '-m', 'setup'])
+facts = ['distribution', 'distribution_version', 'distribution_release', 'distribution_major_version', 'os_family']
+
+try:
+    ansible_out = subprocess.check_output(
+        ['ansible', 'localhost', '-m', 'setup'])
+except subprocess.CalledProcessError as e:
+    print("ERROR: ansible run failed, output was: \n")
+    print(e.output)
+    sys.exit(e.returncode)
+
 parsed = json.loads(ansible_out[ansible_out.index('{'):])
 ansible_facts = {}
 for fact in facts:
-    ansible_facts[fact] = parsed['ansible_facts']['ansible_'+fact]
+    try:
+        ansible_facts[fact] = parsed['ansible_facts']['ansible_'+fact]
+    except:
+        ansible_facts[fact] = "N/A"
 
 nicename = ansible_facts['distribution'] + ' ' + ansible_facts['distribution_version']
 

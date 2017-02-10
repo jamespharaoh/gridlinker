@@ -50,7 +50,8 @@ class ShellBase(object):
         return os.path.join(*args)
 
     # some shells (eg, powershell) are snooty about filenames/extensions, this lets the shell plugin have a say
-    def get_remote_filename(self, base_name):
+    def get_remote_filename(self, pathname):
+        base_name = os.path.basename(pathname.strip())
         return base_name.strip()
 
     def path_has_trailing_slash(self, path):
@@ -89,7 +90,7 @@ class ShellBase(object):
         cmd = ['test', '-e', pipes.quote(path)]
         return ' '.join(cmd)
 
-    def mkdtemp(self, basefile=None, system=False, mode=None):
+    def mkdtemp(self, basefile=None, system=False, mode=None, tmpdir=None):
         if not basefile:
             basefile = 'ansible-tmp-%s-%s' % (time.time(), random.randint(0, 2**48))
 
@@ -105,13 +106,17 @@ class ShellBase(object):
         # to somewhere in or below /var/tmp and if so use /var/tmp.  If
         # anything else we use /tmp (because /tmp is specified by POSIX nad
         # /var/tmp is not).
+
         if system:
             if C.DEFAULT_REMOTE_TMP.startswith('/var/tmp'):
                 basetmpdir = '/var/tmp'
             else:
                 basetmpdir = '/tmp'
-        else:
+        elif tmpdir is None:
             basetmpdir = C.DEFAULT_REMOTE_TMP
+        else:
+            basetmpdir = tmpdir
+
         basetmp = self.join_path(basetmpdir, basefile)
 
         cmd = 'mkdir -p %s echo %s %s' % (self._SHELL_SUB_LEFT, basetmp, self._SHELL_SUB_RIGHT)
@@ -145,7 +150,13 @@ class ShellBase(object):
         # don't quote the cmd if it's an empty string, because this will break pipelining mode
         if cmd.strip() != '':
             cmd = pipes.quote(cmd)
-        cmd_parts = [env_string.strip(), shebang.replace("#!", "").strip(), cmd]
+
+        cmd_parts = []
+        if shebang:
+            shebang = shebang.replace("#!", "").strip()
+        else:
+            shebang = ""
+        cmd_parts.extend([env_string.strip(), shebang, cmd])
         if arg_path is not None:
             cmd_parts.append(arg_path)
         new_cmd = " ".join(cmd_parts)

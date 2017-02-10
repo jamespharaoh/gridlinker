@@ -104,8 +104,7 @@ try:
     from libcloud.compute.providers import get_driver
     _ = Provider.GCE
 except:
-    print("GCE inventory script requires libcloud >= 0.13")
-    sys.exit(1)
+    sys.exit("GCE inventory script requires libcloud >= 0.13")
 
 
 class GceInventory(object):
@@ -125,8 +124,10 @@ class GceInventory(object):
                     pretty=self.args.pretty))
             sys.exit(0)
 
+        zones = self.parse_env_zones()
+
         # Otherwise, assume user wants all instances grouped
-        print(self.json_format_dict(self.group_instances(),
+        print(self.json_format_dict(self.group_instances(zones),
             pretty=self.args.pretty))
         sys.exit(0)
 
@@ -159,6 +160,19 @@ class GceInventory(object):
             config.add_section('inventory')
 
         config.read(gce_ini_path)
+
+        #########
+        # Section added for processing ini settings
+        #########
+
+        # Set the instance_states filter based on config file options
+        self.instance_states = []
+        if config.has_option('gce', 'instance_states'):
+            states = config.get('gce', 'instance_states')
+            # Ignore if instance_states is an empty string.
+            if states:
+                self.instance_states = states.split(',')
+
         return config
 
     def get_inventory_options(self):
@@ -190,8 +204,7 @@ class GceInventory(object):
             if not secrets_path.endswith('secrets.py'):
                 err = "Must specify libcloud secrets file as "
                 err += "/absolute/path/to/secrets.py"
-                print(err)
-                sys.exit(1)
+                sys.exit(err)
             sys.path.append(os.path.dirname(secrets_path))
             try:
                 import secrets
@@ -220,6 +233,14 @@ class GceInventory(object):
         )
         return gce
 
+    def parse_env_zones(self):
+        '''returns a list of comma seperated zones parsed from the GCE_ZONE environment variable.
+        If provided, this will be used to filter the results of the grouped_instances call'''
+        import csv
+        reader = csv.reader([os.environ.get('GCE_ZONE',"")], skipinitialspace=True)
+        zones = [r for r in reader]
+        return [z for z in zones[0]]
+
     def parse_cli_args(self):
         ''' Command line argument processing '''
 
@@ -240,7 +261,7 @@ class GceInventory(object):
         if inst is None:
             return {}
 
-        if inst.extra['metadata'].has_key('items'):
+        if 'items' in inst.extra['metadata']:
             for entry in inst.extra['metadata']['items']:
                 md[entry['key']] = entry['value']
 
@@ -276,19 +297,36 @@ class GceInventory(object):
         except Exception as e:
             return None
 
-    def group_instances(self):
+    def group_instances(self, zones=None):
         '''Group all instances'''
         groups = {}
         meta = {}
         meta["hostvars"] = {}
 
         for node in self.driver.list_nodes():
+
+            # This check filters on the desired instance states defined in the
+            # config file with the instance_states config option.
+            #
+            # If the instance_states list is _empty_ then _ALL_ states are returned.
+            #
+            # If the instance_states list is _populated_ then check the current
+            # state against the instance_states list
+            if self.instance_states and not node.extra['status'] in self.instance_states:
+                continue
+
             name = node.name
 
             meta["hostvars"][name] = self.node_to_dict(node)
 
             zone = node.extra['zone'].name
-            if groups.has_key(zone): groups[zone].append(name)
+
+            # To avoid making multiple requests per zone
+            # we list all nodes and then filter the results
+            if zones and zone not in zones:
+                continue
+
+            if zone in groups: groups[zone].append(name)
             else: groups[zone] = [name]
 
             tags = node.extra['tags']
@@ -297,25 +335,25 @@ class GceInventory(object):
                     tag = t[6:]
                 else:
                     tag = 'tag_%s' % t
-                if groups.has_key(tag): groups[tag].append(name)
+                if tag in groups: groups[tag].append(name)
                 else: groups[tag] = [name]
 
             net = node.extra['networkInterfaces'][0]['network'].split('/')[-1]
             net = 'network_%s' % net
-            if groups.has_key(net): groups[net].append(name)
+            if net in groups: groups[net].append(name)
             else: groups[net] = [name]
 
             machine_type = node.size
-            if groups.has_key(machine_type): groups[machine_type].append(name)
+            if machine_type in groups: groups[machine_type].append(name)
             else: groups[machine_type] = [name]
 
             image = node.image and node.image or 'persistent_disk'
-            if groups.has_key(image): groups[image].append(name)
+            if image in groups: groups[image].append(name)
             else: groups[image] = [name]
 
             status = node.extra['status']
             stat = 'status_%s' % status.lower()
-            if groups.has_key(stat): groups[stat].append(name)
+            if stat in groups: groups[stat].append(name)
             else: groups[stat] = [name]
 
         groups["_meta"] = meta

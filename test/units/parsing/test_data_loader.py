@@ -20,14 +20,12 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from six import PY3
-from yaml.scanner import ScannerError
 
 from ansible.compat.tests import unittest
 from ansible.compat.tests.mock import patch, mock_open
 from ansible.errors import AnsibleParserError
 
 from ansible.parsing.dataloader import DataLoader
-from ansible.parsing.yaml.objects import AnsibleMapping
 
 class TestDataLoader(unittest.TestCase):
 
@@ -39,13 +37,13 @@ class TestDataLoader(unittest.TestCase):
 
     @patch.object(DataLoader, '_get_file_contents')
     def test_parse_json_from_file(self, mock_def):
-        mock_def.return_value = ("""{"a": 1, "b": 2, "c": 3}""", True)
+        mock_def.return_value = (b"""{"a": 1, "b": 2, "c": 3}""", True)
         output = self._loader.load_from_file('dummy_json.txt')
         self.assertEqual(output, dict(a=1,b=2,c=3))
 
     @patch.object(DataLoader, '_get_file_contents')
     def test_parse_yaml_from_file(self, mock_def):
-        mock_def.return_value = ("""
+        mock_def.return_value = (b"""
         a: 1
         b: 2
         c: 3
@@ -55,7 +53,7 @@ class TestDataLoader(unittest.TestCase):
 
     @patch.object(DataLoader, '_get_file_contents')
     def test_parse_fail_from_file(self, mock_def):
-        mock_def.return_value = ("""
+        mock_def.return_value = (b"""
         TEXT:
             ***
                NOT VALID
@@ -85,6 +83,6 @@ class TestDataLoaderWithVault(unittest.TestCase):
         else:
             builtins_name = '__builtin__'
 
-        with patch(builtins_name + '.open', mock_open(read_data=vaulted_data)):
+        with patch(builtins_name + '.open', mock_open(read_data=vaulted_data.encode('utf-8'))):
             output = self._loader.load_from_file('dummy_vault.txt')
             self.assertEqual(output, dict(foo='bar'))

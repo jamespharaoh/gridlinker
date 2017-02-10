@@ -52,8 +52,8 @@ class TaskInclude(Task):
         t = TaskInclude(block=block, role=role, task_include=task_include)
         return t.load_data(data, variable_manager=variable_manager, loader=loader)
 
-    def copy(self, exclude_block=False):
-        new_me = super(TaskInclude, self).copy(exclude_block=exclude_block)
+    def copy(self, exclude_parent=False, exclude_tasks=False):
+        new_me = super(TaskInclude, self).copy(exclude_parent=exclude_parent, exclude_tasks=exclude_tasks)
         new_me.statically_loaded = self.statically_loaded
         return new_me
 
@@ -64,10 +64,8 @@ class TaskInclude(Task):
         they are params to the included tasks.
         '''
         all_vars = dict()
-        if self._block:
-            all_vars.update(self._block.get_vars())
-        if self._task_include:
-            all_vars.update(self._task_include.get_vars())
+        if self._parent:
+            all_vars.update(self._parent.get_vars())
 
         all_vars.update(self.vars)
         all_vars.update(self.args)
