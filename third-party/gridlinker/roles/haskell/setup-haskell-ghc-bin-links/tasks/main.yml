@@ -1,6 +1,0 @@
----
-
-- include: "setup-haskell-ghc-bin-links.yml"
-  tags: [ "haskell", "haskell-ghc", "setup-haskell-ghc-bin-links" ]
-
-# ex: et ts=2 filetype=yaml

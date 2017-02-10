@@ -1,8 +1,0 @@
----
-
-dependencies:
-
-  - "gridlinker-tools-common"
-  - "install-gridlinker-tools"
-
-# ex: et ts=2 filetype=yaml

@@ -1,0 +1,11 @@
+{% if system_ip_forwarding == 'yes' %}
+# enable ip forwarding
+net.ipv4.ip_forward = 1
+{% else %}
+# disable ip forwarding
+net.ipv4.ip_forward = 0
+{% endif %}
+{% if system_vm_swappiness is defined %}
+# set swappiness
+vm.swappiness = {{ system_vm_swappiness }}
+{% endif %}

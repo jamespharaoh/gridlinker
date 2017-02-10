@@ -1,9 +1,0 @@
----
-
-- include: "build-python.yml"
-  tags:
-
-    - "python"
-    - "build-python"
-
-# ex: et ts=2 filetype=yaml

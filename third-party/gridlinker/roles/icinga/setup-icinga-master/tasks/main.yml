@@ -1,9 +1,0 @@
----
-
-- include: "setup-icinga-master.yml"
-  tags:
-
-    - "icinga"
-    - "setup-icinga-master"
-
-# ex: et ts=2 filetype=yaml

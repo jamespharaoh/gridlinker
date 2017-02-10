@@ -1,0 +1,18 @@
+{{ ansible_warning ['#'] }}
+
+{% if nginx_default_site_enabled == 'yes' %}
+server {
+
+	listen {{ nginx_http_port }} default_server;
+
+	server_name {{ identity.name }};
+
+	root /usr/share/nginx/html;
+	index index.html;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+}
+{% endif %}

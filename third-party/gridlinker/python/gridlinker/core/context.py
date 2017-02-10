@@ -1,5 +1,7 @@
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import with_statement
 
 import os
 import re
@@ -33,6 +35,19 @@ class GenericContext (object):
 		self.project_metadata = project_metadata
 
 		self.trace = False
+
+	@lazy_property
+	def project_metadata_stripped (self):
+
+		return dict ([
+			(section_name, section_data)
+			for section_name, section_data
+			in self.project_metadata.items ()
+			if section_name not in set ([
+				"project_data",
+				"resource_data",
+			])
+		])
 
 	@lazy_property
 	def config (self):
@@ -132,6 +147,7 @@ class GenericContext (object):
 
 			return EtcdClient (
 				servers = self.connection_config ["etcd_servers"],
+				port = self.etcd_port,
 				secure = True,
 				client_ca_cert = ca_cert_path,
 				client_cert = cert_path,
@@ -142,6 +158,7 @@ class GenericContext (object):
 
 			return EtcdClient (
 				servers = self.connection_config ["etcd_servers"],
+				port = self.etcd_port,
 				prefix = self.connection_config ["etcd_prefix"])
 
 		else:
@@ -156,6 +173,14 @@ class GenericContext (object):
 			self.ansible_env)
 
 	@lazy_property
+	def etcd_port (self):
+
+		return int (
+			self.connection_config.get (
+				"etcd_port",
+				"2379"))
+
+	@lazy_property
 	def etcdctl_env (self):
 
 		if self.connection_config ["etcd_secure"] == "yes":
@@ -163,8 +188,11 @@ class GenericContext (object):
 			return {
 
 				"ETCDCTL_PEERS": ",".join ([
-					"https://%s:2379" % server
-					for server in self.connection_config ["etcd_servers"]
+					"https://%s:%s" % (
+						etcd_server,
+						self.etcd_port)
+					for etcd_server
+					in self.connection_config ["etcd_servers"]
 				]),
 
 				"ETCDCTL_CA_FILE": "%s/config/%s-ca.cert" % (
@@ -189,8 +217,11 @@ class GenericContext (object):
 			return {
 
 				"ETCDCTL_PEERS": ",".join ([
-					"http://%s:2379" % server
-					for server in self.connection_config ["etcd_servers"]
+					"http://%s:%s" % (
+						etcd_server,
+						self.etcd_port)
+					for etcd_server
+					in self.connection_config ["etcd_servers"]
 				]),
 
 			}
@@ -233,6 +264,7 @@ class GenericContext (object):
 			"PATH": [
 				"%s/bin" % self.ansible_home,
 			] + os.environ ["PATH"].split (":"),
+
 			"PYTHONPATH": self.python_path,
 			"PYTHONUNBUFFERED": "1",
 
@@ -250,6 +282,7 @@ class GenericContext (object):
 	def python_path (self):
 
 		ret = [
+			"%s/work/lib/python2.7/site-packages" % self.home,
 			"%s/python" % self.home,
 		]
 
@@ -260,7 +293,7 @@ class GenericContext (object):
 				continue
 
 			ret.append (
-				"%s/third-party/%s" % (
+				"%s/%s" % (
 					self.home,
 					third_party_data ["python"]))
 
@@ -319,16 +352,51 @@ class GenericContext (object):
 	@lazy_property
 	def ansible_roles_path (self):
 
-		roles_parent_dirs = [
-			"%s/playbooks" % self.home,
-			"%s/roles" % self.gridlinker_home,
+		directories = []
+
+		if os.path.isdir ("%s/roles" % self.home):
+
+			directories += [
+
+				"/".join ([
+					"%s/roles" % self.home,
+					roles_group_dir,
+				])
+
+				for roles_group_dir
+					in os.listdir ("%s/roles" % self.home)
+
+			]
+
+		directories += [
+
+			"/".join ([
+				self.gridlinker_home,
+				"roles",
+				roles_category_dir,
+				roles_group_dir,
+			])
+
+			for roles_category_dir
+				in os.listdir ("/".join ([
+					self.gridlinker_home,
+					"roles",
+				]))
+
+			for roles_group_dir
+				in os.listdir ("/".join ([
+					self.gridlinker_home,
+					"roles",
+					roles_category_dir,
+				]))
+
 		]
 
 		return [
-			"%s/%s" % (roles_parent_dir, roles_dir)
-			for roles_parent_dir in roles_parent_dirs
-			for roles_dir in os.listdir (roles_parent_dir)
-			if os.path.isdir ("%s/%s" % (roles_parent_dir, roles_dir))
+			directory
+			for directory
+			in directories
+			if os.path.isdir (directory)
 		]
 
 	@lazy_property
@@ -342,6 +410,7 @@ class GenericContext (object):
 				"force_color": "True",
 				"gathering": "explicit",
 				"ansible_python_interpreter": "/usr/bin/env python",
+				"sudo_flags": "--set-home",
 
 				"retry_files_save_path": "%s/work/retry" % self.home,
 
@@ -468,9 +537,14 @@ class GenericContext (object):
 
 	def ansible_init (self):
 
-		if self.project_metadata.get ("ansible", {}).get ("write_ssh_data", "yes") == "yes":
+		if (
+			self.project_metadata
+				.get ("ansible", {})
+				.get ("write_ssh_data", "yes")
+		) == "yes":
 
-			with open ("%s/work/known-hosts" % self.home, "w") as file_handle:
+			with open ("%s/work/known-hosts.temp" % self.home, "w") \
+			as file_handle:
 
 				for resource_name, resource_data in self.resources.get_all_list_quick ():
 
@@ -495,14 +569,15 @@ class GenericContext (object):
 						raise Exception (
 							"Can't deduce class for %s" % resource_name)
 
-					if not class_name in self.local_data ["classes"]:
+					if not class_name \
+					in self.classes:
 
 						raise Exception (
 							"Resource %s has invalid class: %s" % (
 								resource_name,
 								class_name))
 
-					class_data = self.local_data ["classes"] [class_name]
+					class_data = self.classes [class_name]
 
 					if not "ssh" in class_data \
 					or not "hostnames" in class_data ["ssh"]:
@@ -559,6 +634,10 @@ class GenericContext (object):
 								resource_data ["ssh"] ["key_%s" % key_type],
 							))
 
+			os.rename (
+				"%s/work/known-hosts.temp" % self.home,
+				"%s/work/known-hosts" % self.home)
+
 			for key_path, key_data in self.client.get_tree ("/ssh-key"):
 
 				if not key_path.endswith ("/private"):
@@ -578,11 +657,24 @@ class GenericContext (object):
 	@lazy_property
 	def classes (self):
 
-		return self.local_data ["classes"]
+		return dict ([
+			(key, value)
+			for directory in self.local_data ["classes"].values ()
+			for key, value in directory.items ()
+		])
+
+	@lazy_property
+	def namespaces (self):
+
+		return dict ([
+			(key, wbs.freeze (value))
+			for key, value
+			in self.local_data ["namespaces"].items ()
+		])
 
 	@lazy_property
 	def inventory (self):
 
 		return Inventory (self)
 
-# ex: noet ts=4 filetype=yaml
+# ex: noet ts=4 filetype=python

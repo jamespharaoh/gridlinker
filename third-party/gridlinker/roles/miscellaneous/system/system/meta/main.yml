@@ -1,0 +1,19 @@
+---
+
+dependencies:
+
+  - "system-common"
+
+  - "system-grub-setup"
+  - "system-getty-setup"
+
+  - "system-apt-setup"
+  - "setup-hosts"
+  - "setup-system-params"
+
+  - "setup-system-groups"
+  - "setup-system-users"
+
+  - "system-packages-install"
+
+# ex: et ts=2 filetype=yaml
