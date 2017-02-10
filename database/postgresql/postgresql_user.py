@@ -170,6 +170,7 @@ except ImportError:
     postgresqldb_found = False
 else:
     postgresqldb_found = True
+from ansible.module_utils.six import iteritems
 
 _flags = ('SUPERUSER', 'CREATEROLE', 'CREATEUSER', 'CREATEDB', 'INHERIT', 'LOGIN', 'REPLICATION')
 VALID_FLAGS = frozenset(itertools.chain(_flags, ('NO%s' % f for f in _flags)))
@@ -290,7 +291,8 @@ def user_alter(cursor, module, user, password, role_attr_flags, encrypted, expir
 
         try:
             cursor.execute(' '.join(alter), query_password_data)
-        except psycopg2.InternalError, e:
+        except psycopg2.InternalError:
+            e = get_exception()
             if e.pgcode == '25006':
                 # Handle errors due to read-only transactions indicated by pgcode 25006
                 # ERROR:  cannot execute ALTER ROLE in a read-only transaction
@@ -298,7 +300,7 @@ def user_alter(cursor, module, user, password, role_attr_flags, encrypted, expir
                 module.fail_json(msg=e.pgerror)
                 return changed
             else:
-                raise psycopg2.InternalError, e
+                raise psycopg2.InternalError(e)
 
         # Grab new role attributes.
         cursor.execute(select, {"user": user})
@@ -432,7 +434,7 @@ def revoke_privileges(cursor, user, privs):
 
     changed = False
     for type_ in privs:
-        for name, privileges in privs[type_].iteritems():
+        for name, privileges in iteritems(privs[type_]):
             # Check that any of the privileges requested to be removed are
             # currently granted to the user
             differences = check_funcs[type_](cursor, user, name, privileges)
@@ -448,12 +450,9 @@ def grant_privileges(cursor, user, privs):
     grant_funcs = dict(table=grant_table_privileges, database=grant_database_privileges)
     check_funcs = dict(table=has_table_privileges, database=has_database_privileges)
 
-    grant_funcs = dict(table=grant_table_privileges, database=grant_database_privileges)
-    check_funcs = dict(table=has_table_privileges, database=has_database_privileges)
-
     changed = False
     for type_ in privs:
-        for name, privileges in privs[type_].iteritems():
+        for name, privileges in iteritems(privs[type_]):
             # Check that any of the privileges requested for the user are
             # currently missing
             differences = check_funcs[type_](cursor, user, name, privileges)
@@ -545,11 +544,11 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             login_user=dict(default="postgres"),
-            login_password=dict(default=""),
+            login_password=dict(default="", no_log=True),
             login_host=dict(default=""),
             login_unix_socket=dict(default=""),
             user=dict(required=True, aliases=['name']),
-            password=dict(default=None),
+            password=dict(default=None, no_log=True),
             state=dict(default="present", choices=["absent", "present"]),
             priv=dict(default=None),
             db=dict(default=''),
@@ -575,7 +574,8 @@ def main():
     no_password_changes = module.params["no_password_changes"]
     try:
         role_attr_flags = parse_role_attrs(module.params["role_attr_flags"])
-    except InvalidFlagsError, e:
+    except InvalidFlagsError:
+        e = get_exception()
         module.fail_json(msg=str(e))
     if module.params["encrypted"]:
         encrypted = "ENCRYPTED"
@@ -596,7 +596,7 @@ def main():
         "port":"port",
         "db":"database"
     }
-    kw = dict( (params_map[k], v) for (k, v) in module.params.iteritems()
+    kw = dict( (params_map[k], v) for (k, v) in iteritems(module.params)
               if k in params_map and v != "" )
 
     # If a login_unix_socket is specified, incorporate it here.
@@ -607,7 +607,8 @@ def main():
     try:
         db_connection = psycopg2.connect(**kw)
         cursor = db_connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    except Exception, e:
+    except Exception:
+        e = get_exception()
         module.fail_json(msg="unable to connect to database: %s" % e)
 
     kw = dict(user=user)
@@ -618,16 +619,19 @@ def main():
         if user_exists(cursor, user):
             try:
                 changed = user_alter(cursor, module, user, password, role_attr_flags, encrypted, expires, no_password_changes)
-            except SQLParseError, e:
+            except SQLParseError:
+                e = get_exception()
                 module.fail_json(msg=str(e))
         else:
             try:
                 changed = user_add(cursor, user, password, role_attr_flags, encrypted, expires)
-            except SQLParseError, e:
+            except SQLParseError:
+                e = get_exception()
                 module.fail_json(msg=str(e))
         try:
             changed = grant_privileges(cursor, user, privs) or changed
-        except SQLParseError, e:
+        except SQLParseError:
+            e = get_exception()
             module.fail_json(msg=str(e))
     else:
         if user_exists(cursor, user):
@@ -638,7 +642,8 @@ def main():
                 try:
                     changed = revoke_privileges(cursor, user, privs)
                     user_removed = user_delete(cursor, user)
-                except SQLParseError, e:
+                except SQLParseError:
+                    e = get_exception()
                     module.fail_json(msg=str(e))
                 changed = changed or user_removed
                 if fail_on_user and not user_removed:

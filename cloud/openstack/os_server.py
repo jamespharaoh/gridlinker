@@ -178,6 +178,25 @@ options:
        - Should the resource be present or absent.
      choices: [present, absent]
      default: present
+   delete_fip:
+     description:
+       - When I(state) is absent and this option is true, any floating IP
+         associated with the instance will be deleted along with the instance.
+     required: false
+     default: false
+     version_added: "2.2"
+   reuse_ips:
+     description:
+       - When I(auto_ip) is true and this option is true, the I(auto_ip) code
+         will attempt to re-use unassigned floating ips in the project before
+         creating a new one. It is important to note that it is impossible
+         to safely do this concurrently, so if your use case involves
+         concurrent server creation, it is highly recommended to set this to
+         false and to delete the floating ip associated with a server when
+         the server is deleted using I(delete_fip).
+     required: false
+     default: true
+     version_added: "2.2"
 requirements:
     - "python >= 2.6"
     - "shade"
@@ -280,7 +299,6 @@ EXAMPLES = '''
   tasks:
   - name: launch an instance with a string
     os_server:
-      name: vm1
       auth:
          auth_url: https://region-b.geo-1.identity.hpcloudsvc.com:35357/v2.0/
          username: admin
@@ -411,7 +429,8 @@ def _delete_server(module, cloud):
     try:
         cloud.delete_server(
             module.params['name'], wait=module.params['wait'],
-            timeout=module.params['timeout'])
+            timeout=module.params['timeout'],
+            delete_ips=module.params['delete_fip'])
     except Exception as e:
         module.fail_json(msg="Error in deleting vm: %s" % e.message)
     module.exit_json(changed=True, result='deleted')
@@ -430,11 +449,11 @@ def _create_server(module, cloud):
     if flavor:
         flavor_dict = cloud.get_flavor(flavor)
         if not flavor_dict:
-            module.fail_json(msg="Could not find flavor %s" % flavor) 
+            module.fail_json(msg="Could not find flavor %s" % flavor)
     else:
         flavor_dict = cloud.get_flavor_by_ram(flavor_ram, flavor_include)
         if not flavor_dict:
-            module.fail_json(msg="Could not find any matching flavor") 
+            module.fail_json(msg="Could not find any matching flavor")
 
     nics = _network_args(module, cloud)
 
@@ -468,6 +487,7 @@ def _create_server(module, cloud):
         boot_volume=module.params['boot_volume'],
         boot_from_volume=module.params['boot_from_volume'],
         terminate_volume=module.params['terminate_volume'],
+        reuse_ips=module.params['reuse_ips'],
         wait=module.params['wait'], timeout=module.params['timeout'],
         **bootkwargs
     )
@@ -567,6 +587,8 @@ def main():
         volumes                         = dict(default=[], type='list'),
         scheduler_hints                 = dict(default=None, type='dict'),
         state                           = dict(default='present', choices=['absent', 'present']),
+        delete_fip                      = dict(default=False, type='bool'),
+        reuse_ips                       = dict(default=True, type='bool'),
     )
     module_kwargs = openstack_module_kwargs(
         mutually_exclusive=[

@@ -22,6 +22,7 @@ DOCUMENTATION = '''
 ---
 module: accelerate
 short_description: Enable accelerated mode on remote node
+deprecated: "in favor of SSH with ControlPersist"
 description:
      - This modules launches an ephemeral I(accelerate) daemon on the remote node which
        Ansible can use to communicate with nodes at high speed.
@@ -64,7 +65,7 @@ options:
 notes:
     - See the advanced playbooks chapter for more about using accelerated mode.
 requirements:
-    - "python >= 2.6"
+    - "python >= 2.4"
     - "python-keyczar"
 author: "James Cammarata (@jimi-c)"
 '''
@@ -104,8 +105,6 @@ from threading import Thread, Lock
 # import module snippets
 # we must import this here at the top so we can use get_module_path()
 from ansible.module_utils.basic import *
-
-syslog.openlog('ansible-%s' % os.path.basename(__file__))
 
 # the chunk size to read and send, assuming mtu 1500 and 
 # leaving room for base64 (+33%) encoding and header (100 bytes)
@@ -168,14 +167,15 @@ def daemonize_self(module, password, port, minutes, pid_file):
             vvv("exiting pid %s" % pid)
             # exit first parent
             module.exit_json(msg="daemonized accelerate on port %s for %s minutes with pid %s" % (port, minutes, str(pid)))
-    except OSError, e:
-        log("fork #1 failed: %d (%s)" % (e.errno, e.strerror))
-        sys.exit(1)
+    except OSError:
+        e       = get_exception()
+        message = "fork #1 failed: %d (%s)" % (e.errno, e.strerror)
+        module.fail_json(msg=message)
 
     # decouple from parent environment
     os.chdir("/")
     os.setsid()
-    os.umask(022)
+    os.umask(int('O22', 8))
 
     # do second fork
     try:
@@ -187,8 +187,9 @@ def daemonize_self(module, password, port, minutes, pid_file):
             pid_file.close()
             vvv("pid file written")
             sys.exit(0)
-    except OSError, e:
-        log("fork #2 failed: %d (%s)" % (e.errno, e.strerror))
+    except OSError:
+        e       = get_exception()
+        log('fork #2 failed: %d (%s)' % (e.errno, e.strerror))
         sys.exit(1)
 
     dev_null = file('/dev/null','rw')
@@ -219,9 +220,9 @@ class LocalSocketThread(Thread):
                         # make sure the directory is accessible only to this
                         # user, as socket files derive their permissions from
                         # the directory that contains them
-                        os.chmod(dir, 0700)
+                        os.chmod(dir, int('0700', 8))
                 elif not os.path.exists(dir):
-                    os.makedirs(dir, 0700)
+                    os.makedirs(dir, int('O700', 8))
         except OSError:
             pass
         self.s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -254,13 +255,14 @@ class LocalSocketThread(Thread):
                             conn.sendall("EXISTS\n")
 
                         # update the last event time so the server doesn't
-                        # shutdown sooner than expected for new cliets
+                        # shutdown sooner than expected for new clients
                         try:
                             self.server.last_event_lock.acquire()
                             self.server.last_event = datetime.datetime.now()
                         finally:
                             self.server.last_event_lock.release()
-                    except Exception, e:
+                    except Exception:
+                        e = get_exception()
                         vv("key loaded locally was invalid, ignoring (%s)" % e)
                         conn.sendall("BADKEY\n")
                 finally:
@@ -520,7 +522,8 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 if response.get('failed',False):
                     log("got a failed response from the master")
                     return dict(failed=True, stderr="Master reported failure, aborting transfer")
-        except Exception, e:
+        except Exception:
+            e = get_exception()
             fd.close()
             tb = traceback.format_exc()
             log("failed to fetch the file: %s" % tb)
@@ -541,7 +544,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
             tmp_path = os.path.expanduser('~/.ansible/tmp/')
             if not os.path.exists(tmp_path):
                 try:
-                    os.makedirs(tmp_path, 0700)
+                    os.makedirs(tmp_path, int('O700', 8))
                 except:
                     return dict(failed=True, msg='could not create a temporary directory at %s' % tmp_path)
             (fd,out_path) = tempfile.mkstemp(prefix='ansible.', dir=tmp_path)
@@ -618,7 +621,8 @@ def daemonize(module, password, port, timeout, minutes, use_ipv6, pid_file):
                 server = ThreadedTCPServer(address, ThreadedTCPRequestHandler, module, password, timeout, use_ipv6=use_ipv6)
                 server.allow_reuse_address = True
                 break
-            except Exception, e:
+            except Exception:
+                e = get_exception()
                 vv("Failed to create the TCP server (tries left = %d) (error: %s) " % (tries,e))
             tries -= 1
             time.sleep(0.2)
@@ -641,7 +645,8 @@ def daemonize(module, password, port, timeout, minutes, use_ipv6, pid_file):
 
         v("server thread terminated, exiting!")
         sys.exit(0)
-    except Exception, e:
+    except Exception:
+        e = get_exception()
         tb = traceback.format_exc()
         log("exception caught, exiting accelerated mode: %s\n%s" % (e, tb))
         sys.exit(0)
@@ -660,6 +665,8 @@ def main():
         ),
         supports_check_mode=True
     )
+
+    syslog.openlog('ansible-%s' % module._name)
 
     password  = base64.b64decode(module.params['password'])
     port      = int(module.params['port'])
@@ -685,11 +692,16 @@ def main():
                 # process, other than tell the calling program
                 # whether other signals can be sent
                 os.kill(daemon_pid, 0)
-            except OSError, e:
+            except OSError:
+                e        = get_exception()
+                message  = 'the accelerate daemon appears to be running'
+                message += 'as a different user that this user cannot access'
+                message += 'pid=%s' % daemon_pid
+
                 if e.errno == errno.EPERM:
                     # no permissions means the pid is probably
                     # running, but as a different user, so fail
-                    module.fail_json(msg="the accelerate daemon appears to be running as a different user that this user cannot access (pid=%d)" % daemon_pid)
+                    module.fail_json(msg=message)
             else:
                 daemon_running = True
         except ValueError:

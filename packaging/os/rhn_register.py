@@ -120,7 +120,7 @@ try:
     import up2date_client
     import up2date_client.config
     HAS_UP2DATE_CLIENT = True
-except ImportError, e:
+except ImportError:
     HAS_UP2DATE_CLIENT = False
 
 # INSERT REDHAT SNIPPETS
@@ -147,9 +147,10 @@ class Rhn(RegistrationBase):
         # configuration.  Yeah, I know this should be subclassed ... but, oh
         # well
         def get_option_default(self, key, default=''):
-            # ignore pep8 W601 errors for this line
-            # setting this to use 'in' does not work in the rhn library
-            if self.has_key(key):
+            # the class in rhn-client-tools that this comes from didn't
+            # implement __contains__() until 2.5.x.  That's why we check if
+            # the key is present in the dictionary that is the actual storage
+            if key in self.dict:
                 return self[key]
             else:
                 return default
@@ -387,7 +388,8 @@ def main():
                 rhn.enable()
                 rhn.register(module.params['enable_eus'] == True, activationkey, profilename, sslcacert, systemorgid)
                 rhn.subscribe(channels)
-            except Exception, e:
+            except Exception:
+                e = get_exception()
                 module.fail_json(msg="Failed to register with '%s': %s" % (rhn.hostname, e))
 
             module.exit_json(changed=True, msg="System successfully registered to '%s'." % rhn.hostname)
@@ -399,7 +401,8 @@ def main():
         else:
             try:
                 rhn.unregister()
-            except Exception, e:
+            except Exception:
+                e = get_exception()
                 module.fail_json(msg="Failed to unregister: %s" % e)
 
             module.exit_json(changed=True, msg="System successfully unregistered from %s." % rhn.hostname)

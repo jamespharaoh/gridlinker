@@ -26,8 +26,9 @@ options:
   state:
     description:
       - register or deregister the instance
-    required: true
+    required: false
     choices: ['present', 'absent']
+    default: present
   name:
     description:
       - Unique name for group to be created or deleted
@@ -76,7 +77,7 @@ options:
     default: None
   lc_check:
     description:
-      - Check to make sure instances that are being replaced with replace_instances do not aready have the current launch_config.
+      - Check to make sure instances that are being replaced with replace_instances do not already have the current launch_config.
     required: false
     version_added: "1.8"
     default: True
@@ -112,7 +113,7 @@ options:
     version_added: "2.0"
   wait_timeout:
     description:
-      - how long before wait instances to become viable when replaced.  Used in concjunction with instance_ids option.
+      - how long before wait instances to become viable when replaced.  Used in conjunction with instance_ids option.
     default: 300
     version_added: "1.8"
   wait_for_instances:
@@ -124,11 +125,23 @@ options:
   termination_policies:
     description:
         - An ordered list of criteria used for selecting instances to be removed from the Auto Scaling group when reducing capacity.
-        - For 'Default', when used to create a new autoscaling group, the "Default" value is used. When used to change an existent autoscaling group, the current termination policies are mantained
+        - For 'Default', when used to create a new autoscaling group, the "Default"i value is used. When used to change an existent autoscaling group, the current termination policies are maintained.
     required: false
     default: Default
     choices: ['OldestInstance', 'NewestInstance', 'OldestLaunchConfiguration', 'ClosestToNextInstanceHour', 'Default']
     version_added: "2.0"
+  notification_topic:
+    description:
+      - A SNS topic ARN to send auto scaling notifications to.
+    default: None
+    required: false
+    version_added: "2.2"
+  notification_types:
+    description:
+      - A list of auto scaling events to trigger notifications on.
+    default: ['autoscaling:EC2_INSTANCE_LAUNCH', 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR', 'autoscaling:EC2_INSTANCE_TERMINATE', 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR']
+    required: false
+    version_added: "2.2"
 extends_documentation_fragment:
     - aws
     - ec2
@@ -202,6 +215,7 @@ to "replace_instances":
 
 import time
 import logging as log
+import traceback
 
 from ansible.module_utils.basic import *
 from ansible.module_utils.ec2 import *
@@ -292,7 +306,7 @@ def elb_dreg(asg_connection, module, group_name, instance_id):
     if as_group.load_balancers and as_group.health_check_type == 'ELB':
         try:
             elb_connection = connect_to_aws(boto.ec2.elb, region, **aws_connect_params)
-        except boto.exception.NoAuthHandlerFound, e:
+        except boto.exception.NoAuthHandlerFound as e:
             module.fail_json(msg=str(e))
     else:
         return
@@ -318,7 +332,7 @@ def elb_dreg(asg_connection, module, group_name, instance_id):
 
 
 def elb_healthy(asg_connection, elb_connection, module, group_name):
-    healthy_instances = []
+    healthy_instances = set()
     as_group = asg_connection.get_all_groups(names=[group_name])[0]
     props = get_properties(as_group)
     # get healthy, inservice instances from ASG
@@ -333,11 +347,15 @@ def elb_healthy(asg_connection, elb_connection, module, group_name):
         # but has not yet show up in the ELB
         try:
             lb_instances = elb_connection.describe_instance_health(lb, instances=instances)
-        except boto.exception.InvalidInstance:
-            pass
+        except boto.exception.BotoServerError as e:
+            if e.error_code == 'InvalidInstance':
+                return None
+
+            module.fail_json(msg=str(e))
+
         for i in lb_instances:
             if i.state == "InService":
-                healthy_instances.append(i.instance_id)
+                healthy_instances.add(i.instance_id)
             log.debug("{0}: {1}".format(i.instance_id, i.state))
     return len(healthy_instances)
 
@@ -351,10 +369,10 @@ def wait_for_elb(asg_connection, module, group_name):
     as_group = asg_connection.get_all_groups(names=[group_name])[0]
 
     if as_group.load_balancers and as_group.health_check_type == 'ELB':
-        log.debug("Waiting for ELB to consider intances healthy.")
+        log.debug("Waiting for ELB to consider instances healthy.")
         try:
             elb_connection = connect_to_aws(boto.ec2.elb, region, **aws_connect_params)
-        except boto.exception.NoAuthHandlerFound, e:
+        except boto.exception.NoAuthHandlerFound as e:
             module.fail_json(msg=str(e))
 
         wait_timeout = time.time() + wait_timeout
@@ -386,19 +404,21 @@ def create_autoscaling_group(connection, module):
     as_groups = connection.get_all_groups(names=[group_name])
     wait_timeout = module.params.get('wait_timeout')
     termination_policies = module.params.get('termination_policies')
+    notification_topic = module.params.get('notification_topic')
+    notification_types = module.params.get('notification_types')
 
     if not vpc_zone_identifier and not availability_zones:
         region, ec2_url, aws_connect_params = get_aws_connection_info(module)
         try:
             ec2_connection = connect_to_aws(boto.ec2, region, **aws_connect_params)
-        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError), e:
+        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
             module.fail_json(msg=str(e))
     elif vpc_zone_identifier:
         vpc_zone_identifier = ','.join(vpc_zone_identifier)
 
     asg_tags = []
     for tag in set_tags:
-        for k,v in tag.iteritems():
+        for k,v in tag.items():
             if k !='propagate_at_launch':
                 asg_tags.append(Tag(key=k,
                      value=v,
@@ -431,12 +451,16 @@ def create_autoscaling_group(connection, module):
             if wait_for_instances:
                 wait_for_new_inst(module, connection, group_name, wait_timeout, desired_capacity, 'viable_instances')
                 wait_for_elb(connection, module, group_name)
+
+            if notification_topic:
+                ag.put_notification_configuration(notification_topic, notification_types)
+
             as_group = connection.get_all_groups(names=[group_name])[0]
             asg_properties = get_properties(as_group)
             changed = True
             return(changed, asg_properties)
-        except BotoServerError, e:
-            module.fail_json(msg=str(e))
+        except BotoServerError as e:
+            module.fail_json(msg="Failed to create Autoscaling Group: %s" % str(e), exception=traceback.format_exc(e))
     else:
         as_group = as_groups[0]
         changed = False
@@ -448,14 +472,15 @@ def create_autoscaling_group(connection, module):
                 group_attr = getattr(as_group, attr)
                 # we do this because AWS and the module may return the same list
                 # sorted differently
-                try:
-                    module_attr.sort()
-                except:
-                    pass
-                try:
-                    group_attr.sort()
-                except:
-                    pass
+                if attr != 'termination_policies':
+                    try:
+                        module_attr.sort()
+                    except:
+                        pass
+                    try:
+                        group_attr.sort()
+                    except:
+                        pass
                 if group_attr != module_attr:
                     changed = True
                     setattr(as_group, attr, module_attr)
@@ -490,8 +515,14 @@ def create_autoscaling_group(connection, module):
         if changed:
             try:
                 as_group.update()
-            except BotoServerError, e:
-                module.fail_json(msg=str(e))
+            except BotoServerError as e:
+                module.fail_json(msg="Failed to update Autoscaling Group: %s" % str(e), exception=traceback.format_exc(e))
+
+        if notification_topic:
+            try:
+                as_group.put_notification_configuration(notification_topic, notification_types)
+            except BotoServerError as e:
+                module.fail_json(msg="Failed to update Autoscaling Group notifications: %s" % str(e), exception=traceback.format_exc(e))
 
         if wait_for_instances:
             wait_for_new_inst(module, connection, group_name, wait_timeout, desired_capacity, 'viable_instances')
@@ -499,13 +530,18 @@ def create_autoscaling_group(connection, module):
         try:
             as_group = connection.get_all_groups(names=[group_name])[0]
             asg_properties = get_properties(as_group)
-        except BotoServerError, e:
-            module.fail_json(msg=str(e))
+        except BotoServerError as e:
+            module.fail_json(msg="Failed to read existing Autoscaling Groups: %s" % str(e), exception=traceback.format_exc(e))
         return(changed, asg_properties)
 
 
 def delete_autoscaling_group(connection, module):
     group_name = module.params.get('name')
+    notification_topic = module.params.get('notification_topic')
+
+    if notification_topic:
+        ag.delete_notification_configuration(notification_topic)
+
     groups = connection.get_all_groups(names=[group_name])
     if groups:
         group = groups[0]
@@ -591,7 +627,7 @@ def replace(connection, module):
     if desired_capacity is None:
         desired_capacity = as_group.desired_capacity
     # set temporary settings and wait for them to be reached
-    # This should get overriden if the number of instances left is less than the batch size.
+    # This should get overwritten if the number of instances left is less than the batch size.
 
     as_group = connection.get_all_groups(names=[group_name])[0]
     update_size(as_group, max_size + batch_size, min_size + batch_size, desired_capacity + batch_size)
@@ -742,7 +778,7 @@ def wait_for_term_inst(connection, module, term_instances):
             lifecycle = instance_facts[i]['lifecycle_state']
             health = instance_facts[i]['health_status']
             log.debug("Instance {0} has state of {1},{2}".format(i,lifecycle,health ))
-            if  lifecycle == 'Terminating' or healthy == 'Unhealthy':
+            if  lifecycle == 'Terminating' or health == 'Unhealthy':
                 count += 1
         time.sleep(10)
 
@@ -793,7 +829,14 @@ def main():
             health_check_type=dict(default='EC2', choices=['EC2', 'ELB']),
             default_cooldown=dict(type='int', default=300),
             wait_for_instances=dict(type='bool', default=True),
-            termination_policies=dict(type='list', default='Default')
+            termination_policies=dict(type='list', default='Default'),
+            notification_topic=dict(type='str', default=None),
+            notification_types=dict(type='list', default=[
+                'autoscaling:EC2_INSTANCE_LAUNCH',
+                'autoscaling:EC2_INSTANCE_LAUNCH_ERROR',
+                'autoscaling:EC2_INSTANCE_TERMINATE',
+                'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
+            ])
         ),
     )
 
@@ -813,7 +856,7 @@ def main():
         connection = connect_to_aws(boto.ec2.autoscale, region, **aws_connect_params)
         if not connection:
             module.fail_json(msg="failed to connect to AWS for the given region: %s" % str(region))
-    except boto.exception.NoAuthHandlerFound, e:
+    except boto.exception.NoAuthHandlerFound as e:
         module.fail_json(msg=str(e))
     changed = create_changed = replace_changed = False
 

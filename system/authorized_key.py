@@ -80,13 +80,13 @@ options:
     version_added: "1.9"
   validate_certs:
     description:
-      - This only applies if using a https url as the source of the keys. If set to C(no), the SSL certificates will not be validated. 
-      - This should only set to C(no) used on personally controlled sites using self-signed certificates as it avoids verifying the source site. 
+      - This only applies if using a https url as the source of the keys. If set to C(no), the SSL certificates will not be validated.
+      - This should only set to C(no) used on personally controlled sites using self-signed certificates as it avoids verifying the source site.
       - Prior to 2.1 the code worked as if this was set to C(yes).
     required: false
     default: "yes"
     choices: ["yes", "no"]
-    version_added: "2.1" 
+    version_added: "2.1"
 author: "Ansible Core Team"
 '''
 
@@ -124,6 +124,11 @@ EXAMPLES = '''
 - authorized_key: user=root key="{{ item }}" state=present exclusive=yes
   with_file:
     - public_keys/doe-jane
+
+# Copies the key from the user who is running ansible to the remote machine user ubuntu
+- authorized_key: user=ubuntu key="{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+  become: yes
+
 '''
 
 # Makes sure the public key line is present or absent in the user's .ssh/authorized_keys.
@@ -138,7 +143,6 @@ EXAMPLES = '''
 #
 # see example in examples/playbooks
 
-import sys
 import os
 import pwd
 import os.path
@@ -146,26 +150,75 @@ import tempfile
 import re
 import shlex
 
+from ansible.module_utils._text import to_native
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.pycompat24 import get_exception
+from ansible.module_utils.urls import fetch_url
+
 class keydict(dict):
 
-    """ a dictionary that maintains the order of keys as they are added """
+    """ a dictionary that maintains the order of keys as they are added
+
+    This has become an abuse of the dict interface.  Probably should be
+    rewritten to be an entirely custom object with methods instead of
+    bracket-notation.
+
+    Our requirements are for a data structure that:
+    * Preserves insertion order
+    * Can store multiple values for a single key.
+
+    The present implementation has the following functions used by the rest of
+    the code:
+
+    * __setitem__(): to add a key=value.  The value can never be disassociated
+      with the key, only new values can be added in addition.
+    * items(): to retrieve the key, value pairs.
+
+    Other dict methods should work but may be surprising.  For instance, there
+    will be multiple keys that are the same in keys() and __getitem__() will
+    return a list of the values that have been set via __setitem__.
+    """
 
     # http://stackoverflow.com/questions/2328235/pythonextend-the-dict-class
 
     def __init__(self, *args, **kw):
         super(keydict,self).__init__(*args, **kw)
-        self.itemlist = super(keydict,self).keys()
+        self.itemlist = list(super(keydict,self).keys())
+
     def __setitem__(self, key, value):
         self.itemlist.append(key)
-        super(keydict,self).__setitem__(key, value)
+        if key in self:
+            self[key].append(value)
+        else:
+            super(keydict, self).__setitem__(key, [value])
+
     def __iter__(self):
         return iter(self.itemlist)
+
     def keys(self):
         return self.itemlist
-    def values(self):
-        return [self[key] for key in self]
+
+    def _item_generator(self):
+        indexes = {}
+        for key in self.itemlist:
+            if key in indexes:
+                indexes[key] += 1
+            else:
+                indexes[key] = 0
+            yield key, self[key][indexes[key]]
+
+    def iteritems(self):
+        raise NotImplementedError("Do not use this as it's not available on py3")
+
+    def items(self):
+        return list(self._item_generator())
+
     def itervalues(self):
-        return (self[key] for key in self)
+        raise NotImplementedError("Do not use this as it's not available on py3")
+
+    def values(self):
+        return [item[1] for item in self.items()]
+
 
 def keyfile(module, user, write=False, path=None, manage_dir=True):
     """
@@ -185,7 +238,8 @@ def keyfile(module, user, write=False, path=None, manage_dir=True):
 
     try:
         user_entry = pwd.getpwnam(user)
-    except KeyError, e:
+    except KeyError:
+        e = get_exception()
         if module.check_mode and path is None:
             module.fail_json(msg="Either user must exist or you must provide full path to key file in check mode")
         module.fail_json(msg="Failed to lookup user %s: %s" % (user, str(e)))
@@ -205,11 +259,11 @@ def keyfile(module, user, write=False, path=None, manage_dir=True):
 
     if manage_dir:
         if not os.path.exists(sshdir):
-            os.mkdir(sshdir, 0700)
+            os.mkdir(sshdir, int('0700', 8))
             if module.selinux_enabled():
                 module.set_default_selinux_context(sshdir, False)
         os.chown(sshdir, uid, gid)
-        os.chmod(sshdir, 0700)
+        os.chmod(sshdir, int('0700', 8))
 
     if not os.path.exists(keysfile):
         basedir = os.path.dirname(keysfile)
@@ -224,7 +278,7 @@ def keyfile(module, user, write=False, path=None, manage_dir=True):
 
     try:
         os.chown(keysfile, uid, gid)
-        os.chmod(keysfile, 0600)
+        os.chmod(keysfile, int('0600', 8))
     except OSError:
         pass
 
@@ -237,19 +291,16 @@ def parseoptions(module, options):
     '''
     options_dict = keydict() #ordered dict
     if options:
-        try:
-            # the following regex will split on commas while
-            # ignoring those commas that fall within quotes
-            regex = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
-            parts = regex.split(options)[1:-1]
-            for part in parts:
-                if "=" in part:
-                    (key, value) = part.split("=", 1)
-                    options_dict[key] = value
-                elif part != ",":
-                    options_dict[part] = None
-        except:
-            module.fail_json(msg="invalid option string: %s" % options)
+        # the following regex will split on commas while
+        # ignoring those commas that fall within quotes
+        regex = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
+        parts = regex.split(options)[1:-1]
+        for part in parts:
+            if "=" in part:
+                (key, value) = part.split("=", 1)
+                options_dict[key] = value
+            elif part != ",":
+                options_dict[part] = None
 
     return options_dict
 
@@ -337,19 +388,19 @@ def writekeys(module, filename, keys):
                 option_str = ""
                 if options:
                     option_strings = []
-                    for option_key in options.keys():
-                        if options[option_key]:
-                            option_strings.append("%s=%s" % (option_key, options[option_key]))
-                        else:
+                    for option_key, value in options.items():
+                        if value is None:
                             option_strings.append("%s" % option_key)
-
+                        else:
+                            option_strings.append("%s=%s" % (option_key, value))
                     option_str = ",".join(option_strings)
                     option_str += " "
                 key_line = "%s%s %s %s\n" % (option_str, type, keyhash, comment)
             except:
                 key_line = key
             f.writelines(key_line)
-    except IOError, e:
+    except IOError:
+        e = get_exception()
         module.fail_json(msg="Failed to write to file %s: %s" % (tmp_path, str(e)))
     f.close()
     module.atomic_move(tmp_path, filename)
@@ -366,7 +417,6 @@ def enforce_state(module, params):
     state       = params.get("state", "present")
     key_options = params.get("key_options", None)
     exclusive   = params.get("exclusive", False)
-    validate_certs = params.get("validate_certs", True)
     error_msg   = "Error getting key from: %s"
 
     # if the key is a url, request it and use it as key source
@@ -379,6 +429,9 @@ def enforce_state(module, params):
                 key = resp.read()
         except Exception:
             module.fail_json(msg=error_msg % key)
+
+        # resp.read gives bytes on python3, convert to native string type
+        key = to_native(key, errors='surrogate_or_strict')
 
     # extract individual keys into an array, skipping blank lines and comments
     key = [s for s in key.splitlines() if s and not s.startswith('#')]
@@ -403,12 +456,10 @@ def enforce_state(module, params):
             parsed_options = parseoptions(module, key_options)
             parsed_new_key = (parsed_new_key[0], parsed_new_key[1], parsed_options, parsed_new_key[3])
 
-        present = False
         matched = False
         non_matching_keys = []
 
         if parsed_new_key[0] in existing_keys:
-            present = True
             # Then we check if everything matches, including
             # the key type and options. If not, we append this
             # existing key to the non-matching list
@@ -458,7 +509,6 @@ def enforce_state(module, params):
     return params
 
 def main():
-
     module = AnsibleModule(
         argument_spec = dict(
            user        = dict(required=True, type='str'),
@@ -477,7 +527,5 @@ def main():
     results = enforce_state(module, module.params)
     module.exit_json(**results)
 
-# import module snippets
-from ansible.module_utils.basic import *
-from ansible.module_utils.urls import *
-main()
+if __name__ == '__main__':
+    main()

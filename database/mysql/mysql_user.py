@@ -103,7 +103,7 @@ notes:
      without providing any login_user/login_password details. The second must drop a ~/.my.cnf file containing
      the new root credentials. Subsequent runs of the playbook will then succeed by reading the new credentials from
      the file."
-   - Currently, there is only support for the `mysql_native_password` encryted password hash module.
+   - Currently, there is only support for the `mysql_native_password` encrypted password hash module.
 
 author: "Jonathan Mainguy (@Jmainguy)"
 extends_documentation_fragment: mysql
@@ -166,6 +166,7 @@ except ImportError:
     mysqldb_found = False
 else:
     mysqldb_found = True
+from ansible.module_utils.six import iteritems
 
 VALID_PRIVS = frozenset(('CREATE', 'DROP', 'GRANT', 'GRANT OPTION',
                          'LOCK TABLES', 'REFERENCES', 'EVENT', 'ALTER',
@@ -213,7 +214,7 @@ def get_mode(cursor):
 
 def user_exists(cursor, user, host, host_all):
     if host_all:
-        cursor.execute("SELECT count(*) FROM user WHERE user = %s", user)
+        cursor.execute("SELECT count(*) FROM user WHERE user = %s", ([user]))
     else:
         cursor.execute("SELECT count(*) FROM user WHERE user = %s AND host = %s", (user,host))
 
@@ -234,9 +235,8 @@ def user_add(cursor, user, host, host_all, password, encrypted, new_priv, check_
         cursor.execute("CREATE USER %s@%s IDENTIFIED BY %s", (user,host,password))
     else:
         cursor.execute("CREATE USER %s@%s", (user,host))
-
     if new_priv is not None:
-        for db_table, priv in new_priv.iteritems():
+        for db_table, priv in iteritems(new_priv):
             privileges_grant(cursor, user,host,db_table,priv)
     return True
 
@@ -252,7 +252,7 @@ def user_mod(cursor, user, host, host_all, password, encrypted, new_priv, append
     grant_option = False
 
     if host_all:
-        hostnames = user_get_hostnames(cursor, user)
+        hostnames = user_get_hostnames(cursor, [user])
     else:
         hostnames = [host]
 
@@ -302,7 +302,7 @@ def user_mod(cursor, user, host, host_all, password, encrypted, new_priv, append
 
             # If the user has privileges on a db.table that doesn't appear at all in
             # the new specification, then revoke all privileges on it.
-            for db_table, priv in curr_priv.iteritems():
+            for db_table, priv in iteritems(curr_priv):
                 # If the user has the GRANT OPTION on a db.table, revoke it first.
                 if "GRANT" in priv:
                     grant_option = True
@@ -315,7 +315,7 @@ def user_mod(cursor, user, host, host_all, password, encrypted, new_priv, append
 
             # If the user doesn't currently have any privileges on a db.table, then
             # we can perform a straight grant operation.
-            for db_table, priv in new_priv.iteritems():
+            for db_table, priv in iteritems(new_priv):
                 if db_table not in curr_priv:
                     if module.check_mode:
                         return True
@@ -342,7 +342,7 @@ def user_delete(cursor, user, host, host_all, check_mode):
         return True
 
     if host_all:
-        hostnames = user_get_hostnames(cursor, user)
+        hostnames = user_get_hostnames(cursor, [user])
 
         for hostname in hostnames:
             cursor.execute("DROP USER %s@%s", (user, hostname))
@@ -415,9 +415,12 @@ def privileges_unpack(priv, mode):
     for item in priv.strip().split('/'):
         pieces = item.strip().split(':')
         dbpriv = pieces[0].rsplit(".", 1)
-        # Do not escape if privilege is for database '*' (all databases)
-        if dbpriv[0].strip('`') != '*':
-            pieces[0] = '%s%s%s.%s' % (quote, dbpriv[0].strip('`'), quote, dbpriv[1])
+        # Do not escape if privilege is for database or table, i.e.
+        # neither quote *. nor .*
+        for i, side in enumerate(dbpriv):
+            if side.strip('`') != '*':
+                dbpriv[i] = '%s%s%s' % (quote, side.strip('`'), quote)
+        pieces[0] = '.'.join(dbpriv)
 
         if '(' in pieces[1]:
             output[pieces[0]] = re.split(r',\s*(?=[^)]*(?:\(|$))', pieces[1].upper())
@@ -534,7 +537,8 @@ def main():
         if not cursor:
             cursor = mysql_connect(module, login_user, login_password, config_file, ssl_cert, ssl_key, ssl_ca, db,
                                    connect_timeout=connect_timeout)
-    except Exception, e:
+    except Exception:
+        e = get_exception()
         module.fail_json(msg="unable to connect to database, check login_user and login_password are correct or %s has the credentials. Exception message: %s" % (config_file, e))
 
     if not sql_log_bin:
@@ -543,11 +547,13 @@ def main():
     if priv is not None:
         try:
             mode = get_mode(cursor)
-        except Exception, e:
+        except Exception:
+            e = get_exception()
             module.fail_json(msg=str(e))
         try:
             priv = privileges_unpack(priv, mode)
-        except Exception, e:
+        except Exception:
+            e = get_exception()
             module.fail_json(msg="invalid privileges string: %s" % str(e))
 
     if state == "present":
@@ -558,14 +564,16 @@ def main():
                 else:
                     changed = user_mod(cursor, user, host, host_all, None, encrypted, priv, append_privs, module)
 
-            except (SQLParseError, InvalidPrivsError, MySQLdb.Error), e:
+            except (SQLParseError, InvalidPrivsError, MySQLdb.Error):
+                e = get_exception()
                 module.fail_json(msg=str(e))
         else:
             if host_all:
                 module.fail_json(msg="host_all parameter cannot be used when adding a user")
             try:
                 changed = user_add(cursor, user, host, host_all, password, encrypted, priv, module.check_mode)
-            except (SQLParseError, InvalidPrivsError, MySQLdb.Error), e:
+            except (SQLParseError, InvalidPrivsError, MySQLdb.Error):
+                e = get_exception()
                 module.fail_json(msg=str(e))
     elif state == "absent":
         if user_exists(cursor, user, host, host_all):

@@ -19,6 +19,7 @@
 # TODO:
 # Ability to set CPU/Memory reservations
 
+
 try:
     import json
 except ImportError:
@@ -262,7 +263,7 @@ EXAMPLES = '''
     vm_extra_config:
       folder: MyFolder
 
-# Task to gather facts from a vSphere cluster only if the system is a VMWare guest
+# Task to gather facts from a vSphere cluster only if the system is a VMware guest
 
 - vsphere_guest:
     vcenter_hostname: vcenter.mydomain.local
@@ -683,7 +684,7 @@ def deploy_template(vsphere_client, guest, resource_pool, template_src, esxi, mo
         try:
             hostmor = [k for k,
                        v in vsphere_client.get_hosts().items() if v == esxi_hostname][0]
-        except IndexError, e:
+        except IndexError:
             vsphere_client.disconnect()
             module.fail_json(msg="Cannot find esx host named: %s" % esxi_hostname)
 
@@ -708,7 +709,7 @@ def deploy_template(vsphere_client, guest, resource_pool, template_src, esxi, mo
         try:
             cluster = [k for k,
                        v in vsphere_client.get_clusters().items() if v == cluster_name][0] if cluster_name else None
-        except IndexError, e:
+        except IndexError:
             vsphere_client.disconnect()
             module.fail_json(msg="Cannot find Cluster named: %s" %
                              cluster_name)
@@ -717,7 +718,7 @@ def deploy_template(vsphere_client, guest, resource_pool, template_src, esxi, mo
             rpmor = [k for k, v in vsphere_client.get_resource_pools(
                 from_mor=cluster).items()
                 if v == resource_pool][0]
-        except IndexError, e:
+        except IndexError:
             vsphere_client.disconnect()
             module.fail_json(msg="Cannot find Resource Pool named: %s" %
                              resource_pool)
@@ -736,7 +737,7 @@ def deploy_template(vsphere_client, guest, resource_pool, template_src, esxi, mo
 
     try:
         if not vmTarget:
-            cloneArgs = dict(resourcepool=rpmor, power_on=power_on_after_clone)
+            cloneArgs = dict(resourcepool=rpmor, power_on=False)
 
             if snapshot_to_clone is not None:
                 #check if snapshot_to_clone is specified, Create a Linked Clone instead of a full clone.
@@ -748,6 +749,18 @@ def deploy_template(vsphere_client, guest, resource_pool, template_src, esxi, mo
                 cloneArgs["folder"] = vm_extra_config.get("folder")
 
             vmTemplate.clone(guest, **cloneArgs)
+
+            vm = vsphere_client.get_vm_by_name(guest)
+
+            # VM was created. If there is any extra config options specified, set
+            if vm_extra_config:
+                vm.set_extra_config(vm_extra_config)
+
+            # Power on if asked
+            if power_on_after_clone == True:
+                state = 'powered_on'
+                power_state(vm, state, True)
+
             changed = True
         else:
             changed = False
@@ -841,6 +854,18 @@ def reconfigure_vm(vsphere_client, vm, module, esxi, resource_pool, cluster_name
     changed, changes = update_disks(vsphere_client, vm,
                                     module, vm_disk, changes)
     request = VI.ReconfigVM_TaskRequestMsg()
+
+    # Change extra config
+    if vm_extra_config:
+        spec = spec_singleton(spec, request, vm)
+        extra_config = []
+        for k,v in vm_extra_config.items():
+            ec = spec.new_extraConfig()
+            ec.set_element_key(str(k))
+            ec.set_element_value(str(v))
+            extra_config.append(ec)
+        spec.set_element_extraConfig(extra_config)
+        changes["extra_config"] = vm_extra_config
 
     # Change Memory
     if 'memory_mb' in vm_hardware:
@@ -962,7 +987,7 @@ def reconfigure_vm(vsphere_client, vm, module, esxi, resource_pool, cluster_name
         disk_num = 0
         dev_changes = []
         disks_changed = {}
-        for disk in sorted(vm_disk.iterkeys()):
+        for disk in sorted(vm_disk):
             try:
                 disksize = int(vm_disk[disk]['size_gb'])
                 # Convert the disk size to kilobytes
@@ -1000,7 +1025,8 @@ def reconfigure_vm(vsphere_client, vm, module, esxi, resource_pool, cluster_name
                 vm.power_off(sync_run=True)
                 vm.get_status()
 
-            except Exception, e:
+            except Exception:
+                e = get_exception()
                 module.fail_json(
                     msg='Failed to shutdown vm %s: %s' % (guest, e)
                 )
@@ -1023,7 +1049,8 @@ def reconfigure_vm(vsphere_client, vm, module, esxi, resource_pool, cluster_name
         if vm.is_powered_off() and poweron:
             try:
                 vm.power_on(sync_run=True)
-            except Exception, e:
+            except Exception:
+                e = get_exception()
                 module.fail_json(
                     msg='Failed to power on vm %s : %s' % (guest, e)
                 )
@@ -1054,7 +1081,7 @@ def reconfigure_net(vsphere_client, vm, module, esxi, resource_pool, guest, vm_n
             module.fail_json(msg="Cannot find datacenter named: %s" % datacenter)
         dcprops = VIProperty(vsphere_client, dcmor)
         nfmor = dcprops.networkFolder._obj
-        for k,v in vm_nic.iteritems():
+        for k,v in vm_nic.items():
             nicNum = k[len(k) -1]
             if vm_nic[k]['network_type'] == 'dvs':
                 portgroupKey = find_portgroup_key(module, s, nfmor, vm_nic[k]['network'])
@@ -1085,7 +1112,7 @@ def reconfigure_net(vsphere_client, vm, module, esxi, resource_pool, guest, vm_n
                             module.exit_json()
 
         if len(nics) > 0:
-            for nic, obj in nics.iteritems():
+            for nic, obj in nics.items():
                 """
                 1,2 and 3 are used to mark which action should be taken
                 1 = from a distributed switch to a distributed switch
@@ -1114,7 +1141,7 @@ def reconfigure_net(vsphere_client, vm, module, esxi, resource_pool, guest, vm_n
                         "nic_backing").pyclass()
                     nic_backing.set_element_deviceName(vm_nic[nic]['network'])
                     dev._obj.set_element_backing(nic_backing)
-            for nic, obj in nics.iteritems():
+            for nic, obj in nics.items():
                 dev = obj[0]
                 spec = request.new_spec()
                 nic_change = spec.new_deviceChange()
@@ -1147,7 +1174,7 @@ def _build_folder_tree(nodes, parent):
 
 
 def _find_path_in_tree(tree, path):
-    for name, o in tree.iteritems():
+    for name, o in tree.items():
         if name == path[0]:
             if len(path) == 1:
                 return o
@@ -1200,7 +1227,7 @@ def create_vm(vsphere_client, module, esxi, resource_pool, cluster_name, guest, 
 
         # try the legacy behaviour of just matching the folder name, so 'lamp' alone matches 'production/customerA/lamp'
         if vmfmor is None:
-            for mor, name in vsphere_client._get_managed_objects(MORTypes.Folder).iteritems():
+            for mor, name in vsphere_client._get_managed_objects(MORTypes.Folder).items():
                 if name == vm_extra_config['folder']:
                     vmfmor = mor
 
@@ -1224,7 +1251,7 @@ def create_vm(vsphere_client, module, esxi, resource_pool, cluster_name, guest, 
     try:
         hostmor = [k for k,
                    v in vsphere_client.get_hosts().items() if v == esxi_hostname][0]
-    except IndexError, e:
+    except IndexError:
         vsphere_client.disconnect()
         module.fail_json(msg="Cannot find esx host named: %s" % esxi_hostname)
 
@@ -1250,7 +1277,7 @@ def create_vm(vsphere_client, module, esxi, resource_pool, cluster_name, guest, 
         try:
             cluster = [k for k,
                        v in vsphere_client.get_clusters().items() if v == cluster_name][0] if cluster_name else None
-        except IndexError, e:
+        except IndexError:
             vsphere_client.disconnect()
             module.fail_json(msg="Cannot find Cluster named: %s" %
                              cluster_name)
@@ -1259,7 +1286,7 @@ def create_vm(vsphere_client, module, esxi, resource_pool, cluster_name, guest, 
             rpmor = [k for k, v in vsphere_client.get_resource_pools(
                 from_mor=cluster).items()
                 if v == resource_pool][0]
-        except IndexError, e:
+        except IndexError:
             vsphere_client.disconnect()
             module.fail_json(msg="Cannot find Resource Pool named: %s" %
                              resource_pool)
@@ -1316,7 +1343,7 @@ def create_vm(vsphere_client, module, esxi, resource_pool, cluster_name, guest, 
     if vm_disk:
         disk_num = 0
         disk_key = 0
-        for disk in sorted(vm_disk.iterkeys()):
+        for disk in sorted(vm_disk):
             try:
                 datastore = vm_disk[disk]['datastore']
             except KeyError:
@@ -1372,7 +1399,7 @@ def create_vm(vsphere_client, module, esxi, resource_pool, cluster_name, guest, 
         add_floppy(module, vsphere_client, config_target, config, devices,
                   default_devs, floppy_type, floppy_image_path)
     if vm_nic:
-        for nic in sorted(vm_nic.iterkeys()):
+        for nic in sorted(vm_nic):
             try:
                 nictype = vm_nic[nic]['type']
             except KeyError:
@@ -1447,7 +1474,8 @@ def delete_vm(vsphere_client, module, guest, vm, force):
                     vm.power_off(sync_run=True)
                     vm.get_status()
 
-                except Exception, e:
+                except Exception:
+                    e = get_exception()
                     module.fail_json(
                         msg='Failed to shutdown vm %s: %s' % (guest, e))
             else:
@@ -1471,7 +1499,8 @@ def delete_vm(vsphere_client, module, guest, vm, force):
             module.fail_json(msg="Error removing vm: %s %s" %
                              task.get_error_message())
         module.exit_json(changed=True, changes="VM %s deleted" % guest)
-    except Exception, e:
+    except Exception:
+        e = get_exception()
         module.fail_json(
             msg='Failed to delete vm %s : %s' % (guest, e))
 
@@ -1513,8 +1542,8 @@ def power_state(vm, state, force):
                         % power_status
             return True
 
-        except Exception, e:
-            return e
+        except Exception:
+            return get_exception()
 
     return False
 
@@ -1756,7 +1785,8 @@ def main():
                 module.fail_json(msg='Unable to validate the certificate of the vcenter host %s' % vcenter_hostname)
         else:
             raise
-    except VIApiException, err:
+    except VIApiException:
+        err = get_exception()
         module.fail_json(msg="Cannot connect to %s: %s" %
                          (vcenter_hostname, err))
 
@@ -1771,7 +1801,8 @@ def main():
         if vmware_guest_facts:
             try:
                 module.exit_json(ansible_facts=gather_facts(vm))
-            except Exception, e:
+            except Exception:
+                e = get_exception()
                 module.fail_json(
                     msg="Fact gather failed with exception %s" % e)
         # Power Changes

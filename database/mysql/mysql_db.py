@@ -88,7 +88,7 @@ EXAMPLES = '''
 # Dumps all databases to hostname.sql
 - mysql_db: state=dump name=all target=/tmp/{{ inventory_hostname }}.sql
 
-# Imports file.sql similiar to mysql -u <username> -p <password> < hostname.sql
+# Imports file.sql similar to mysql -u <username> -p <password> < hostname.sql
 - mysql_db: state=import name=all target=/tmp/{{ inventory_hostname }}.sql
 '''
 
@@ -289,7 +289,8 @@ def main():
     try:
         cursor = mysql_connect(module, login_user, login_password, config_file, ssl_cert, ssl_key, ssl_ca,
                                connect_timeout=connect_timeout)
-    except Exception, e:
+    except Exception:
+        e = get_exception()
         if os.path.exists(config_file):
             module.fail_json(msg="unable to connect to database, check login_user and login_password are correct or %s has the credentials. Exception message: %s" % (config_file, e))
         else:
@@ -301,12 +302,15 @@ def main():
     if db_exists(cursor, db):
         if state == "absent":
             if module.check_mode:
-                changed = True
+                module.exit_json(changed=True, db=db)
             else:
                 try:
                     changed = db_delete(cursor, db)
-                except Exception, e:
+                except Exception:
+                    e = get_exception()
                     module.fail_json(msg="error deleting database: " + str(e))
+                module.exit_json(changed=changed, db=db)
+
         elif state == "dump":
             if module.check_mode:
                 module.exit_json(changed=True, db=db)
@@ -318,6 +322,7 @@ def main():
                     module.fail_json(msg="%s" % stderr)
                 else:
                     module.exit_json(changed=True, db=db, msg=stdout)
+
         elif state == "import":
             if module.check_mode:
                 module.exit_json(changed=True, db=db)
@@ -329,6 +334,12 @@ def main():
                     module.fail_json(msg="%s" % stderr)
                 else:
                     module.exit_json(changed=True, db=db, msg=stdout)
+
+        elif state == "present":
+            if module.check_mode:
+                module.exit_json(changed=False, db=db)
+            module.exit_json(changed=False, db=db)
+
     else:
         if state == "present":
             if module.check_mode:
@@ -336,10 +347,38 @@ def main():
             else:
                 try:
                     changed = db_create(cursor, db, encoding, collation)
-                except Exception, e:
+                except Exception:
+                    e = get_exception()
+                    module.fail_json(msg="error creating database: " + str(e))
+            module.exit_json(changed=changed, db=db)
+
+        elif state == "import":
+            if module.check_mode:
+                module.exit_json(changed=True, db=db)
+            else:
+                try:
+                    changed = db_create(cursor, db, encoding, collation)
+                    if changed:
+                        rc, stdout, stderr = db_import(module, login_host, login_user,
+                                                    login_password, db, target, all_databases,
+                                                    login_port, config_file, socket, ssl_cert, ssl_key, ssl_ca)
+                        if rc != 0:
+                            module.fail_json(msg="%s" % stderr)
+                        else:
+                            module.exit_json(changed=True, db=db, msg=stdout)
+                except Exception:
+                    e = get_exception()
                     module.fail_json(msg="error creating database: " + str(e))
 
-    module.exit_json(changed=changed, db=db)
+        elif state == "absent":
+            if module.check_mode:
+                module.exit_json(changed=False, db=db)
+            module.exit_json(changed=False, db=db)
+
+        elif state == "dump":
+            if module.check_mode:
+                module.exit_json(changed=False, db=db)
+            module.fail_json(msg="Cannot dump database %s - not found" % (db))
 
 # import module snippets
 from ansible.module_utils.basic import *

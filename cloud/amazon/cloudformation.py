@@ -80,8 +80,8 @@ options:
     version_added: "2.0"
   template_format:
     description:
-    - For local templates, allows specification of json or yaml format
-    default: json
+    - (deprecated) For local templates, allows specification of json or yaml format. Templates are now passed raw to CloudFormation regardless of format. This parameter is ignored since Ansible 2.2.
+    default: None
     choices: [ json, yaml ]
     required: false
     version_added: "2.0"
@@ -147,7 +147,6 @@ EXAMPLES = '''
 
 import json
 import time
-import yaml
 
 try:
     import boto
@@ -193,28 +192,28 @@ def stack_operation(cfn, stack_name, operation):
             if 'yes' in existed:
                 result = dict(changed=True,
                               output='Stack Deleted',
-                              events=map(str, list(stack.describe_events())))
+                              events=list(map(str, list(stack.describe_events()))))
             else:
                 result = dict(changed= True, output='Stack Not Found')
             break
         if '%s_COMPLETE' % operation == stack.stack_status:
             result = dict(changed=True,
-                          events = map(str, list(stack.describe_events())),
+                          events = list(map(str, list(stack.describe_events()))),
                           output = 'Stack %s complete' % operation)
             break
         if  'ROLLBACK_COMPLETE' == stack.stack_status or '%s_ROLLBACK_COMPLETE' % operation == stack.stack_status:
             result = dict(changed=True, failed=True,
-                          events = map(str, list(stack.describe_events())),
+                          events = list(map(str, list(stack.describe_events()))),
                           output = 'Problem with %s. Rollback complete' % operation)
             break
         elif '%s_FAILED' % operation == stack.stack_status:
             result = dict(changed=True, failed=True,
-                          events = map(str, list(stack.describe_events())),
+                          events = list(map(str, list(stack.describe_events()))),
                           output = 'Stack %s failed' % operation)
             break
         elif '%s_ROLLBACK_FAILED' % operation == stack.stack_status:
             result = dict(changed=True, failed=True,
-                          events = map(str, list(stack.describe_events())),
+                          events = list(map(str, list(stack.describe_events()))),
                           output = 'Stack %s rollback failed' % operation)
             break
         else:
@@ -229,7 +228,7 @@ def invoke_with_throttling_retries(function_ref, *argv):
         try:
             retval=function_ref(*argv)
             return retval
-        except boto.exception.BotoServerError, e:
+        except boto.exception.BotoServerError as e:
             if e.code != IGNORE_CODE or retries==MAX_RETRIES:
                 raise e
         time.sleep(5 * (2**retries))
@@ -246,7 +245,7 @@ def main():
             stack_policy=dict(default=None, required=False),
             disable_rollback=dict(default=False, type='bool'),
             template_url=dict(default=None, required=False),
-            template_format=dict(default='json', choices=['json', 'yaml'], required=False),
+            template_format=dict(default=None, choices=['json', 'yaml'], required=False),
             tags=dict(default=None, type='dict')
         )
     )
@@ -269,12 +268,6 @@ def main():
         template_body = open(module.params['template'], 'r').read()
     else:
         template_body = None
-
-    if module.params['template_format'] == 'yaml':
-        if template_body is None:
-            module.fail_json(msg='yaml format only supported for local templates')
-        else:
-            template_body = json.dumps(yaml.load(template_body), indent=2)
 
     notification_arns = module.params['notification_arns']
 
@@ -303,7 +296,7 @@ def main():
 
     try:
         cfn = connect_to_aws(boto.cloudformation, region, **aws_connect_kwargs)
-    except boto.exception.NoAuthHandlerFound, e:
+    except boto.exception.NoAuthHandlerFound as e:
         module.fail_json(msg=str(e))
     update = False
     result = {}
@@ -319,10 +312,10 @@ def main():
                              stack_policy_body=stack_policy_body,
                              template_url=template_url,
                              disable_rollback=disable_rollback,
-                             capabilities=['CAPABILITY_IAM'],
+                             capabilities=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
                              **kwargs)
             operation = 'CREATE'
-        except Exception, err:
+        except Exception as err:
             error_msg = boto_exception(err)
             if 'AlreadyExistsException' in error_msg or 'already exists' in error_msg:
                 update = True
@@ -342,9 +335,10 @@ def main():
                              stack_policy_body=stack_policy_body,
                              disable_rollback=disable_rollback,
                              template_url=template_url,
-                             capabilities=['CAPABILITY_IAM'])
+                             capabilities=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
+                             **kwargs)
             operation = 'UPDATE'
-        except Exception, err:
+        except Exception as err:
             error_msg = boto_exception(err)
             if 'No updates are to be performed.' in error_msg:
                 result = dict(changed=False, output='Stack is already up-to-date.')
@@ -381,7 +375,7 @@ def main():
         try:
             invoke_with_throttling_retries(cfn.describe_stacks,stack_name)
             operation = 'DELETE'
-        except Exception, err:
+        except Exception as err:
             error_msg = boto_exception(err)
             if 'Stack:%s does not exist' % stack_name in error_msg:
                 result = dict(changed=False, output='Stack not found.')
@@ -390,6 +384,11 @@ def main():
         if operation == 'DELETE':
             cfn.delete_stack(stack_name)
             result = stack_operation(cfn, stack_name, operation)
+
+    if module.params['template_format'] is not None:
+        result['warnings'] = [('Argument `template_format` is deprecated '
+            'since Ansible 2.2, JSON and YAML templates are now passed '
+            'directly to the CloudFormation API.')]
 
     module.exit_json(**result)
 

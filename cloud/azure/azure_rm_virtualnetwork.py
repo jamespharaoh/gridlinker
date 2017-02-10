@@ -145,6 +145,7 @@ except ImportError:
     pass
 
 
+
 def virtual_network_to_dict(vnet):
     '''
     Convert a virtual network object to a dict.

@@ -251,12 +251,14 @@ def main():
 
         check_file_attrs(module, changed, msg)
         module.exit_json(msg=msg, changed=changed)
-    except Exception, e:
+    except Exception:
+        e = get_exception()
         module.fail_json(msg=str(e))
 
 
 # import module snippets
-from ansible.module_utils.basic import *
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.pycompat24 import get_exception
 
 if __name__ == '__main__':
     main()

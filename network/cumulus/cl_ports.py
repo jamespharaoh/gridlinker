@@ -27,20 +27,20 @@ description:
       to not include ports that do not exist on the switch. Carefully read the
       original ports.conf file for any exceptions or limitations.
       For more details go the Configure Switch Port Attribute Documentation at
-      http://docs.cumulusnetworks.com
+      U(http://docs.cumulusnetworks.com).
 options:
     speed_10g:
         description:
-            - list of ports to run initial run at 10G
+            - List of ports to run initial run at 10G.
     speed_40g:
         description:
-            - list of ports to run initial run at 40G
+            - List of ports to run initial run at 40G.
     speed_4_by_10g:
         description:
-            - list of 40G ports that will be unganged to run as 4 10G ports.
+            - List of 40G ports that will be unganged to run as 4 10G ports.
     speed_40g_div_4:
         description:
-            - list of 10G ports that will be ganged to form a 40G port
+            - List of 10G ports that will be ganged to form a 40G port.
 '''
 EXAMPLES = '''
 Example playbook entries using the cl_ports module to manage the switch
@@ -84,7 +84,8 @@ def hash_existing_ports_conf(module):
 
     try:
         existing_ports_conf = open(PORTS_CONF).readlines()
-    except IOError, error_msg:
+    except IOError:
+        error_msg = get_exception()
         _msg = "Failed to open %s: %s" % (PORTS_CONF, error_msg)
         module.fail_json(msg=_msg)
         return # for testing only should return on module.fail_json
@@ -143,7 +144,8 @@ def make_copy_of_orig_ports_conf(module):
 
     try:
         shutil.copyfile(PORTS_CONF, PORTS_CONF + '.orig')
-    except IOError, error_msg:
+    except IOError:
+        error_msg = get_exception()
         _msg = "Failed to save the original %s: %s" % (PORTS_CONF, error_msg)
         module.fail_json(msg=_msg)
         return  # for testing only
@@ -165,7 +167,8 @@ def write_to_ports_conf(module):
                 temp.write(_str)
             temp.seek(0)
             shutil.copyfile(temp.name, PORTS_CONF)
-        except IOError, error_msg:
+        except IOError:
+            error_msg = get_exception()
             module.fail_json(
                 msg="Failed to write to %s: %s" % (PORTS_CONF, error_msg))
     finally:

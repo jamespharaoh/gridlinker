@@ -96,6 +96,12 @@ options:
       - name of the network, 'default' will be used if not specified
     required: false
     default: "default"
+  subnetwork:
+    description:
+      - name of the subnetwork in which the instance should be created
+    required: false
+    default: null
+    version_added: "2.2"
   persistent_boot_disk:
     description:
       - if set, create the instance with a persistent boot disk
@@ -115,7 +121,7 @@ options:
       - desired state of the resource
     required: false
     default: "present"
-    choices: ["active", "present", "absent", "deleted"]
+    choices: ["active", "present", "absent", "deleted", "started", "stopped", "terminated"]
   tags:
     description:
       - a comma-separated list of tags to associate with the instance
@@ -136,7 +142,7 @@ options:
   external_ip:
     version_added: "1.9"
     description:
-      - type of external ip, ephemeral by default; alternatively, a list of fixed gce ips or ip names can be given (if there is not enough specified ip, 'ephemeral' will be used)
+      - type of external ip, ephemeral by default; alternatively, a list of fixed gce ips or ip names can be given (if there is not enough specified ip, 'ephemeral' will be used). Specify 'none' if no external ip is desired.
     required: false
     default: "ephemeral"
   disk_auto_delete:
@@ -285,6 +291,10 @@ def get_instance_info(inst):
         netname = inst.extra['networkInterfaces'][0]['network'].split('/')[-1]
     except:
         netname = None
+    try:
+        subnetname = inst.extra['networkInterfaces'][0]['subnetwork'].split('/')[-1]
+    except:
+        subnetname = None
     if 'disks' in inst.extra:
         disk_names = [disk_info['source'].split('/')[-1]
                       for disk_info
@@ -305,6 +315,7 @@ def get_instance_info(inst):
         'metadata': metadata,
         'name': inst.name,
         'network': netname,
+        'subnetwork': subnetname,
         'private_ip': inst.private_ips[0],
         'public_ip': public_ip,
         'status': ('status' in inst.extra) and inst.extra['status'] or None,
@@ -330,6 +341,7 @@ def create_instances(module, gce, instance_names):
     machine_type = module.params.get('machine_type')
     metadata = module.params.get('metadata')
     network = module.params.get('network')
+    subnetwork = module.params.get('subnetwork')
     persistent_boot_disk = module.params.get('persistent_boot_disk')
     disks = module.params.get('disks')
     state = module.params.get('state')
@@ -356,7 +368,7 @@ def create_instances(module, gce, instance_names):
                     instance_external_ip = gce.ex_get_address(instance_external_ip)
             else:
                 instance_external_ip = 'ephemeral'
-        except GoogleBaseError, e:
+        except GoogleBaseError as e:
             module.fail_json(msg='Unexpected error attempting to get a static ip %s, error: %s' % (external_ip, e.value))
     else:
         instance_external_ip = external_ip
@@ -441,6 +453,8 @@ def create_instances(module, gce, instance_names):
         )
         if preemptible is not None:
             gce_args['ex_preemptible'] = preemptible
+        if subnetwork is not None:
+            gce_args['ex_subnetwork'] = subnetwork
 
         inst = None
         try:
@@ -488,20 +502,21 @@ def create_instances(module, gce, instance_names):
 
     return (changed, instance_json_data, instance_names)
 
-
-def terminate_instances(module, gce, instance_names, zone_name):
-    """Terminates a list of instances.
+def change_instance_state(module, gce, instance_names, zone_name, state):
+    """Changes the state of a list of instances. For example,
+    change from started to stopped, or started to absent.
 
     module: Ansible module object
     gce: authenticated GCE connection object
     instance_names: a list of instance names to terminate
     zone_name: the zone where the instances reside prior to termination
+    state: 'state' parameter passed into module as argument
 
-    Returns a dictionary of instance names that were terminated.
+    Returns a dictionary of instance names that were changed.
 
     """
     changed = False
-    terminated_instance_names = []
+    changed_instance_names = []
     for name in instance_names:
         inst = None
         try:
@@ -510,13 +525,22 @@ def terminate_instances(module, gce, instance_names, zone_name):
             pass
         except Exception as e:
             module.fail_json(msg=unexpected_error_msg(e), changed=False)
-        if inst:
+        if inst and state in ['absent', 'deleted']:
             gce.destroy_node(inst)
-            terminated_instance_names.append(inst.name)
+            changed_instance_names.append(inst.name)
+            changed = True
+        elif inst and state == 'started' and \
+                  inst.state == libcloud.compute.types.NodeState.STOPPED:
+            gce.ex_start_node(inst)
+            changed_instance_names.append(inst.name)
+            changed = True
+        elif inst and state in ['stopped', 'terminated'] and \
+                  inst.state == libcloud.compute.types.NodeState.RUNNING:
+            gce.ex_stop_node(inst)
+            changed_instance_names.append(inst.name)
             changed = True
 
-    return (changed, terminated_instance_names)
-
+    return (changed, changed_instance_names)
 
 def main():
     module = AnsibleModule(
@@ -527,9 +551,11 @@ def main():
             metadata = dict(),
             name = dict(),
             network = dict(default='default'),
+            subnetwork = dict(),
             persistent_boot_disk = dict(type='bool', default=False),
             disks = dict(type='list'),
-            state = dict(choices=['active', 'present', 'absent', 'deleted'],
+            state = dict(choices=['active', 'present', 'absent', 'deleted',
+                                  'started', 'stopped', 'terminated'],
                          default='present'),
             tags = dict(type='list'),
             zone = dict(default='us-central1-a'),
@@ -558,6 +584,7 @@ def main():
     metadata = module.params.get('metadata')
     name = module.params.get('name')
     network = module.params.get('network')
+    subnetwork = module.params.get('subnetwork')
     persistent_boot_disk = module.params.get('persistent_boot_disk')
     state = module.params.get('state')
     tags = module.params.get('tags')
@@ -583,16 +610,20 @@ def main():
         module.fail_json(msg="Apache Libcloud 0.20.0+ is required to use 'preemptible' option",
                          changed=False)
 
+    if subnetwork is not None and not hasattr(gce, 'ex_get_subnetwork'):
+        module.fail_json(msg="Apache Libcloud 1.0.0+ is required to use 'subnetwork' option",
+                         changed=False)
+
     json_output = {'zone': zone}
-    if state in ['absent', 'deleted']:
-        json_output['state'] = 'absent'
-        (changed, terminated_instance_names) = terminate_instances(
-            module, gce, inames, zone)
+    if state in ['absent', 'deleted', 'started', 'stopped', 'terminated']:
+        json_output['state'] = state
+        (changed, changed_instance_names) = change_instance_state(
+            module, gce, inames, zone, state)
 
         # based on what user specified, return the same variable, although
         # value could be different if an instance could not be destroyed
         if instance_names:
-            json_output['instance_names'] = terminated_instance_names
+            json_output['instance_names'] = changed_instance_names
         elif name:
             json_output['name'] = name
 

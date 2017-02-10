@@ -21,7 +21,7 @@ DOCUMENTATION = """
 module: junos_facts
 version_added: "2.1"
 author: "Peter Sprygada (@privateip)"
-short_description: Collect facts from remove device running Junos
+short_description: Collect facts from remote device running Junos
 description:
   - Collects fact information from a remote device running the Junos
     operating system.  By default, the module will collect basic fact
@@ -45,7 +45,7 @@ options:
         format of the configuration file.  Devices support three
         configuration file formats.  By default, the configuration
         from the device is returned as text.  The other options include
-        set and xml.  If the xml option is choosen, the configuration file
+        set and xml.  If the xml option is chosen, the configuration file
         is returned as both xml and json.
     required: false
     default: text
@@ -81,10 +81,14 @@ EXAMPLES = """
 
 RETURN = """
 ansible_facts:
-  descrption: Returns the facts collect from the device
+  description: Returns the facts collect from the device
   returned: always
   type: dict
 """
+import ansible.module_utils.junos
+
+from ansible.module_utils.network import NetworkModule
+from ansible.module_utils.junos import xml_to_string, xml_to_json
 
 def main():
     """ Main entry point for AnsibleModule
@@ -95,12 +99,12 @@ def main():
         transport=dict(default='netconf', choices=['netconf'])
     )
 
-    module = get_module(argument_spec=spec,
-                        supports_check_mode=True)
+    module = NetworkModule(argument_spec=spec,
+                           supports_check_mode=True)
 
     result = dict(changed=False)
 
-    facts = module.get_facts()
+    facts = module.connection.get_facts()
 
     if '2RE' in facts:
         facts['has_2RE'] = facts['2RE']
@@ -110,19 +114,17 @@ def main():
 
     if module.params['config'] is True:
         config_format = module.params['config_format']
-        resp_config = module.get_config( config_format=config_format)
+        resp_config = module.config.get_config(config_format=config_format)
 
         if config_format in ['text', 'set']:
-           facts['config'] = resp_config
+            facts['config'] = resp_config
         elif config_format == "xml":
-           facts['config'] = xml_to_string(resp_config)
-           facts['config_json'] = xml_to_json(resp_config)
+            facts['config'] = xml_to_string(resp_config)
+            facts['config_json'] = xml_to_json(resp_config)
 
     result['ansible_facts'] = facts
     module.exit_json(**result)
 
-from ansible.module_utils.basic import *
-from ansible.module_utils.junos import *
 
 if __name__ == '__main__':
     main()

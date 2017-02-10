@@ -64,6 +64,7 @@ class Ec2Metadata(object):
                    'ap-northeast-2',
                    'ap-southeast-1',
                    'ap-southeast-2',
+                   'ap-south-1',
                    'eu-central-1',
                    'eu-west-1',
                    'sa-east-1',
@@ -91,7 +92,7 @@ class Ec2Metadata(object):
 
     def _mangle_fields(self, fields, uri, filter_patterns=['public-keys-0']):
         new_fields = {}
-        for key, value in fields.iteritems():
+        for key, value in fields.items():
             split_fields = key[len(uri):].split('/')
             if len(split_fields) > 1 and split_fields[1]:
                 new_key = "-".join(split_fields)

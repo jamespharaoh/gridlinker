@@ -72,7 +72,7 @@ options:
     version_added: "1.5"
   delete:
     description:
-      - Delete files that don't exist (after transfer, not before) in the C(src) path. This option requires C(recursive=yes).
+      - Delete files in C(dest) that don't exist (after transfer, not before) in the C(src) path. This option requires C(recursive=yes).
     choices: [ 'yes', 'no' ]
     default: 'no'
     required: false
@@ -234,7 +234,7 @@ synchronize:
 delegate_to: "{{ inventory_hostname }}"
 
 # Synchronize and delete files in dest on the remote host that are not found in src of localhost.
-synchronize: src=some/relative/path dest=/some/absolute/path delete=yes
+synchronize: src=some/relative/path dest=/some/absolute/path delete=yes recursive=yes
 
 # Synchronize using an alternate rsync command
 # This specific command is granted su privileges on the destination
@@ -248,7 +248,7 @@ synchronize: src=some/relative/path dest=/some/absolute/path rsync_path="su -c r
 # Synchronize passing in extra rsync options
 synchronize:
     src: /tmp/helloworld
-    dest: /var/www/helloword
+    dest: /var/www/helloworld
     rsync_opts:
       - "--no-motd"
       - "--exclude=.git"
@@ -413,7 +413,7 @@ def main():
     if not source.startswith('"rsync://') and not dest.startswith('"rsync://'):
         # If the user specified a port value
         # Note:  The action plugin takes care of setting this to a port from
-        # inventory if the user didn't specify an explict dest_port
+        # inventory if the user didn't specify an explicit dest_port
         if dest_port is not None:
             cmd += " --rsh 'ssh %s %s -o Port=%s'" % (private_key, ssh_opts, dest_port)
         else:

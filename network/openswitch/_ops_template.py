@@ -28,6 +28,7 @@ description:
     against a provided candidate configuration. If there are changes, the
     candidate configuration is merged with the current configuration and
     pushed into OpenSwitch
+deprecated: Deprecated in 2.2. Use ops_config instead
 extends_documentation_fragment: openswitch
 options:
   src:
@@ -62,8 +63,8 @@ options:
         against the contents of source.  There are times when it is not
         desirable to have the task get the current running-config for
         every task in a playbook.  The I(config) argument allows the
-        implementer to pass in the configuruation to use as the base
-        config for comparision.
+        implementer to pass in the configuration to use as the base
+        config for comparison.
     required: false
     default: null
 """
@@ -86,53 +87,34 @@ EXAMPLES = """
 RETURN = """
 updates:
   description: The list of configuration updates to be merged
-  retured: always
+  returned: always
   type: dict
   sample: {obj, obj}
 responses:
-  desription: returns the responses when configuring using cli
+  description: returns the responses when configuring using cli
   returned: when transport == cli
   type: list
   sample: [...]
 """
-import copy
 
-def compare(this, other):
-    parents = [item.text for item in this.parents]
-    for entry in other:
-        if this == entry:
-            return None
-    return this
+import ansible.module_utils.openswitch
+from ansible.module_utils.netcfg import NetworkConfig, dumps
+from ansible.module_utils.network import NetworkModule
+from ansible.module_utils.openswitch import HAS_OPS
 
-def expand(obj, queue):
-    block = [item.raw for item in obj.parents]
-    block.append(obj.raw)
-
-    current_level = queue
-    for b in block:
-        if b not in current_level:
-            current_level[b] = collections.OrderedDict()
-        current_level = current_level[b]
-    for c in obj.children:
-        if c.raw not in current_level:
-            current_level[c.raw] = collections.OrderedDict()
-
-def flatten(data, obj):
-    for k, v in data.items():
-        obj.append(k)
-        flatten(v, obj)
-    return obj
 
 def get_config(module):
     config = module.params['config'] or dict()
     if not config and not module.params['force']:
-        config = module.config
+        config = module.config.get_config()
     return config
+
 
 def sort(val):
     if isinstance(val, (list, set)):
         return sorted(val)
     return val
+
 
 def diff(this, other, path=None):
     updates = list()
@@ -151,6 +133,7 @@ def diff(this, other, path=None):
                 if sort(this[key]) != sort(other_value):
                     updates.append((list(path), key, value, other_value))
     return updates
+
 
 def merge(changeset, config=None):
     config = config or dict()
@@ -176,18 +159,25 @@ def main():
 
     mutually_exclusive = [('config', 'backup'), ('config', 'force')]
 
-    module = get_module(argument_spec=argument_spec,
-                        mutually_exclusive=mutually_exclusive,
-                        supports_check_mode=True)
+    module = NetworkModule(argument_spec=argument_spec,
+                           mutually_exclusive=mutually_exclusive,
+                           supports_check_mode=True)
+
+    if not module.params['transport'] and not HAS_OPS:
+        module.fail_json(msg='unable to import ops.dc library')
 
     result = dict(changed=False)
 
     contents = get_config(module)
-    result['_backup'] = copy.deepcopy(module.config)
+    result['_backup'] = contents
 
     if module.params['transport'] in ['ssh', 'rest']:
         config = contents
-        src = module.from_json(module.params['src'])
+
+        try:
+            src = module.from_json(module.params['src'])
+        except ValueError:
+            module.fail_json(msg='unable to load src due to json parsing error')
 
         changeset = diff(src, config)
         candidate = merge(changeset, config)
@@ -200,46 +190,32 @@ def main():
 
         if changeset:
             if not module.check_mode:
-                module.configure(config)
+                module.config(config)
             result['changed'] = True
 
     else:
-        config = module.parse_config(config)
-        candidate = module.parse_config(module.params['src'])
+        candidate = NetworkConfig(contents=module.params['src'], indent=4)
 
-        commands = collections.OrderedDict()
-        toplevel = [c.text for c in config]
+        if contents:
+            config = NetworkConfig(contents=contents, indent=4)
 
-        for line in candidate:
-            if line.text in ['!', '']:
-                continue
-
-            if not line.parents:
-                if line.text not in toplevel:
-                    expand(line, commands)
-            else:
-                item = compare(line, config)
-                if item:
-                    expand(item, commands)
-
-        commands = flatten(commands, list())
+        if not module.params['force']:
+            commands = candidate.difference(config)
+            commands = dumps(commands, 'commands').split('\n')
+            commands = [str(c) for c in commands if c]
+        else:
+            commands = str(candidate).split('\n')
 
         if commands:
             if not module.check_mode:
-                commands = [str(c).strip() for c in commands]
-                response = module.configure(commands)
+                response = module.config(commands)
                 result['responses'] = response
             result['changed'] = True
+
         result['updates'] = commands
 
     module.exit_json(**result)
 
-from ansible.module_utils.basic import *
-from ansible.module_utils.urls import *
-from ansible.module_utils.netcfg import *
-from ansible.module_utils.shell import *
-from ansible.module_utils.openswitch import *
 
 if __name__ == '__main__':
     main()
-
