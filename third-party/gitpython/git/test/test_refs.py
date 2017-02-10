@@ -4,10 +4,8 @@
 # This module is part of GitPython and is released under
 # the BSD License: http://www.opensource.org/licenses/bsd-license.php
 
-from git.test.lib import (
-    TestBase,
-    with_rw_repo
-)
+from itertools import chain
+
 from git import (
     Reference,
     Head,
@@ -18,11 +16,15 @@ from git import (
     GitCommandError,
     RefLog
 )
-import git.refs as refs
-from git.util import Actor
 from git.objects.tag import TagObject
-from itertools import chain
-import os
+from git.test.lib import (
+    TestBase,
+    with_rw_repo
+)
+from git.util import Actor
+
+import git.refs as refs
+import os.path as osp
 
 
 class TestRefs(TestBase):
@@ -101,15 +103,13 @@ class TestRefs(TestBase):
             assert prev_object == cur_object        # represent the same git object
             assert prev_object is not cur_object    # but are different instances
 
-            writer = head.config_writer()
-            tv = "testopt"
-            writer.set_value(tv, 1)
-            assert writer.get_value(tv) == 1
-            writer.release()
+            with head.config_writer() as writer:
+                tv = "testopt"
+                writer.set_value(tv, 1)
+                assert writer.get_value(tv) == 1
             assert head.config_reader().get_value(tv) == 1
-            writer = head.config_writer()
-            writer.remove_option(tv)
-            writer.release()
+            with head.config_writer() as writer:
+                writer.remove_option(tv)
 
             # after the clone, we might still have a tracking branch setup
             head.set_tracking_branch(None)
@@ -119,6 +119,17 @@ class TestRefs(TestBase):
             assert head.tracking_branch() == remote_ref
             head.set_tracking_branch(None)
             assert head.tracking_branch() is None
+            
+            special_name = 'feature#123'
+            special_name_remote_ref = SymbolicReference.create(rwrepo, 'refs/remotes/origin/%s' % special_name)
+            gp_tracking_branch = rwrepo.create_head('gp_tracking#123')
+            special_name_remote_ref = rwrepo.remotes[0].refs[special_name]  # get correct type
+            gp_tracking_branch.set_tracking_branch(special_name_remote_ref)
+            assert gp_tracking_branch.tracking_branch().path == special_name_remote_ref.path
+            
+            git_tracking_branch = rwrepo.create_head('git_tracking#123')
+            rwrepo.git.branch('-u', special_name_remote_ref.name, git_tracking_branch.name)
+            assert git_tracking_branch.tracking_branch().name == special_name_remote_ref.name
         # END for each head
 
         # verify REFLOG gets altered
@@ -175,6 +186,12 @@ class TestRefs(TestBase):
 
     def test_orig_head(self):
         assert type(self.rorepo.head.orig_head()) == SymbolicReference
+
+    @with_rw_repo('0.1.6')
+    def test_head_checkout_detached_head(self, rw_repo):
+        res = rw_repo.remotes.origin.refs.master.checkout()
+        assert isinstance(res, SymbolicReference)
+        assert res.name == 'HEAD'
 
     @with_rw_repo('0.1.6')
     def test_head_reset(self, rw_repo):
@@ -264,10 +281,10 @@ class TestRefs(TestBase):
             assert tmp_head == new_head and tmp_head.object == new_head.object
 
             logfile = RefLog.path(tmp_head)
-            assert os.path.isfile(logfile)
+            assert osp.isfile(logfile)
             Head.delete(rw_repo, tmp_head)
             # deletion removes the log as well
-            assert not os.path.isfile(logfile)
+            assert not osp.isfile(logfile)
             heads = rw_repo.heads
             assert tmp_head not in heads and new_head not in heads
             # force on deletion testing would be missing here, code looks okay though ;)
@@ -276,7 +293,7 @@ class TestRefs(TestBase):
 
         # tag ref
         tag_name = "5.0.2"
-        light_tag = TagReference.create(rw_repo, tag_name)
+        TagReference.create(rw_repo, tag_name)
         self.failUnlessRaises(GitCommandError, TagReference.create, rw_repo, tag_name)
         light_tag = TagReference.create(rw_repo, tag_name, "HEAD~1", force=True)
         assert isinstance(light_tag, TagReference)
@@ -320,8 +337,8 @@ class TestRefs(TestBase):
         assert remote_refs_so_far
 
         for remote in remotes:
-            # remotes without references throw
-            self.failUnlessRaises(AssertionError, getattr, remote, 'refs')
+            # remotes without references should produce an empty list
+            self.assertEqual(remote.refs, [])
         # END for each remote
 
         # change where the active head points to
@@ -436,7 +453,7 @@ class TestRefs(TestBase):
 
         self.failUnlessRaises(OSError, SymbolicReference.create, rw_repo, symref_path, cur_head.reference.commit)
         # it works if the new ref points to the same reference
-        SymbolicReference.create(rw_repo, symref.path, symref.reference).path == symref.path
+        SymbolicReference.create(rw_repo, symref.path, symref.reference).path == symref.path  # @NoEffect
         SymbolicReference.delete(rw_repo, symref)
         # would raise if the symref wouldn't have been deletedpbl
         symref = SymbolicReference.create(rw_repo, symref_path, cur_head.reference)
@@ -446,12 +463,12 @@ class TestRefs(TestBase):
         symbol_ref_path = "refs/symbol_ref"
         symref = SymbolicReference(rw_repo, symbol_ref_path)
         assert symref.path == symbol_ref_path
-        symbol_ref_abspath = os.path.join(rw_repo.git_dir, symref.path)
+        symbol_ref_abspath = osp.join(rw_repo.git_dir, symref.path)
 
         # set it
         symref.reference = new_head
         assert symref.reference == new_head
-        assert os.path.isfile(symbol_ref_abspath)
+        assert osp.isfile(symbol_ref_abspath)
         assert symref.commit == new_head.commit
 
         for name in ('absname', 'folder/rela_name'):
@@ -503,7 +520,7 @@ class TestRefs(TestBase):
         rw_repo.head.reference = Head.create(rw_repo, "master")
 
         # At least the head should still exist
-        assert os.path.isfile(os.path.join(rw_repo.git_dir, 'HEAD'))
+        assert osp.isfile(osp.join(rw_repo.git_dir, 'HEAD'))
         refs = list(SymbolicReference.iter_items(rw_repo))
         assert len(refs) == 1
 

@@ -2,6 +2,136 @@
 Changelog
 =========
 
+2.1.1 - Bugfixes
+====================================
+
+All issues and PRs can be viewed in all detail when following this URL:
+https://github.com/gitpython-developers/GitPython/issues?q=is%3Aclosed+milestone%3A%22v2.1.1+-+Bugfixes%22
+
+
+2.1.0 - Much better windows support!
+====================================
+
+Special thanks to @ankostis, who made this release possible (nearly) single-handedly.
+GitPython is run by its users, and their PRs make all the difference, they keep
+GitPython relevant. Thank you all so much for contributing !
+
+Notable fixes
+-------------
+
+* The `GIT_DIR` environment variable does not override the `path` argument when
+  initializing a `Repo` object anymore. However, if said `path` unset, `GIT_DIR`
+  will be used to fill the void.
+  
+All issues and PRs can be viewed in all detail when following this URL:
+https://github.com/gitpython-developers/GitPython/issues?q=is%3Aclosed+milestone%3A%22v2.1.0+-+proper+windows+support%22
+
+
+2.0.9 - Bugfixes
+=============================
+
+* `tag.commit` will now resolve commits deeply.
+* `Repo` objects can now be pickled, which helps with multi-processing.
+* `Head.checkout()` now deals with detached heads, which is when it will return
+  the `HEAD` reference instead.
+
+* `DiffIndex.iter_change_type(...)` produces better results when diffing
+2.0.8 - Features and Bugfixes
+=============================
+
+* `DiffIndex.iter_change_type(...)` produces better results when diffing
+  an index against the working tree.
+* `Repo().is_dirty(...)` now supports the `path` parameter, to specify a single
+  path by which to filter the output. Similar to `git status <path>`
+* Symbolic refs created by this library will now be written with a newline
+  character, which was previously missing.
+* `blame()` now properly preserves multi-line commit messages.
+* No longer corrupt ref-logs by writing multi-line comments into them.
+
+2.0.7 - New Features
+====================
+
+* `IndexFile.commit(...,skip_hooks=False)` added. This parameter emulates the 
+   behaviour of `--no-verify` on the command-line.
+
+2.0.6 - Fixes and Features
+==========================
+
+* Fix: remote output parser now correctly matches refs with non-ASCII
+  chars in them
+* API: Diffs now have `a_rawpath`, `b_rawpath`, `raw_rename_from`,
+  `raw_rename_to` properties, which are the raw-bytes equivalents of their
+  unicode path counterparts.
+* Fix: TypeError about passing keyword argument to string decode() on
+  Python 2.6.
+* Feature: `setUrl API on Remotes <https://github.com/gitpython-developers/GitPython/pull/446#issuecomment-224670539>`_
+
+2.0.5 - Fixes
+=============
+
+* Fix: parser of fetch info lines choked on some legitimate lines
+
+2.0.4 - Fixes
+=============
+
+* Fix: parser of commit object data is now robust against cases where
+  commit object contains invalid bytes.  The invalid characters are now
+  replaced rather than choked on.
+* Fix: non-ASCII paths are now properly decoded and returned in
+  ``.diff()`` output
+* Fix: `RemoteProgress` will now strip the ', ' prefix or suffix from messages.
+* API: Remote.[fetch|push|pull](...) methods now allow the ``progress`` argument to
+  be a callable. This saves you from creating a custom type with usually just one
+  implemented method.
+
+2.0.3 - Fixes
+=============
+
+* Fix: bug in ``git-blame --incremental`` output parser that broken when
+  commit messages contained ``\r`` characters
+* Fix: progress handler exceptions are not caught anymore, which would usually just hide bugs
+  previously.
+* Fix: The `Git.execute` method will now redirect `stdout` to `devnull` if `with_stdout` is false, 
+  which is the intended behaviour based on the parameter's documentation.
+
+2.0.2 - Fixes
+=============
+
+* Fix: source package does not include \*.pyc files
+* Fix: source package does include doc sources
+
+2.0.1 - Fixes
+=============
+
+* Fix: remote output parser now correctly matches refs with "@" in them
+
+2.0.0 - Features
+================
+
+Please note that due to breaking changes, we have to increase the major version.
+
+* **IMPORTANT**: This release drops support for python 2.6, which is
+  officially deprecated by the python maintainers.
+* **CRITICAL**: `Diff` objects created with patch output will now not carry
+  the --- and +++ header lines anymore.  All diffs now start with the
+  @@ header line directly.  Users that rely on the old behaviour can now
+  (reliably) read this information from the a_path and b_path properties
+  without having to parse these lines manually.
+* `Commit` now has extra properties `authored_datetime` and
+  `committer_datetime` (to get Python datetime instances rather than
+  timestamps)
+* `Commit.diff()` now supports diffing the root commit via
+  `Commit.diff(NULL_TREE)`.
+* `Repo.blame()` now respects `incremental=True`, supporting incremental
+  blames.  Incremental blames are slightly faster since they don't include
+  the file's contents in them.
+* Fix: `Diff` objects created with patch output will now have their
+  `a_path` and `b_path` properties parsed out correctly.  Previously, some
+  values may have been populated incorrectly when a file was added or
+  deleted.
+* Fix: diff parsing issues with paths that contain "unsafe" chars, like
+  spaces, tabs, backslashes, etc.
+
 1.0.2 - Fixes
 =============
 
@@ -80,11 +210,11 @@ It follows the `semantic version scheme <http://semver.org>`_, and thus will not
 
 0.3.3
 =====
-* When fetching, pulling or pushing, and an error occours, it will not be reported on stdout anymore. However, if there is a fatal error, it will still result in a GitCommandError to be thrown. This goes hand in hand with improved fetch result parsing.
+* When fetching, pulling or pushing, and an error occurs, it will not be reported on stdout anymore. However, if there is a fatal error, it will still result in a GitCommandError to be thrown. This goes hand in hand with improved fetch result parsing.
 * Code Cleanup (in preparation for python 3 support)
 
   * Applied autopep8 and cleaned up code
-  * Using python logging module instead of print statments to signal certain kinds of errors
+  * Using python logging module instead of print statements to signal certain kinds of errors
 
 0.3.2.1
 =======
@@ -163,7 +293,7 @@ It follows the `semantic version scheme <http://semver.org>`_, and thus will not
 * Head Type changes
 
  * config_reader() & config_writer() methods added for access to head specific options.
- * tracking_branch() & set_tracking_branch() methods addded for easy configuration of tracking branches.
+ * tracking_branch() & set_tracking_branch() methods added for easy configuration of tracking branches.
 
 
 0.3.0 Beta 2
@@ -195,13 +325,13 @@ General
 0.2 Beta 2
 ===========
  * Commit objects now carry the 'encoding' information of their message. It wasn't parsed previously, and defaults to UTF-8
- * Commit.create_from_tree now uses a pure-python implementation, mimicing git-commit-tree
+ * Commit.create_from_tree now uses a pure-python implementation, mimicking git-commit-tree
 
 0.2
 =====
 General
 -------
-* file mode in Tree, Blob and Diff objects now is an int compatible to definintiions
+* file mode in Tree, Blob and Diff objects now is an int compatible to definitions
   in the stat module, allowing you to query whether individual user, group and other
   read, write and execute bits are set.
 * Adjusted class hierarchy to generally allow comparison and hash for Objects and Refs
@@ -215,12 +345,12 @@ General
   may change without prior notice.
 * Renamed all find_all methods to list_items - this method is part of the Iterable interface
   that also provides a more efficients and more responsive iter_items method
-* All dates, like authored_date and committer_date, are stored as seconds since epoc
+* All dates, like authored_date and committer_date, are stored as seconds since epoch
   to consume less memory - they can be converted using time.gmtime in a more suitable
   presentation format if needed.
 * Named method parameters changed on a wide scale to unify their use. Now git specific
   terms are used everywhere, such as "Reference" ( ref ) and "Revision" ( rev ).
-  Prevously multiple terms where used making it harder to know which type was allowed
+  Previously multiple terms where used making it harder to know which type was allowed
   or not.
 * Unified diff interface to allow easy diffing between trees, trees and index, trees
   and working tree, index and working tree, trees and index. This closely follows
@@ -250,7 +380,7 @@ Blob
 GitCommand
 -----------
 * git.subcommand call scheme now prunes out None from the argument list, allowing
-  to be called more confortably as None can never be a valid to the git command
+  to be called more comfortably as None can never be a valid to the git command
   if converted to a string.
 * Renamed 'git_dir' attribute to 'working_dir' which is exactly how it is used
 
@@ -277,19 +407,19 @@ Diff
 Diffing
 -------
 * Commit and Tree objects now support diffing natively with a common interface to
-  compare agains other Commits or Trees, against the working tree or against the index.
+  compare against other Commits or Trees, against the working tree or against the index.
 
 Index
 -----
 * A new Index class allows to read and write index files directly, and to perform
   simple two and three way merges based on an arbitrary index.
 
-Referernces
+References
 ------------
 * References are object that point to a Commit
 * SymbolicReference are a pointer to a Reference Object, which itself points to a specific
   Commit
-* They will dynmically retrieve their object at the time of query to assure the information
+* They will dynamically retrieve their object at the time of query to assure the information
   is actual. Recently objects would be cached, hence ref object not be safely kept
   persistent.
 
@@ -298,7 +428,7 @@ Repo
 * Moved blame method from Blob to repo as it appeared to belong there much more.
 * active_branch method now returns a Head object instead of a string with the name
   of the active branch.
-* tree method now requires a Ref instance as input and defaults to the active_branche
+* tree method now requires a Ref instance as input and defaults to the active_branch
   instead of master
 * is_dirty now takes additional arguments allowing fine-grained control about what is
   considered dirty
@@ -374,7 +504,7 @@ General
 * Removed ambiguity between paths and treeishs. When calling commands that
   accept treeish and path arguments and there is a path with the same name as
   a treeish git cowardly refuses to pick one and asks for the command to use
-  the unambiguous syntax where '--' seperates the treeish from the paths.
+  the unambiguous syntax where '--' separates the treeish from the paths.
 
 * ``Repo.commits``, ``Repo.commits_between``, ``Repo.commits_since``,
   ``Repo.commit_count``, ``Repo.commit``, ``Commit.count`` and
@@ -522,7 +652,7 @@ Tree
 ----
 * Corrected problem with ``Tree.__div__`` not working with zero length files.
   Removed ``__len__`` override and replaced with size instead. Also made size
-  cach properly. This is a breaking change.
+  cache properly. This is a breaking change.
 
 0.1.1
 =====
