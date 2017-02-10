@@ -214,6 +214,27 @@ def do_inventory_list (context):
 				inventory.group_members [group_name]),
 		}
 
+	output ["all"] ["vars"] ["namespaces"] = dict ([
+		(namespace.name, [
+			resource.identity_name
+			for resource in namespace.resources
+		])
+		for namespace in inventory.namespaces.values ()
+	])
+
+	output ["all"] ["vars"] ["classes"] = dict ([
+		(class_data.name, [
+			resource.identity_name
+			for resource in class_data.resources
+		])
+		for class_data in inventory.classes.values ()
+	])
+
+	output ["all"] ["vars"] ["resources"] = dict ([
+		(resource_name, resource.data ["identity"])
+		for resource_name, resource in inventory.resources.items ()
+	])
+
 	print_json (output)
 
 def resolve_resource_data (context, output):
@@ -224,7 +245,10 @@ def resolve_resource_data (context, output):
 	in context.project_metadata ["resource_data"].items ():
 
 		if resource_data_key in output ["all"] ["vars"]:
-			raise Exception ()
+
+			raise Exception (
+				"Global key %s in globals and project resource data" % (
+					resource_data_key))
 
 		# find resources
 
