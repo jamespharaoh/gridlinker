@@ -37,14 +37,16 @@ options:
           - a management token is required to manipulate the acl lists
     state:
         description:
-          - whether the ACL pair should be present or absent, defaults to present
+          - whether the ACL pair should be present or absent
         required: false
         choices: ['present', 'absent']
-    type:
+        default: present
+    token_type:
         description:
           - the type of token that should be created, either management or
-            client, defaults to client
+            client
         choices: ['client', 'management']
+        default: client
     name:
         description:
           - the name that should be associated with the acl key, this is opaque
@@ -122,7 +124,7 @@ try:
     import consul
     from requests.exceptions import ConnectionError
     python_consul_installed = True
-except ImportError, e:
+except ImportError:
     python_consul_installed = False
 
 try:
@@ -178,11 +180,11 @@ def update_acl(module):
                 token = consul.acl.create(
                     name=name, type=token_type, rules=rules)
                 changed = True
-            except Exception, e:
+            except Exception as e:
                 module.fail_json(
                     msg="No token returned, check your managment key and that \
                          the host is in the acl datacenter %s" % e)
-    except Exception, e:
+    except Exception as e:
         module.fail_json(msg="Could not create/update acl %s" % e)
 
     module.exit_json(changed=changed,
@@ -211,10 +213,10 @@ def load_rules_for_token(module, consul_api, token):
         if info and info['Rules']:
             rule_set = hcl.loads(to_ascii(info['Rules']))
             for rule_type in rule_set:
-                for pattern, policy in rule_set[rule_type].iteritems():
+                for pattern, policy in rule_set[rule_type].items():
                     rules.add_rule(rule_type, Rule(pattern, policy['policy']))
         return rules
-    except Exception, e:
+    except Exception as e:
         module.fail_json(
             msg="Could not load rule list from retrieved rule data %s, %s" % (
                     token, e))
@@ -234,8 +236,12 @@ def yml_to_rules(module, yml_rules):
                 rules.add_rule('key', Rule(rule['key'], rule['policy']))
             elif ('service' in rule and 'policy' in rule):
                 rules.add_rule('service', Rule(rule['service'], rule['policy']))
+            elif ('event' in rule and 'policy' in rule):
+                rules.add_rule('event', Rule(rule['event'], rule['policy']))
+            elif ('query' in rule and 'policy' in rule):
+                rules.add_rule('query', Rule(rule['query'], rule['policy']))
             else:
-                module.fail_json(msg="a rule requires a key/service and a policy.")
+                module.fail_json(msg="a rule requires a key/service/event or query and a policy.")
     return rules
 
 template = '''%s "%s" {
@@ -243,7 +249,7 @@ template = '''%s "%s" {
 }
 '''
 
-RULE_TYPES = ['key', 'service']
+RULE_TYPES = ['key', 'service', 'event', 'query']
 
 class Rules:
 
@@ -262,7 +268,7 @@ class Rules:
 
         rules = ""
         for rule_type in RULE_TYPES:
-            for pattern, rule in self.rules[rule_type].iteritems():
+            for pattern, rule in self.rules[rule_type].items():
                 rules += template % (rule_type, pattern, rule.policy)
         return to_ascii(rules)
 
@@ -278,7 +284,7 @@ class Rules:
             return False
 
         for rule_type in RULE_TYPES:
-            for name, other_rule in other.rules[rule_type].iteritems():
+            for name, other_rule in other.rules[rule_type].items():
                 if not name in self.rules[rule_type]:
                     return False
                 rule = self.rules[rule_type][name]
@@ -345,10 +351,10 @@ def main():
 
     try:
         execute(module)
-    except ConnectionError, e:
+    except ConnectionError as e:
         module.fail_json(msg='Could not connect to consul agent at %s:%s, error was %s' % (
                             module.params.get('host'), module.params.get('port'), str(e)))
-    except Exception, e:
+    except Exception as e:
         module.fail_json(msg=str(e))
 
 # import module snippets

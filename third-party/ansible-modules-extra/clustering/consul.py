@@ -182,7 +182,7 @@ EXAMPLES = '''
 
   - name: register nginx with an http check
     consul:
-      name: nginx
+      service_name: nginx
       service_port: 80
       interval: 60s
       http: "http://localhost:80/status"
@@ -227,7 +227,7 @@ try:
     import consul
     from requests.exceptions import ConnectionError
     python_consul_installed = True
-except ImportError, e:
+except ImportError:
     python_consul_installed = False
 
 def register_with_consul(module):
@@ -349,7 +349,7 @@ def get_consul_api(module, token=None):
 
 def get_service_by_id_or_name(consul_api, service_id_or_name):
     ''' iterate the registered services and find one with the given id '''
-    for name, service in consul_api.agent.services().iteritems():
+    for name, service in consul_api.agent.services().items():
         if service['ID'] == service_id_or_name or service['Service'] == service_id_or_name:
             return ConsulService(loaded=service)
 
@@ -573,10 +573,10 @@ def main():
 
     try:
         register_with_consul(module)
-    except ConnectionError, e:
+    except ConnectionError as e:
         module.fail_json(msg='Could not connect to consul agent at %s:%s, error was %s' % (
                             module.params.get('host'), module.params.get('port'), str(e)))
-    except Exception, e:
+    except Exception as e:
         module.fail_json(msg=str(e))
 
 # import module snippets

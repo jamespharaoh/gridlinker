@@ -146,7 +146,7 @@ def main():
         "login_password":"password",
         "port":"port"
     }
-    kw = dict( (params_map[k], v) for (k, v) in module.params.iteritems() 
+    kw = dict( (params_map[k], v) for (k, v) in module.params.items()
               if k in params_map and v != '' )
     try:
         db_connection = psycopg2.connect(database=db, **kw)
@@ -159,30 +159,33 @@ def main():
                                               .ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = db_connection.cursor(
                 cursor_factory=psycopg2.extras.DictCursor)
-    except Exception, e:
+    except Exception:
+        e = get_exception()
         module.fail_json(msg="unable to connect to database: %s" % e)
 
     try:
         if module.check_mode:
-            if state == "absent":
+            if state == "present":
                 changed = not ext_exists(cursor, ext)
-            elif state == "present":
+            elif state == "absent":
                 changed = ext_exists(cursor, ext)
-            module.exit_json(changed=changed,ext=ext)
-
-        if state == "absent":
-            changed = ext_delete(cursor, ext)
-
-        elif state == "present":
-            changed = ext_create(cursor, ext)
-    except NotSupportedError, e:
+        else:
+            if state == "absent":
+                changed = ext_delete(cursor, ext)
+    
+            elif state == "present":
+                changed = ext_create(cursor, ext)
+    except NotSupportedError:
+        e = get_exception()
         module.fail_json(msg=str(e))
-    except Exception, e:
+    except Exception:
+        e = get_exception()
         module.fail_json(msg="Database query failed: %s" % e)
 
-    module.exit_json(changed=changed, db=db)
+    module.exit_json(changed=changed, db=db, ext=ext)
 
 # import module snippets
 from ansible.module_utils.basic import *
+from ansible.module_utils.pycompat24 import get_exception
 main()
 

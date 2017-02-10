@@ -25,6 +25,7 @@ version_added: "2.0"
 author:
   - Alan Loi (@loia)
   - Fernando Jose Pando (@nand0p)
+  - Nadir Lloret (@nadirollo)
 requirements:
   - "boto >= 2.33.0"
 options:
@@ -69,13 +70,19 @@ options:
     required: false
     default: null
     version_added: "2.1"
+  redrive_policy:
+    description:
+      - json dict with the redrive_policy (see example)
+    required: false
+    default: null
+    version_added: "2.2"
 extends_documentation_fragment:
     - aws
     - ec2
 """
 
 EXAMPLES = '''
-# Create SQS queue
+# Create SQS queue with redrive policy
 - sqs_queue:
     name: my-queue
     region: ap-southeast-2
@@ -85,6 +92,9 @@ EXAMPLES = '''
     delivery_delay: 30
     receive_message_wait_time: 20
     policy: "{{ json_dict }}"
+    redrive_policy:
+      maxReceiveCount: 5
+      deadLetterTargetArn: arn:aws:sqs:eu-west-1:123456789012:my-dead-queue
 
 # Delete SQS queue
 - sqs_queue:
@@ -93,6 +103,9 @@ EXAMPLES = '''
     state: absent
 '''
 
+import json
+import traceback
+
 try:
     import boto.sqs
     from boto.exception import BotoServerError, NoAuthHandlerFound
@@ -100,6 +113,9 @@ try:
 
 except ImportError:
     HAS_BOTO = False
+
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.ec2 import AnsibleAWSError, connect_to_aws, ec2_argument_spec, get_aws_connection_info
 
 
 def create_or_update_sqs_queue(connection, module):
@@ -112,6 +128,7 @@ def create_or_update_sqs_queue(connection, module):
         delivery_delay=module.params.get('delivery_delay'),
         receive_message_wait_time=module.params.get('receive_message_wait_time'),
         policy=module.params.get('policy'),
+        redrive_policy=module.params.get('redrive_policy')
     )
 
     result = dict(
@@ -147,7 +164,8 @@ def update_sqs_queue(queue,
                      maximum_message_size=None,
                      delivery_delay=None,
                      receive_message_wait_time=None,
-                     policy=None):
+                     policy=None,
+                     redrive_policy=None):
     changed = False
 
     changed = set_queue_attribute(queue, 'VisibilityTimeout', default_visibility_timeout,
@@ -162,6 +180,8 @@ def update_sqs_queue(queue,
                                   check_mode=check_mode) or changed
     changed = set_queue_attribute(queue, 'Policy', policy,
                                   check_mode=check_mode) or changed
+    changed = set_queue_attribute(queue, 'RedrivePolicy', redrive_policy,
+                                  check_mode=check_mode) or changed
     return changed
 
 
@@ -175,7 +195,7 @@ def set_queue_attribute(queue, attribute, value, check_mode=False):
         existing_value = ''
 
     # convert dict attributes to JSON strings (sort keys for comparing)
-    if attribute is 'Policy':
+    if attribute in ['Policy', 'RedrivePolicy']:
         value = json.dumps(value, sort_keys=True)
         if existing_value:
             existing_value = json.dumps(json.loads(existing_value), sort_keys=True)
@@ -224,6 +244,7 @@ def main():
         delivery_delay=dict(type='int'),
         receive_message_wait_time=dict(type='int'),
         policy=dict(type='dict', required=False),
+        redrive_policy=dict(type='dict', required=False),
     ))
 
     module = AnsibleModule(
@@ -240,7 +261,7 @@ def main():
     try:
         connection = connect_to_aws(boto.sqs, region, **aws_connect_params)
 
-    except (NoAuthHandlerFound, AnsibleAWSError), e:
+    except (NoAuthHandlerFound, AnsibleAWSError) as e:
         module.fail_json(msg=str(e))
 
     state = module.params.get('state')
@@ -249,10 +270,6 @@ def main():
     elif state == 'absent':
         delete_sqs_queue(connection, module)
 
-
-# import module snippets
-from ansible.module_utils.basic import *
-from ansible.module_utils.ec2 import *
 
 if __name__ == '__main__':
     main()

@@ -133,6 +133,8 @@ table_status:
     sample: ACTIVE
 '''
 
+import traceback
+
 try:
     import boto
     import boto.dynamodb2
@@ -151,6 +153,10 @@ try:
 
 except ImportError:
     HAS_BOTO = False
+
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.ec2 import AnsibleAWSError, connect_to_aws, ec2_argument_spec, get_aws_connection_info
+
 
 DYNAMO_TYPE_DEFAULT = 'STRING'
 INDEX_REQUIRED_OPTIONS = ['name', 'type', 'hash_key_name']
@@ -244,7 +250,7 @@ def dynamo_table_exists(table):
         table.describe()
         return True
 
-    except JSONResponseError, e:
+    except JSONResponseError as e:
         if e.message and e.message.startswith('Requested resource not found'):
             return False
         else:
@@ -264,14 +270,14 @@ def update_dynamo_table(table, throughput=None, check_mode=False, global_indexes
     removed_indexes, added_indexes, index_throughput_changes = get_changed_global_indexes(table, global_indexes)
     if removed_indexes:
         if not check_mode:
-            for name, index in removed_indexes.iteritems():
+            for name, index in removed_indexes.items():
                 global_indexes_changed = table.delete_global_secondary_index(name) or global_indexes_changed
         else:
             global_indexes_changed = True
 
     if added_indexes:
         if not check_mode:
-            for name, index in added_indexes.iteritems():
+            for name, index in added_indexes.items():
                 global_indexes_changed = table.create_global_secondary_index(global_index=index) or global_indexes_changed
         else:
             global_indexes_changed = True
@@ -281,7 +287,7 @@ def update_dynamo_table(table, throughput=None, check_mode=False, global_indexes
             # todo: remove try once boto has https://github.com/boto/boto/pull/3447 fixed
             try:
                 global_indexes_changed = table.update_global_secondary_index(global_indexes=index_throughput_changes) or global_indexes_changed
-            except ValidationException as e:
+            except ValidationException:
                 pass
         else:
             global_indexes_changed = True
@@ -318,18 +324,18 @@ def get_changed_global_indexes(table, global_indexes):
     set_index_info = dict((index.name, index.schema()) for index in global_indexes)
     set_index_objects = dict((index.name, index) for index in global_indexes)
 
-    removed_indexes = dict((name, index) for name, index in table_index_info.iteritems() if name not in set_index_info)
-    added_indexes = dict((name, set_index_objects[name]) for name, index in set_index_info.iteritems() if name not in table_index_info)
+    removed_indexes = dict((name, index) for name, index in table_index_info.items() if name not in set_index_info)
+    added_indexes = dict((name, set_index_objects[name]) for name, index in set_index_info.items() if name not in table_index_info)
     # todo: uncomment once boto has https://github.com/boto/boto/pull/3447 fixed
-    # index_throughput_changes = dict((name, index.throughput) for name, index in set_index_objects.iteritems() if name not in added_indexes and (index.throughput['read'] != str(table_index_objects[name].throughput['read']) or index.throughput['write'] != str(table_index_objects[name].throughput['write'])))
+    # index_throughput_changes = dict((name, index.throughput) for name, index in set_index_objects.items() if name not in added_indexes and (index.throughput['read'] != str(table_index_objects[name].throughput['read']) or index.throughput['write'] != str(table_index_objects[name].throughput['write'])))
     # todo: remove once boto has https://github.com/boto/boto/pull/3447 fixed
-    index_throughput_changes = dict((name, index.throughput) for name, index in set_index_objects.iteritems() if name not in added_indexes)
+    index_throughput_changes = dict((name, index.throughput) for name, index in set_index_objects.items() if name not in added_indexes)
 
     return removed_indexes, added_indexes, index_throughput_changes
 
 
 def validate_index(index, module):
-    for key, val in index.iteritems():
+    for key, val in index.items():
         if key not in INDEX_OPTIONS:
             module.fail_json(msg='%s is not a valid option for an index' % key)
     for required_option in INDEX_REQUIRED_OPTIONS:
@@ -398,7 +404,7 @@ def main():
 
     try:
         connection = connect_to_aws(boto.dynamodb2, region, **aws_connect_params)
-    except (NoAuthHandlerFound, AnsibleAWSError), e:
+    except (NoAuthHandlerFound, AnsibleAWSError) as e:
         module.fail_json(msg=str(e))
 
     state = module.params.get('state')
@@ -407,10 +413,6 @@ def main():
     elif state == 'absent':
         delete_dynamo_table(connection, module)
 
-
-# import module snippets
-from ansible.module_utils.basic import *
-from ansible.module_utils.ec2 import *
 
 if __name__ == '__main__':
     main()
