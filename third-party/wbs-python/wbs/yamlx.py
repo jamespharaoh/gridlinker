@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import codecs
@@ -111,7 +113,10 @@ def encode_real (schema, data, indent, here):
 
 def encode_str (schema, data, indent, here):
 
-	return "\"%s\"" % data
+	return "\"%s\"" % (
+		data.replace (
+			"\"",
+			"\\\""))
 
 def encode_list (schema, data, indent, here):
 
@@ -241,4 +246,4 @@ def load_data (path):
 			"File or directory doesn't exist: %s" % (
 				path))
 
-# ex: noet ts=4 filetype=yaml
+# ex: noet ts=4 filetype=python

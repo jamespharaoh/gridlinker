@@ -3,37 +3,50 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+__all__ = [
+	"LoginClient",
+]
+
 try:
 
 	import datetime
 	import flask
-	import httplib2
 	import json
+	import requests
+
+	import_success = True
 
 except ImportError:
 
-	pass
+	impor_success = False
 
 class LoginClient (object):
 
 	def __init__ (self, settings):
 
+		if not import_success:
+
+			raise Exception (
+				"Missing required libraries")
+
 		self.token_cache = dict ()
 
 		self.settings = settings
 
-		self.http = (
-			httplib2.Http ())
+		self.http_session = (
+			requests.Session ())
 
 	def before_request (self):
 
-		if "force_email" in self.settings:
+		if "force-email" in self.settings:
 
 			flask.g.user_email = (
-				self.settings ["force_email"])
+				self.settings ["force-email"])
 
 			flask.g.user_groups = (
-				self.settings ["force_groups"])
+				self.settings ["force-groups"])
+
+			flask.g.logout_url = None
 
 			return
 
@@ -41,6 +54,9 @@ class LoginClient (object):
 
 			flask.g.user_email = None
 			flask.g.user_groups = []
+
+			flask.g.login_url = (
+				self.settings ["login-url"])
 
 			return
 
@@ -65,12 +81,11 @@ class LoginClient (object):
 
 		if not token_data:
 
-			response, content = (
-				self.http.request (
-					"%s/api/verify" % (
+			http_request = (
+				self.http_session.post (
+					url = "%s/api/verify" % (
 						self.settings ["login-url"]),
-					"POST",
-					body = json.dumps ({
+					data = json.dumps ({
 						"token": token,
 					}),
 					headers = {
@@ -78,8 +93,7 @@ class LoginClient (object):
 					}))
 
 			token_data = (
-				json.loads (
-					content))
+				http_request.json ())
 
 			token_data ["expires"] = (
 				datetime.datetime.now ()
@@ -96,9 +110,16 @@ class LoginClient (object):
 			flask.g.user_groups = (
 				token_data ["groups"])
 
+			flask.g.logout_url = (
+				"%s/log-out" % (
+					self.settings ["login-url"]))
+
 		else:
 
 			flask.g.user_email = None
 			flask.g.user_groups = []
+
+			flask.g.login_url = (
+				self.settings ["login-url"])
 
 # ex: noet ts=4 filetype=python
