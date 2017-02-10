@@ -8,3 +8,4 @@
 /work
 *.pyc
 /data/temp
+/third-party/gitdb/gitdb2.egg-info

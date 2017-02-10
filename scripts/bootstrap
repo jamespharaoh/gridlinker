@@ -3,6 +3,19 @@
 set -euf -o pipefail
 trap 'pid=$(jobs -p); if test "$pid"; then kill $pid; fi' EXIT
 
+system_packages=(
+	"build-essential"
+	"curl"
+	"git"
+	"python"
+	"python-crypto"
+	"python-jinja2"
+	"python-openssl"
+	"python-paramiko"
+	"python-setuptools"
+	"python-yaml"
+)
+
 # check for existing etcd
 
 if test -f /etc/init/etcd.conf; then
@@ -15,13 +28,22 @@ fi
 cd ~/datingnode-ansible
 if ! test -d config -a -f config/overrides.yml; then
 	echo "Please create config/overrides.yml first" >&2
+	exit 1
 fi
+
+# ask for deployment name
+
+read -p "Please specify deployment name: " deployment_name
 
 # update all packages
 
 echo "Updating packages" >&2
 sudo apt-get update
 sudo apt-get dist-upgrade -y
+
+# install packages
+echo "Installing packages" >&2
+sudo apt-get install -y "${system_packages[@]}"
 
 # setup temporary etcd
 
@@ -56,7 +78,7 @@ cat >config/connections.yml <<-EOF
 EOF
 
 echo "Initialising resources" >&2
-misc/create-resources
+scripts/create-resources "$deployment_name"
 
 echo "Configuring devbox" >&2
 ./datingnode-local ansible playbook -- playbooks/vagrant-devbox.yml

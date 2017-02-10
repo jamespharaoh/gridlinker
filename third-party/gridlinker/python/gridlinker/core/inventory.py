@@ -666,7 +666,8 @@ class Inventory (object):
 
 		if not "identity" in class_data:
 
-			raise Exception ()
+			raise Exception (
+				"Invalid class definition: %s" % class_name)
 
 		if class_data ["identity"] ["type"] != "class":
 

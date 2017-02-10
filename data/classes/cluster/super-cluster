@@ -9,36 +9,26 @@ class:
 
   namespace: "cluster"
 
-icinga:
+  groups:
 
-  master: ""
+    - "super-clusters"
 
-  database_type: "postgresql"
-  database_delegate: "host/icinga-1"
-  database_username: "icinga"
-  database_hostname: "icinga-1.vpn"
-  database_port: "5432"
+super_cluster:
 
-icinga_web:
+  icinga_master: ""
 
-  version: "2.1.2"
+  icinga_database_type: "postgresql"
+  icinga_database_delegate: "host/icinga-1"
+  icinga_database_username: "icinga"
+  icinga_database_hostname: "icinga-1.vpn"
+  icinga_database_port: "5432"
 
-  database_type: "postgresql"
-  database_delegate: "host/icinga-1"
-  database_username: "icingaweb"
-  database_hostname: "icinga-1.vpn"
-  database_port: "5432"
+  icinga_web_version: "2.1.2"
 
-icinga_web_graphite:
-
-  version: "b451489effdfb179ce2e3ff8c0d8390efad8db5e"
-
-graphite_carbon:
-
-  version: "0.9.14"
-
-graphite_web:
-
-  version: "0.9.14"
+  icinga_web_database_type: "postgresql"
+  icinga_web_database_delegate: "host/icinga-1"
+  icinga_web_database_username: "icingaweb"
+  icinga_web_database_hostname: "icinga-1.vpn"
+  icinga_web_database_port: "5432"
 
 # ex: et ts=2 filetype=yaml

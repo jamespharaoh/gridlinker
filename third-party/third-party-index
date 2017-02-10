@@ -3,48 +3,49 @@
 ansible:
 
   url: "git@github.com:ansible/ansible.git"
-  #version: "stable-2.0"
-  version: "2eb59bedcfc127b6b3ea392e654c031e83a6e87d"
-  python: "ansible/lib"
+  branch: "stable-2.2"
+  auto: "python"
 
 ansible-modules-core:
 
   url: "git@github.com:ansible/ansible-modules-core.git"
-  version: "stable-2.0"
+  branch: "stable-2.2"
+  auto: "python"
 
 ansible-modules-extra:
 
   url: "git@github.com:ansible/ansible-modules-extras.git"
-  version: "stable-2.0"
+  branch: "stable-2.2"
+  auto: "python"
 
 gitdb:
 
   url: "git@github.com:gitpython-developers/gitdb.git"
-  version: "master"
-  python: "gitdb"
+  branch: "master"
+  auto: "python"
 
 gitpython:
 
   url: "git@github.com:gitpython-developers/GitPython.git"
-  version: "master"
-  python: "gitpython"
+  branch: "master"
+  auto: "python"
 
 gridlinker:
 
   url: "git@gitlab.wellbehavedsoftware.com:well-behaved-software/gridlinker.git"
-  version: "master"
-  python: "gridlinker/python"
+  branch: "master"
+  python: "third-party/gridlinker/python"
 
 smmap:
 
   url: "git@github.com:gitpython-developers/smmap.git"
-  version: "master"
-  python: "smmap"
+  branch: "master"
+  auto: "python"
 
 wbs-python:
 
   url: "git@gitlab.wellbehavedsoftware.com:well-behaved-software/wbs-python.git"
-  version: "master"
-  python: "wbs-python"
+  branch: "master"
+  python: "third-party/wbs-python"
 
 # ex: et ts=2 filetype=yaml

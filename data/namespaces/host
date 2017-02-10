@@ -1,0 +1,8 @@
+---
+
+identity:
+
+  type: "namespace"
+  name: "host"
+
+# ex: et ts=2 filetype=yaml
