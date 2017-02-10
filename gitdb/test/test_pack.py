@@ -188,7 +188,8 @@ class TestPack(TestBase):
 
         # pack writing - write all packs into one
         # index path can be None
-        pack_path = tempfile.mktemp('', "pack", rw_dir)
+        pack_path1 = tempfile.mktemp('', "pack1", rw_dir)
+        pack_path2 = tempfile.mktemp('', "pack2", rw_dir)
         index_path = tempfile.mktemp('', 'index', rw_dir)
         iteration = 0
 
@@ -196,8 +197,9 @@ class TestPack(TestBase):
             for obj in pack_objs:
                 obj.stream.seek(0)
         # END utility
-        for ppath, ipath, num_obj in zip((pack_path, ) * 2, (index_path, None), (len(pack_objs), None)):
-            pfile = open(ppath, 'wb')
+        for ppath, ipath, num_obj in zip((pack_path1, pack_path2),
+                                         (index_path, None),
+                                         (len(pack_objs), None)):
             iwrite = None
             if ipath:
                 ifile = open(ipath, 'wb')
@@ -210,12 +212,12 @@ class TestPack(TestBase):
             # END rewind streams
             iteration += 1
 
-            pack_sha, index_sha = PackEntity.write_pack(pack_objs, pfile.write, iwrite, object_count=num_obj)
-            pfile.close()
+            with open(ppath, 'wb') as pfile:
+                pack_sha, index_sha = PackEntity.write_pack(pack_objs, pfile.write, iwrite, object_count=num_obj)
             assert os.path.getsize(ppath) > 100
 
             # verify pack
-            pf = PackFile(ppath)
+            pf = PackFile(ppath)  # FIXME: Leaks file-pointer(s)!
             assert pf.size() == len(pack_objs)
             assert pf.version() == PackFile.pack_version_default
             assert pf.checksum() == pack_sha
@@ -232,7 +234,7 @@ class TestPack(TestBase):
             # END verify files exist
         # END for each packpath, indexpath pair
 
-        # verify the packs throughly
+        # verify the packs thoroughly
         rewind_streams()
         entity = PackEntity.create(pack_objs, rw_dir)
         count = 0
