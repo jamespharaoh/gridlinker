@@ -1,5 +1,21 @@
 ---
 
+# ---------- internal
+
+gridlinker:
+
+  url: "git@gitlab.wellbehavedsoftware.com:well-behaved-software/gridlinker.git"
+  branch: "master"
+  python: "third-party/gridlinker/python"
+
+wbs-python:
+
+  url: "git@gitlab.wellbehavedsoftware.com:well-behaved-software/wbs-python.git"
+  branch: "master"
+  python: "third-party/wbs-python"
+
+# ---------- ansible
+
 ansible:
 
   url: "git@github.com:ansible/ansible.git"
@@ -18,6 +34,26 @@ ansible-modules-extra:
   branch: "stable-2.2"
   auto: "python"
 
+# ---------- python
+
+cffi:
+
+  url: "git@gitlab.wellbehavedsoftware.com:well-behaved-software/python-cffi.git"
+  branch: "master"
+  auto: "python"
+
+cryptography:
+
+  url: "git@github.com:pyca/cryptography.git"
+  branch: "master"
+  auto: "python"
+
+enum34:
+
+  url: "git@github.com:certik/enum34.git"
+  branch: "master"
+  auto: "python"
+
 gitdb:
 
   url: "git@github.com:gitpython-developers/gitdb.git"
@@ -30,22 +66,59 @@ gitpython:
   branch: "master"
   auto: "python"
 
-gridlinker:
+ipaddress:
 
-  url: "git@gitlab.wellbehavedsoftware.com:well-behaved-software/gridlinker.git"
+  url: "git@github.com:phihag/ipaddress.git"
   branch: "master"
-  python: "third-party/gridlinker/python"
+  auto: "python"
+
+jinja2:
+
+  url: "git@github.com:mitsuhiko/jinja2.git"
+  branch: "2.8-maintenance"
+  auto: "python"
+
+markupsafe:
+
+  url: "git@github.com:pallets/markupsafe.git"
+  branch: "master"
+  auto: "python"
+
+netaddr:
+
+  url: "git@github.com:drkjam/netaddr.git"
+  branch: "rel-0.7.x"
+  version: "netaddr-0.7.18"
+  auto: "python"
+
+pycrypto:
+
+  url: "git@github.com:dlitz/pycrypto.git"
+  branch: "master"
+  auto: "python"
+
+pyopenssl:
+
+  url: "git@github.com:pyca/pyopenssl.git"
+  branch: "master"
+  auto: "python"
+
+pyyaml:
+
+  url: "git@github.com:yaml/pyyaml.git"
+  branch: "master"
+  auto: "python"
+
+six:
+
+  url: "git@github.com:wellbehavedsoftware/python-six.git"
+  branch: "master"
+  auto: "python"
 
 smmap:
 
   url: "git@github.com:gitpython-developers/smmap.git"
   branch: "master"
   auto: "python"
-
-wbs-python:
-
-  url: "git@gitlab.wellbehavedsoftware.com:well-behaved-software/wbs-python.git"
-  branch: "master"
-  python: "third-party/wbs-python"
 
 # ex: et ts=2 filetype=yaml
