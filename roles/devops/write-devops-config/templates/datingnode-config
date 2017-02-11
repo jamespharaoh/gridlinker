@@ -47,6 +47,6 @@ IMAGES=(
 	"$IMAGE_MEMCACHE"
 )
 
-DATINGNODE_SUPER="/home/vagrant/datingnode-super"
+DATINGNODE_SUPER="{{ devbox_home }}/datingnode-super"
 
 # ex: noet ts=4 filetype=sh

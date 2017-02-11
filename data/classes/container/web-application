@@ -44,7 +44,7 @@ start:
     - "{{ container_directory }}/data:/data"
 
   volumes_instant:
-    - "/home/vagrant/datingnode-super:/var/www/datingnode-super"
+    - "{{ devbox_home }}/datingnode-super:/var/www/datingnode-super"
 
   volumes_all: "{{ start_volumes_default + start_volumes_instant }}"
 
