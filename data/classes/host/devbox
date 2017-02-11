@@ -1,0 +1,140 @@
+---
+
+identity:
+
+  name: "devbox"
+  type: "class"
+
+class:
+
+  namespace: "host"
+
+ansible:
+
+  connection: "local"
+
+devbox:
+
+  home: "/home/{{ devbox_user }}"
+  user: "vagrant"
+
+  checkouts:
+
+    - name: "datingnode-ansible"
+      remote: "git@bitbucket.org:jimmyff/datingnode-ansible.git"
+      branch: "master"
+
+    - name: "datingnode-super"
+      remote: "git@bitbucket.org:jimmyff/datingnode-super.git"
+      branch: "unity"
+
+etcd:
+
+  name: "localhost"
+  version: "3.1.0"
+  secured: "no"
+  clustered: "no"
+
+python:
+
+  packages:
+
+    - name: "pip"
+      version: "9.0.1"
+
+    - name: "docker-py"
+      version: "1.10.6"
+
+    - name: "jinja2"
+      version: "2.8.1"
+
+    - name: "netaddr"
+      version: "0.7.19"
+
+    - name: "paramiko"
+      version: "2.1.1"
+
+    - name: "psycopg2"
+      version: "2.6.2"
+
+    - name: "pyopenssl"
+      version: "16.2.0"
+
+    - name: "pyyaml"
+      version: "3.12"
+
+system:
+
+  init: "systemd"
+
+ubuntu:
+
+  release: "xenial"
+
+  system_packages:
+
+    # remove
+
+    - name: "chef"
+      state: "absent"
+
+    - name: "chef-zero"
+      state: "absent"
+
+    - name: "cloud-init"
+      state: "absent"
+
+    - name: "puppet"
+      state: "absent"
+
+    - name: "puppet-common"
+      state: "absent"
+
+    - name: "python-pip"
+      state: "absent"
+
+    # install
+
+    - name: "btrfs-tools"
+      state: "present"
+
+    - name: "colordiff"
+      state: "present"
+
+    - name: "dkms"
+      state: "present"
+
+    - name: "encfs"
+      state: "present"
+
+    - name: "git"
+      state: "present"
+
+    - name: "libffi-dev"
+      state: "present"
+
+    - name: "libpq-dev"
+      state: "present"
+
+    - name: "libssl-dev"
+      state: "present"
+
+    - name: "linux-generic-lts-vivid"
+      state: "present"
+
+    - name: "nfs-kernel-server"
+      state: "present"
+
+    - name: "ngrep"
+      state: "present"
+
+    - name: "postgresql-client-9.5"
+      state: "present"
+
+    - name: "samba"
+      state: "present"
+
+    - name: "whois"
+      state: "present"
+
+# ex: et ts=2 filetype=yaml

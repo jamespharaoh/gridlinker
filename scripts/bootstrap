@@ -24,7 +24,7 @@ cd ~/datingnode-ansible
 
 # check for existing etcd
 
-if test -f /etc/init/etcd.conf; then
+if test -f /etc/init/etcd.conf -o -f /etc/systemd/system/etcd.service; then
 
 	echo "Etcd already seems to be installed, aborting..." >&2
 
@@ -42,11 +42,25 @@ if test -f "config/overrides.yml"; then
 
 fi
 
-# ask for deployment name
+# runtime configuration
 
-read -p "Please specify deployment name: " deployment_name
+hostname=$(hostname)
 
-echo >config/overrides.yml <<-END
+echo "Using hostname: $hostname"
+
+if test "$#" -ge 1; then
+
+	deployment_name="$1"
+
+	echo "Using deploymentname: $deployment_name"
+
+else
+
+	read -p "Please specify deployment name: " deployment_name
+
+fi
+
+cat >config/overrides.yml <<-END
 	---
 
 	deployment_name: "${deployment_name}"
@@ -120,11 +134,11 @@ EOF
 
 echo "Initialising resources" >&2
 
-scripts/create-resources "$deployment_name"
+scripts/create-resources "$deployment_name" "$hostname"
 
 echo "Configuring devbox" >&2
 
-./datingnode-local ansible playbook -- playbooks/vagrant-devbox.yml
+./datingnode-local ansible playbook -- playbooks/devbox-bootstrap.yml
 
 # swap from temporary to permanent etcd
 
@@ -143,12 +157,13 @@ echo "Configuring permanent connection" >&2
 cat >config/connections.yml <<-EOF
 	---
 	datingnode-local:
-	  etcd_servers: [ "datingnode-devbox" ]
+	  etcd_servers: [ "localhost" ]
 	  etcd_secure: "no"
 	  etcd_prefix: "/datingnode-local"
 EOF
 
 echo "Importing data to etcd" >&2
+
 ./datingnode-local etcd import --source work/etcd-bootstrap
 
 # done

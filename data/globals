@@ -88,16 +88,16 @@ wbs_dist: "https://dist.wellbehavedsoftware.com"
 
 python:
 
-  install_version: "2.7.10"
+  install_version: "2.7.13"
 
   packages:
 
     - name: "pip"
-      version: "8.1.0"
+      version: "9.0.1"
 
 python_pip:
 
-  install_version: "8.0.2"
+  install_version: "9.0.1"
 
 postgresql_version: "9.3"
 postgresql_user: "postgres"

@@ -1,8 +1,10 @@
 ---
 
-- include: "setup-hosts.yml"
-  tags:
+- hosts: "devbox"
+  roles:
 
     - "setup-hosts"
+    - "system"
+    - "etcd"
 
 # ex: et ts=2 filetype=yaml

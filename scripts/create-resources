@@ -2,19 +2,20 @@
 
 set -euf -o pipefail
 
-if test "$#" != "1"; then
-	echo "Syntax: $0 CLUSTER" >&2
+if test "$#" != "2"; then
+	echo "Syntax: $0 CLUSTER HOSTNAME" >&2
 	exit 1
 fi
 
 cluster="$1"
+hostname="$2"
 
 # create devbox
 
 ./datingnode-local resource create \
 	--update-existing \
-	--class "vagrant-devbox" \
-	--name "datingnode-devbox" \
+	--class "devbox" \
+	--name "${hostname}" \
 	--set "private.address" "172.28.128.5"
 
 # create super cluster
@@ -55,7 +56,7 @@ cluster="$1"
 	--update-existing \
 	--class "database" \
 	--name "$cluster-database-1" \
-	--set-parent "datingnode-devbox" \
+	--set-parent "${hostname}" \
 	--index "1" \
 	--set "identity.cluster" "$cluster"
 
@@ -63,7 +64,7 @@ cluster="$1"
 	--update-existing \
 	--class "web-application" \
 	--name "$cluster-web-application-1" \
-	--set-parent "datingnode-devbox" \
+	--set-parent "${hostname}" \
 	--index "1" \
 	--set "identity.cluster" "$cluster"
 
@@ -71,7 +72,7 @@ cluster="$1"
 	--update-existing \
 	--class "vhost-proxy" \
 	--name "$cluster-vhost-proxy-1" \
-	--set-parent "datingnode-devbox" \
+	--set-parent "${hostname}" \
 	--index "1" \
 	--set "identity.cluster" "$cluster"
 
@@ -79,7 +80,7 @@ cluster="$1"
 	--update-existing \
 	--class "memcache" \
 	--name "$cluster-memcache-1" \
-	--set-parent "datingnode-devbox" \
+	--set-parent "${hostname}" \
 	--index "1" \
 	--set "identity.cluster" "$cluster"
 
