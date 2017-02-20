@@ -12,8 +12,15 @@ docker_mirror_url: "{{ docker_mirror_url | default ('https://get.docker.com/ubun
 
 docker_quay_auth: "{{ docker_quay_auth | default ('') }}"
 
+devbox_user: "{{ devbox_user | default (lookup ('env', 'USER')) }}"
 devbox_home: "{{ devbox_home | default (lookup ('env', 'HOME')) }}"
 devbox_private: "{{ devbox_private | default ('') }}"
+
+devbox_trusted_hosts:
+
+{% for trusted_host in devbox_trusted_hosts | default ([ '172.28.128.1' ]) %}
+  - "{{ trusted_host }}"
+{% endfor %}
 
 instant_deploy: "{{ instant_deploy | default ('no') }}"
 

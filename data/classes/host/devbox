@@ -21,11 +21,11 @@ devbox:
   checkouts:
 
     - name: "datingnode-ansible"
-      remote: "git@bitbucket.org:jimmyff/datingnode-ansible.git"
+      remote: "git@github.com:jimmyff/datingnode-ansible.git"
       branch: "master"
 
     - name: "datingnode-super"
-      remote: "git@bitbucket.org:jimmyff/datingnode-super.git"
+      remote: "git@github.com:jimmyff/datingnode-super.git"
       branch: "unity"
 
 etcd:

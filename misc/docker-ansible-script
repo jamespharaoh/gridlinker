@@ -73,12 +73,14 @@ rsync \
 	--include "/config" \
 	--include "/data" \
 	--include "/misc" \
-	--include "/playbooks/build" \
 	--include "/playbooks/build-internal.yml" \
-	--include "/playbooks/config" \
 	--include "/playbooks/config.yml" \
 	--exclude "/playbooks/*" \
 	--include "/playbooks" \
+	--include "/roles/build" \
+	--include "/roles/config" \
+	--exclude "/roles/*" \
+	--include "/roles" \
 	--include "/third-party" \
 	--exclude "/*" \
 	"/datingnode-ansible/" \
@@ -99,7 +101,7 @@ mkdir -p work
 cat >work/ansible.cfg <<-END
 	[defaults]
 	library = $PROJECT/third-party/ansible-modules-core:$PROJECT/third-party/ansible-modules-extras
-	roles_path = $PROJECT/playbooks/build:$PROJECT/third-party/gridlinker/roles/system
+	roles_path = $PROJECT/roles/build:$PROJECT/third-party/gridlinker/roles/miscellaneous/system
 END
 
 heading "Applying ansible build $build_name"
