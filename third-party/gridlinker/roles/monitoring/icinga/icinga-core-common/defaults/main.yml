@@ -291,14 +291,6 @@ icinga_core_agent_security_files:
     target: "pki/{{ identity_name }}.key"
     mode: "0640"
 
-icinga_core_agent_links:
-
-  - link: "{{ icinga_core_installed_prefix }}/etc"
-    target: "../../etc"
-
-  - link: "{{ icinga_core_installed_prefix }}/var"
-    target: "../../var"
-
 # ---------- agent configuration
 
 icinga_core_host_vars: {}

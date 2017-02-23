@@ -147,6 +147,9 @@ ubuntu_system_packages:
   - name: "dnsutils"
     state: "present"
 
+  - name: "ebtables"
+    state: "present"
+
   - name: "git"
     state: "present"
 
@@ -203,8 +206,13 @@ extra_ssl_domains:
 
 ubuntu_mirror: "http:/"
 
-icinga:
+icinga_agent:
 
-  version: "2.4.2-1"
+  masters: "icinga"
+
+icinga_core:
+
+  install: "yes"
+  install_version: "2.6.1-{{ ubuntu_release }}-0"
 
 # ex: et ts=2 filetype=yaml

@@ -21,11 +21,11 @@ environment:
 etcd:
 
   default_servers:
-    - "admin-1.vpn.datingnode.co.uk"
-    - "admin-2.vpn.datingnode.co.uk"
-    - "admin-3.vpn.datingnode.co.uk"
+    - "rocket-hz-host-1.rocketware.co.uk"
+    - "rocket-hz-host-2.rocketware.co.uk"
+    - "rocket-hz-host-3.rocketware.co.uk"
   default_secure: "yes"
-  default_prefix: "/datingnode-ansible"
+  default_prefix: "/datingnode-master"
 
 certificate_data:
 

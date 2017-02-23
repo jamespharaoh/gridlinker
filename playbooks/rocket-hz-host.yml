@@ -3,14 +3,14 @@
 - hosts: "rocket-hz-host"
   roles:
 
-    - "wait-for-ssh"
-    - "scan-ssh-key"
+    - "ssh-server-wait"
+    - "ssh-server-keyscan"
 
     - role: "setup-authorized-keys"
       authorized_keys_user: "root"
       authorized_keys_home: "/root"
 
-    - "install-system-packages"
+    - "system-packages-install"
     - "setup-network"
     - "setup-hosts"
     - "setup-sysctl"
@@ -25,6 +25,6 @@
     - "install-kvm"
     - "install-openvpn"
 
-    - "icinga-agent"
+    - "icinga-core-agent"
 
 # ex: et ts=2 filetype=yaml

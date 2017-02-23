@@ -2122,11 +2122,13 @@ class Inventory (object):
 
 			else:
 
-				raise Exception (
-					"Token '%s' not found in %s reference '%s'" % (
-						token,
-						reference_type,
-						reference_value))
+				return False, None, None
+
+				#raise Exception (
+				#	"Token '%s' not found in %s reference '%s'" % (
+				#		token,
+				#		reference_type,
+				#		reference_value))
 
 		elif self.trace:
 

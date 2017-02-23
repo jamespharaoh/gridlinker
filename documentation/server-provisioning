@@ -1,0 +1,169 @@
+## Physical server
+
+Order the server with Hetzner. It needs to be placed in the dedicated rack space
+and the second network port should be connected to the private switch. It should
+have two SSDs by default and a 4TB spinning disk.
+
+Once the server is made available, an extra regular IP address should be added,
+for the virtual machine, and a failover address, for inbound traffic.
+
+The forward and reverse DNS should be set up as follows. The forward DNS is
+configured via cloudfront, and the reverse DNS is configured via the Hetzner
+Robot.
+
+| Name                              | Description  |
+| --------------------------------- | ------------ |
+| rocket-hz-host-X.rocketware.co.uk | Primary IP   |
+| rocket-hz-vm-X.rocketware.co.uk   | Secondary IP |
+| rocket-hz-pub-X.rocketware.co.uk  | Failover IP  |
+
+The system should be booted into rescue mode, and a password will be provided.
+SSH into the host and perform the base installation:
+
+```
+name="rocket-hz-host-X"
+drive="sda,sdb"
+root_type="ext4"
+root_size="32"
+version="1604-xenial"
+
+images="/root/.oldroot/nfs/install/../images"
+image="$images/Ubuntu-${version}-64-minimal.tar.gz"
+
+installimage -a -n ${name} -i ${image} \
+    -d ${drive} -r yes -l 1 -b grub \
+    -p /:${root_type}:${root_size}G
+```
+
+This should take a minute or two, then you can reboot the machine. Once it
+restarts you can connect using the same credentials. You will need to remove the
+SSH host key, both for the hostname and IP address, using `ssh-keygen -R`, since
+this will change when the new system boots for the first time.
+
+Now, perform some basic system configuration and enable SSH access via public
+key.
+
+```
+apt update
+apt dist-upgrade
+apt install python
+
+mkdir -p /root/.ssh
+cat >> /root/.ssh/authorized_keys
+(paste your public SSH key here)
+(type control+D, then enter on a new line to end)
+```
+
+Now reboot again, since the kernel and other system packages are likely to have
+been updated. Verify that the SSH public key access is working.
+
+At this point, we can continue the server configuration using ansible from a
+devbox. Create a resource for the new server:
+
+```
+./datingnode-master resource create \
+    --class "rocket-hz-host" \
+    --name "rocket-hz-host-X" \
+    --set "identity.index" "X" \
+    --set "ubuntu.release" "xenial" \
+    --set "system.init" "systemd" \
+    --set "private.address" "x.x.x.x" \
+    --set "private.broadcast" "10.69.131.255" \
+    --set "private.netbits" "22" \
+    --set "private.netmask" "255.255.252.0" \
+    --set "private.network" "10.69.128.0" \
+    --set "public.address" "x.x.x.x" \
+    --set "public.broadcast" "x.x.x.x" \
+    --set "public.gateway" "x.x.x.x" \
+    --set "public.netbits" "xx" \
+    --set "public.network" "x.x.x.x"
+```
+
+And run the playbook to configure it:
+
+```
+./datingnode-master ansible playbook -- \
+    playbooks/rocket-hz-host.yml \
+    --limit host/rocket-hz-host-X
+```
+
+This will fail when attempting to start `dnsmasq`. This is because it is trying
+to bind to the bridge interface `brprv0` which has been configured but not
+enabled. Reboot the server and run the script again.
+
+```
+./datingnode-master ansible playbook -- \
+    playbooks/rocket-hz-host.yml \
+    --limit host/rocket-hz-host-X
+```
+
+It will fail again when trying to start `etcd`. At this point, add the new
+server as a cluster member:
+
+```
+./datingnode-master etcd control -- \
+    member add rocket-hz-host-X \
+    https://rocket-hz-host-X.rocketware.co.uk:2380
+```
+
+This will output a set of environment variables named `ETCD_NAME`,
+`ETCD_INITIAL_CLUSTER` and `ETCD_INITIAL_CLUSTER_STATE`. Copy this information
+and paste it to the end of `/etc/etcd/etcd-environment` on the host, then reset
+and start `etcd`:
+
+```
+systemctl stop etcd
+rm -rf /var/lib/etcd/member
+```
+
+Back on the devbox, confirm that the cluster has been updated correctly and is
+healthy:
+
+```
+./datingnode-master etcd control -- cluster-health
+```
+
+Add the new etcd server in `config/connections.yml` and `data/project, then run
+the playbook again:
+
+```
+./datingnode-master ansible playbook -- \
+    playbooks/rocket-hz-host.yml \
+    --limit host/rocket-hz-host-X
+```
+
+The playbook will fail again when it tried to configure `openvpn`. Issue a new
+server certificate:
+
+```
+./datingnode-master certificate authority issue \
+    --authority "openvpn" \
+    --common-name "rocket-hz-host-X" \
+    --server \
+    --print-all
+```
+
+Note the serial number and configure the host resource as appropriate. You'll
+also need to allocate a unique network for the VPN clients. This example uses
+the letter "Y" to represent the serial number:
+
+```
+./datingnode-master resource update \
+    --name "host/rocket-hz-host-X" \
+    --set "openvpn.certificate" "/authority/openvpn/issue/Y/certificate" \
+    --set "openvpn.private_key" "/authority/openvpn/issue/Y/key" \
+    --set "openvpn.network" "10.69.x"
+```
+
+Run the playbook again:
+
+```
+./datingnode-master ansible playbook -- \
+    playbooks/rocket-hz-host.yml \
+    --limit host/rocket-hz-host-X
+```
+
+This time the playbook should complete and the physical server should be
+configured. We now need to update some configuration on the other servers:
+
+TODO

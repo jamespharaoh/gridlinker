@@ -39,7 +39,10 @@ etcd:
   secured: "yes"
   clustered: "yes"
 
+  peer_authority: "rocket-etcd-peer"
   peer_ca_certificate: "/authority/rocket-etcd-peer/certificate"
+
+  client_authority: "rocket-etcd-client"
   client_ca_certificate: "/authority/rocket-etcd-client/certificate"
 
   initial_cluster_state: "new"
@@ -48,12 +51,12 @@ etcd:
     'rocket-hz-host-2=https://rocket-hz-host-2.rocketware.co.uk:2380',
   ] | join (',') }}"
 
-icinga:
+icinga_core:
 
   master: "{{ super_cluster.icinga_master }}"
 
   authority: "rocket-icinga"
-  ca_certificate: "/authority/{{ icinga_authority }}/certificate"
+  ca_certificate: "/authority/{{ icinga_core_authority }}/certificate"
 
   alt_dns:
 
