@@ -52,7 +52,7 @@ if test "$build_name" = "base"; then
 
 		hash -d pip
 
-		pip install paramiko pyyaml jinja2 httplib2 pycrypto pyopenssl
+		pip install paramiko pyyaml jinja2 httplib2 pycrypto pyopenssl six
 
 		touch /etc/dnode-ansible-flag
 
