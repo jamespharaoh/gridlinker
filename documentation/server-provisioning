@@ -163,7 +163,39 @@ Run the playbook again:
     --limit host/rocket-hz-host-X
 ```
 
-This time the playbook should complete and the physical server should be
-configured. We now need to update some configuration on the other servers:
+This time the playbook should complete. We now need to update some configuration
+on the other servers:
 
 TODO
+
+Finally, we'll partition the disks and setup LVM:
+
+```
+parted /dev/sda
+unit mb
+print
+mkpart primary ext2 34361 -0
+toggle 2 lvm
+quit
+
+parted /dev/sdb
+unit mb
+print
+mkpart primary ext2 34361 -0
+toggle 2 lvm
+quit
+
+gdisk /dev/sdc
+n
+1
+2048
+-0
+8e00
+w
+y
+
+pvcreate /dev/sda2 /dev/sdb2 /dev/sdc1
+vgcreate lvm-fast /dev/sda2 /dev/sdb2
+vgcreate lvm-big /dev/sdc1
+```
+
