@@ -99,13 +99,14 @@
 	] | join, '\n' -%}
 
 	{%- print [
-		uuid_mount_ext4 (
+		uuid_mount_btrfs (
 			cluster_name + '-cache-' + identity_index,
 			[
 				'/datingnode-' + cluster_name,
 				'/' + cluster_name + '-web-application-' + identity_index,
 				'/fast',
-			] | join),
+			] | join,
+			cluster_name),
 	] | join, '\n' -%}
 
 	{%- set data_dir = '/datingnode-' + cluster_name -%}
@@ -204,19 +205,22 @@
 {%- print '\n# ---------- misc\n\n' -%}
 
 {%- print [
-	uuid_mount_ext4 (
+	uuid_mount_btrfs (
 		'live-backups-' + identity_index,
-		'/datingnode-live/backups'),
+		'/datingnode-live/backups',
+		'/'),
 ] | join, '\n' -%}
 
 {%- print [
-	uuid_mount_ext4 (
+	uuid_mount_btrfs (
 		'lxc-' + identity_index,
-		'/var/lib/lxc'),
+		'/var/lib/lxc',
+		'/'),
 ] | join, '\n' -%}
 
 {%- print [
-	uuid_mount_ext4 (
+	uuid_mount_btrfs (
 		'docker-' + identity_index,
-		'/var/lib/docker'),
+		'/var/lib/docker',
+		'/'),
 ] | join, '\n' -%}

@@ -3,9 +3,10 @@
 - name: "stop docker container"
   delegate_to: "host/{{ identity.parent }}"
   action:
-    module: "docker"
+
+    module: "docker_container"
     name: "{{ identity.name }}"
-    image: "whatever"
+    image: "{{ start.registry }}/{{ start.image }}"
     state: "stopped"
 
 # ex: et ts=2 filetype=yaml

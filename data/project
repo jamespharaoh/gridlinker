@@ -50,13 +50,11 @@ resource_data:
 
     group: "deployment-clusters"
     key: "{{ identity_name }}"
-    section: "deployment_cluster"
 
   super_clusters:
 
     group: "super-clusters"
     key: "{{ identity_name }}"
-    section: "super_cluster"
 
 developers:
 

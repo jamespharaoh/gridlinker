@@ -3,8 +3,8 @@
 - hosts: "rocket-hz-vm"
   roles:
 
-    - "wait-for-ssh"
-    - "scan-ssh-key"
+    - "ssh-server-wait"
+    - "ssh-server-keyscan"
 
     - role: "setup-authorized-keys"
       authorized_keys_user: "root"
@@ -14,7 +14,7 @@
       authorized_keys_user: "ubuntu"
       authorized_keys_home: "/home/ubuntu"
 
-    - "install-system-packages"
+    - "system-packages-install"
     - "setup-grub-vm"
     - "setup-network"
     - "setup-hosts"
@@ -30,6 +30,6 @@
     - "datingnode-vm-firewall-setup"
     - "setup-datingnode-vm"
 
-    - "icinga-agent"
+    - "icinga-core-agent"
 
 # ex: et ts=2 filetype=yaml

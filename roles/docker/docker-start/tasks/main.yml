@@ -3,19 +3,25 @@
 - name: "start container"
   delegate_to: "host/{{ identity.parent }}"
   action:
-    module: "docker"
+
+    module: "docker_container"
     name: "{{ start.name }}"
-    state: "running"
     image: "{{ start.registry }}/{{ start.image }}"
-    registry: "{{ start.registry }}"
+    state: "started"
+
     command: "/sbin/my_init"
-    dns:
+
+    dns_servers:
       - "{{ parent.private.address }}"
-    expose: "{{ start.expose }}"
-    ports: "{{ start.ports }}"
+
+    exposed_ports: "{{ start.expose }}"
+    published_ports: "{{ start.ports }}"
+
     tty: "True"
-    stdin_open: "True"
+    interactive: "True"
+
     volumes: "{{ start.volumes }}"
+
     env: "{{ start.env }}"
 
 # ex: et ts=2 filetype=yaml

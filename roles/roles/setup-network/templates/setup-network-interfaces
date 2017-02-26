@@ -22,14 +22,14 @@ iface brpub0 inet static
 
 	# bridging
 
-	bridge_ports eth0
+	bridge_ports {{ public_interface }}
 	bridge_stp off
 	bridge_maxwait 0
 	bridge_fd 0
 
 	# link performance
 
-	pre-up tc qdisc add dev eth0 root sfq
+	pre-up tc qdisc add dev {{ public_interface }} root sfq
 
 	# firewall rules
 
@@ -64,15 +64,15 @@ iface brprv0 inet static
 
 	# bridging
 
-	bridge_ports eth1
+	bridge_ports {{ private_interface }}
 	bridge_stp off
 	bridge_maxwait 0
 	bridge_fd 0
 
 	# link performance
 
-	pre-up ip link set eth1 mtu 9000
-	pre-up tc qdisc add dev eth1 root sfq
+	pre-up ip link set {{ private_interface }} mtu 9000
+	pre-up tc qdisc add dev {{ private_interface }} root sfq
 
 	# firewall rules
 

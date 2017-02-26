@@ -7,8 +7,26 @@
     module: "apt"
     name: "ntp"
 
+- name: "write vm fstab"
+  sudo: "yes"
+  action:
+
+    module: "template"
+    dest: "/etc/fstab"
+    src: "datingnode-vm-fstab"
+
+- name: "write vm mount script"
+  sudo: "yes"
+  action:
+
+    module: "template"
+    dest: "/etc/mount-script"
+    src: "datingnode-vm-mount-script"
+
+    mode: "0755"
+
 - name: "write encfs keys"
-  with_dict: "{{ clusters }}"
+  with_dict: "{{ deployment_clusters }}"
   when: "'cluster' in item.value and 'encfs_key' in item.value.cluster"
   become: "yes"
   action:
@@ -30,7 +48,7 @@
     mode: "0600"
 
 - name: "write encfs helpers"
-  with_dict: "{{ clusters }}"
+  with_dict: "{{ deployment_clusters }}"
   when: "'cluster' in item.value and 'encfs_key' in item.value.cluster"
   become: "yes"
   action:
@@ -49,24 +67,6 @@
 
     owner: "root"
     group: "root"
-    mode: "0755"
-
-- name: "write vm fstab"
-  sudo: "yes"
-  action:
-
-    module: "template"
-    dest: "/etc/fstab"
-    src: "datingnode-vm-fstab"
-
-- name: "write vm mount script"
-  sudo: "yes"
-  action:
-
-    module: "template"
-    dest: "/etc/mount-script"
-    src: "datingnode-vm-mount-script"
-
     mode: "0755"
 
 - name: "install database backup script"

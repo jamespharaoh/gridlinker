@@ -1,2 +1,2 @@
 postmaster: root
-root: {{ clusters.master.cluster_operations_email | join (', ') }}
+root: {{ super_clusters.master.cluster_operations_email | join (', ') }}

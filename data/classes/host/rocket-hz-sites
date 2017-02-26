@@ -27,7 +27,15 @@ ssh:
     - "{{ identity.name }}"
     - "{{ private.address }}"
 
-icinga:
+private:
+
+  hostnames:
+
+    - "{{ identity_name }}"
+    - "{{ identity_name }}.vpn"
+    - "{{ identity_name }}.vpn.rocketware.co.uk"
+
+aicinga:
 
   master: "{{ super_cluster.icinga_master }}"
   authority: "rocket-icinga"

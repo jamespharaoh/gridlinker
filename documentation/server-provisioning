@@ -199,3 +199,145 @@ vgcreate lvm-fast /dev/sda2 /dev/sdb2
 vgcreate lvm-big /dev/sdc1
 ```
 
+## Virtual machine
+
+TODO Create LVM volumes
+
+Download the Ubuntu server ISO image and store it on the host under a directory
+called `/iso`. Create a file for the virtual machine definition, using the
+following template. Make sure to put the server index in place of `X`, the
+correct path to the downloaded ISO, and the MAC address which corresponds to the
+allocated hardware MAC address for the machine's IP address by Hetzner.
+
+```xml
+<domain type='kvm'>
+  <name>rocket-hz-vm-X</name>
+  <memory unit='GiB'>224</memory>
+  <currentMemory unit='GiB'>224</currentMemory>
+  <vcpu placement='static'>12</vcpu>
+  <os>
+    <type arch='x86_64' machine='q35'>hvm</type>
+    <boot dev='hd'/>
+    <boot dev='cdrom'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+  <clock offset='utc'/>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <devices>
+    <emulator>/usr/bin/kvm-spice</emulator>
+    <disk type='block' device='disk'>
+      <driver name='qemu' type='raw' cache='none' io='native' discard='unmap'/>
+      <source dev='/dev/lvm-fast/rocket-hz-vm-X'/>
+      <target dev='sda' bus='scsi'/>
+    </disk>
+    <disk type='block' device='disk'>
+      <driver name='qemu' type='raw' cache='none' io='native' discard='unmap'/>
+      <source dev='/dev/lvm-fast/live-database-X'/>
+      <target dev='sdb' bus='scsi'/>
+    </disk>
+    <disk type='block' device='disk'>
+      <driver name='qemu' type='raw' cache='none' io='native' discard='unmap'/>
+      <source dev='/dev/lvm-fast/live-cache-X'/>
+      <target dev='sdc' bus='scsi'/>
+    </disk>
+    <disk type='block' device='disk'>
+      <driver name='qemu' type='raw' cache='none' io='native' discard='unmap'/>
+      <source dev='/dev/lvm-big/live-images-X'/>
+      <target dev='sdd' bus='scsi'/>
+    </disk>
+    <disk type='block' device='disk'>
+      <driver name='qemu' type='raw' cache='none' io='native' discard='unmap'/>
+      <source dev='/dev/lvm-big/live-backups-X'/>
+      <target dev='sde' bus='scsi'/>
+    </disk>
+    <disk type='block' device='disk'>
+      <driver name='qemu' type='raw' cache='none' io='native' discard='unmap'/>
+      <source dev='/dev/lvm-fast/docker-X'/>
+      <target dev='sdf' bus='scsi'/>
+    </disk>
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='/iso/ubuntu-16.04.2-server-amd64.iso'/>
+      <target dev='sdg' bus='sata'/>
+      <readonly/>
+    </disk>
+    <interface type='network'>
+      <source network='public'/>
+      <model type='virtio'/>
+      <mac address='xx:xx:xx:xx:xx:xx'/>
+    </interface>
+    <interface type='network'>
+      <source network='private'/>
+      <model type='virtio'/>
+    </interface>
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
+    <input type='mouse' bus='ps2'/>
+    <input type='keyboard' bus='ps2'/>
+    <graphics type='vnc' port='-1' autoport='yes'/>
+    <video>
+      <model type='cirrus' vram='9216' heads='1'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
+    </video>
+    <memballoon model='virtio'>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
+    </memballoon>
+  </devices>
+</domain>
+```
+
+Define and start the VM:
+
+```sh
+virsh define rocket-hz-vm-X.xml
+virsh start rocket-hz-vm-X
+```
+
+Connect using VNC and complete the installation. Partition the entire first disk
+as an ext4 partition mounted as root, and create a user called "ubuntu" with an
+arbitrary password.
+
+When the installation is complete, stop the machine with `virsh destroy`, edit
+it with `virsh edit`, and remove the `<boot dev='cdrom'/>` and the `<disk>`
+which corresponds to the CDROM.
+
+Copy your SSH public key into the host using the password, install it in
+`.ssh/authorized_keys`, then remove the user's password with (TODO).
+
+Now, in a devbox, create the resource for the VM. You'll need to allocate a
+private address and fill in the details for the public address:
+
+```
+./datingnode-master resource create \
+    --class "rocket-hz-vm" \
+    --name "rocket-hz-vm-X" \
+    --set-parent "rocket-hz-host-X" \
+    --set "identity.index" "X" \
+    --set "ubuntu.release" "xenial" \
+    --set "system.init" "systemd" \
+    --set "private.address" "x.x.x.x" \
+    --set "private.broadcast" "10.69.131.255" \
+    --set "private.interface" "enp2s2" \
+    --set "private.netbits" "22" \
+    --set "private.netmask" "255.255.252.0" \
+    --set "private.network" "10.69.128.0" \
+    --set "public.address" "x.x.x.x" \
+    --set "public.broadcast" "x.x.x.x" \
+    --set "public.gateway" "x.x.x.x" \
+    --set "public.interface" "enp2s1" \
+    --set "public.mac" "xx:xx:xx:xx:xx" \
+    --set "public.netbits" "xx" \
+    --set "public.netmask" "x.x.x.x" \
+    --set "public.network" "x.x.x.x"
+```
+

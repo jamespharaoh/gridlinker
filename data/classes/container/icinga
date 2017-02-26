@@ -27,6 +27,12 @@ private:
 
     - "graphite.vpn.rocketware.co.uk"
 
+  hostnames:
+
+    - "{{ identity_name }}"
+    - "{{ identity_name }}.vpn"
+    - "{{ identity_name }}.vpn.rocketware.co.uk"
+
 ansible:
 
   ssh_host: "{{ private.address }}"

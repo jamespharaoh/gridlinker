@@ -31,6 +31,11 @@ OPEN_PORTS_TCP=(
 OPEN_PORTS_UDP=(
 )
 
+# obtain a lock
+
+exec 200>/run/firewall-rules-lock
+flock --exclusive 200
+
 # initialise filter tables
 
 	iptables --table "filter" --flush
