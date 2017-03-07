@@ -21,11 +21,11 @@ python_mirror: "https://www.python.org/ftp/python"
 python_default: "yes"
 
 python_temp: "/tmp/python-install"
-python_target: "/opt/python-{{ python_version }}"
+python_target: "/opt/python-{{ python_install_version }}"
 
-python_name: "Python-{{ python_version }}"
+python_name: "Python-{{ python_install_version }}"
 python_archive: "{{ python_name }}.tar.xz"
-python_url: "{{ python_mirror }}/{{ python_version }}/{{ python_archive }}"
+python_url: "{{ python_mirror }}/{{ python_install_version }}/{{ python_archive }}"
 
 python_pip_mirror: "https://bootstrap.pypa.io/"
 
@@ -36,6 +36,13 @@ python_apt_name: "python-apt-{{ python_apt_version }}"
 python_apt_archive: "{{ python_apt_name }}.tar.gz"
 python_apt_mirror: "https://dist.wellbehavedsoftware.com/python-apt"
 python_apt_url: "{{ python_apt_mirror }}/{{ python_apt_archive }}"
+
+python_apt_version: "{{
+  {
+    'trusty': '0.9.3-1',
+    'xenial': '1.1.0~beta1-1',
+  } [ubuntu_release]
+}}"
 
 python_alternatives:
 

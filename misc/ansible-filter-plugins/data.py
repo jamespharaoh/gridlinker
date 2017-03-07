@@ -7,6 +7,8 @@ import itertools
 import re
 import types
 
+from wbs import yamlx
+
 __all__ = [
 	"FilterModule",
 ]
@@ -104,20 +106,6 @@ def index_by (items, index_key):
 		in items
 	])
 
-def prepend_list (items, string):
-
-	return [
-		string + item
-		for item in items
-	]
-
-def append_list (items, string):
-
-	return [
-		item + string
-		for item in items
-	]
-
 def flatten_list (lists):
 
 	return [
@@ -132,7 +120,15 @@ def keys (item):
 
 def values (source):
 
-	return source.values ()
+	if isinstance (source, list):
+
+		return map (
+			lambda item: item [1],
+			source)
+
+	else:
+
+		return source.values ()
 
 def items (item):
 
@@ -172,6 +168,10 @@ def bytes (source):
 
 	return size * scale
 
+def to_yamlx (value):
+
+	return yamlx.encode_simple (None, value)
+
 def to_dict (items):
 
 	return dict (items)
@@ -188,13 +188,12 @@ class FilterModule (object):
 			"dict_map": dict_map,
 			"index_by": index_by,
 
-			"prepend_list": prepend_list,
-			"append_list": append_list,
-
 			"keys": keys,
 			"values": values,
 			"items": items,
 			"to_dict": to_dict,
+
+			"to_yamlx": to_yamlx,
 
 			"bytes": bytes,
 

@@ -1,5 +1,7 @@
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import with_statement
 
 import os
 import re
@@ -17,10 +19,9 @@ from wbs import LazyDictionary
 from wbs import ReportableError
 from wbs import SchemaDatabase
 
+from gridlinker.ansible.misc import *;
 from gridlinker.certificate.authority import CertificateAuthority
-
 from gridlinker.core.inventory import Inventory
-
 from gridlinker.etcd import GenericCollection
 from gridlinker.etcd import EtcdClient
 
@@ -33,6 +34,25 @@ class GenericContext (object):
 		self.project_metadata = project_metadata
 
 		self.trace = False
+
+	@lazy_property
+	def project_metadata_stripped (self):
+
+		return dict ([
+			(section_name, ansible_escape (section_data))
+			for section_name, section_data
+			in self.project_metadata.items ()
+		])
+
+	@lazy_property
+	def project_globals (self):
+
+		return self.local_data ["globals"]
+
+	@lazy_property
+	def project_defaults (self):
+
+		return self.local_data ["defaults"]
 
 	@lazy_property
 	def config (self):
@@ -139,6 +159,7 @@ class GenericContext (object):
 
 			return EtcdClient (
 				servers = self.connection_config ["etcd_servers"],
+				port = self.etcd_port,
 				secure = True,
 				client_ca_cert = ca_cert_path,
 				client_cert = cert_path,
@@ -149,6 +170,7 @@ class GenericContext (object):
 
 			return EtcdClient (
 				servers = self.connection_config ["etcd_servers"],
+				port = self.etcd_port,
 				prefix = self.connection_config ["etcd_prefix"])
 
 		else:
@@ -163,6 +185,14 @@ class GenericContext (object):
 			self.ansible_env)
 
 	@lazy_property
+	def etcd_port (self):
+
+		return int (
+			self.connection_config.get (
+				"etcd_port",
+				"2379"))
+
+	@lazy_property
 	def etcdctl_env (self):
 
 		if self.connection_config ["etcd_secure"] == "yes":
@@ -170,8 +200,11 @@ class GenericContext (object):
 			return {
 
 				"ETCDCTL_PEERS": ",".join ([
-					"https://%s:2379" % server
-					for server in self.connection_config ["etcd_servers"]
+					"https://%s:%s" % (
+						etcd_server,
+						self.etcd_port)
+					for etcd_server
+					in self.connection_config ["etcd_servers"]
 				]),
 
 				"ETCDCTL_CA_FILE": "%s/config/%s-ca.cert" % (
@@ -196,8 +229,11 @@ class GenericContext (object):
 			return {
 
 				"ETCDCTL_PEERS": ",".join ([
-					"http://%s:2379" % server
-					for server in self.connection_config ["etcd_servers"]
+					"http://%s:%s" % (
+						etcd_server,
+						self.etcd_port)
+					for etcd_server
+					in self.connection_config ["etcd_servers"]
 				]),
 
 			}
@@ -545,14 +581,15 @@ class GenericContext (object):
 						raise Exception (
 							"Can't deduce class for %s" % resource_name)
 
-					if not class_name in self.local_data ["classes"]:
+					if not class_name \
+					in self.classes:
 
 						raise Exception (
 							"Resource %s has invalid class: %s" % (
 								resource_name,
 								class_name))
 
-					class_data = self.local_data ["classes"] [class_name]
+					class_data = self.classes [class_name]
 
 					if not "ssh" in class_data \
 					or not "hostnames" in class_data ["ssh"]:
@@ -632,7 +669,20 @@ class GenericContext (object):
 	@lazy_property
 	def classes (self):
 
-		return self.local_data ["classes"]
+		return dict ([
+			(key, value)
+			for directory in self.local_data ["classes"].values ()
+			for key, value in directory.items ()
+		])
+
+	@lazy_property
+	def namespaces (self):
+
+		return dict ([
+			(key, wbs.freeze (value))
+			for key, value
+			in self.local_data ["namespaces"].items ()
+		])
 
 	@lazy_property
 	def inventory (self):
