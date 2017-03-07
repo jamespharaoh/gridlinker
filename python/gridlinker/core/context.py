@@ -591,26 +591,50 @@ class GenericContext (object):
 
 					class_data = self.classes [class_name]
 
-					if not "ssh" in class_data \
-					or not "hostnames" in class_data ["ssh"]:
+					namespace_name = class_data ["class"] ["namespace"]
+					namespace_data = self.namespaces [namespace_name]
 
-						continue
+					if "ssh" in class_data \
+					and "hostnames" in class_data ["ssh"]:
 
-					addresses = [
+						addresses = [
 
-						address for address in map (
+							address for address in map (
 
-							lambda value: (
-								self.inventory.resolve_value_or_none (
-									resource_name,
-									value,
-									"")),
+								lambda value: (
+									self.inventory.resolve_value_or_none (
+										resource_name,
+										value,
+										"")),
 
-							class_data ["ssh"] ["hostnames"])
+								class_data ["ssh"] ["hostnames"])
 
-						if address is not None
+							if address is not None
 
-					]
+						]
+
+					elif "ssh" in namespace_data \
+					and "hostnames" in namespace_data ["ssh"]:
+
+						addresses = [
+
+							address for address in map (
+
+								lambda value: (
+									self.inventory.resolve_value_or_none (
+										resource_name,
+										value,
+										"")),
+
+								namespace_data ["ssh"] ["hostnames"])
+
+							if address is not None
+
+						]
+
+					else:
+
+						addresses = []
 
 					if not addresses:
 						continue
