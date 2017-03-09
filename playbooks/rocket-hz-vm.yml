@@ -32,4 +32,6 @@
 
     - "icinga-core-agent"
 
+    - "btrfs-dedupe"
+
 # ex: et ts=2 filetype=yaml

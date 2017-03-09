@@ -266,4 +266,37 @@ icinga_host:
           type: "string"
           value: "/datingnode-staging/staging-web-application-{{ identity_index }}/big"
 
+btrfs_dedupe:
+
+  install_version: "1.1.0-{{ ubuntu_release }}"
+
+  tasks:
+
+    - name: "big"
+      user: "root"
+      schedule: "10 1 * * *"
+      database_path: "/var/cache/btrfs-dedupe/big.json.gz"
+      dedupe_paths:
+
+        - "/datingnode-live/live-web-application-{{ identity_index }}/big"
+        - "/datingnode-live/staging-web-application-{{ identity_index }}/big"
+
+    - name: "docker"
+      user: "root"
+      schedule: "10 2 * * *"
+      database_path: "/var/cache/btrfs-dedupe/docker.json.gz"
+      dedupe_paths:
+
+        - "/var/lib/docker"
+        - "/var/lib/docker/btrfs/subvolumes/*"
+
+    - name: "lxc"
+      user: "root"
+      schedule: "10 3 * * *"
+      database_path: "/var/cache/btrfs-dedupe/docker.json.gz"
+      dedupe_paths:
+
+        - "/var/lib/lxc"
+        - "/var/lib/lxc/*/rootfs"
+
 # ex: et ts=2 filetype=yaml
