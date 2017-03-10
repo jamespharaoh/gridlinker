@@ -2,13 +2,14 @@
 
 set -euf -o pipefail
 
-if test "$#" != "2"; then
-	echo "Syntax: $0 CLUSTER HOSTNAME" >&2
+if test "$#" != "1"; then
+	echo "Syntax: $0 CLUSTER" >&2
 	exit 1
 fi
 
 cluster="$1"
-hostname="$2"
+hostname="$(hostname --short)"
+ip_address="$(dig +short $hostname)"
 
 # create devbox
 
@@ -16,14 +17,16 @@ hostname="$2"
 	--update-existing \
 	--class "devbox" \
 	--name "${hostname}" \
-	--set "private.address" "172.28.128.5"
+	--set "private.address" "$ip_address"
 
 # create super cluster
 
 ./datingnode-local resource create \
 	--update-existing \
 	--class "super-cluster" \
-	--name "master"
+	--name "master" \
+	\
+	--set "icinga.master" ""
 
 # create deployment cluster
 
@@ -34,6 +37,7 @@ hostname="$2"
 	\
 	--set "cluster.database_master" "$cluster-database-1" \
 	--set "cluster.domain_suffix" "$cluster.datingnode.com" \
+	--set "cluster.slave_reads" "yes" \
 	--set "cluster.whitelist_active" "no" \
 	\
 	--set "ports.vhost_proxy" "80" \
@@ -48,7 +52,12 @@ hostname="$2"
 	--set "app.log_api" "yes" \
 	--set "app.send_external_communications" "no" \
 	--add "app.external_communication_email_white_list" "dummy" \
-	--remove "app.external_communication_email_white_list" "dummy"
+	--remove "app.external_communication_email_white_list" "dummy" \
+	\
+	--set "php.pm_max_children" "100" \
+	--set "php.pm_max_spare_servers" "10" \
+	--set "php.pm_min_spare_servers" "5" \
+	--set "php.pm_start_servers" "10"
 
 # create containers
 
@@ -82,6 +91,36 @@ hostname="$2"
 	--name "$cluster-memcache-1" \
 	--set-parent "${hostname}" \
 	--index "1" \
-	--set "identity.cluster" "$cluster"
+	--set "identity.cluster" "$cluster" \
+	--set "memcache.enabled" "yes"
+
+# create directories and mount-flags
+
+web_application="/datingnode-$cluster/$cluster-web-application-1"
+
+for directory in \
+	"$web_application" \
+	"$web_application/data" \
+	"$web_application/data/assets" \
+; do
+
+	sudo mkdir -p "$directory"
+
+done
+
+for directory in \
+	"$web_application/data/assets/image-cache" \
+	"$web_application/data/assets/sitemaps" \
+	"$web_application/data/assets/user-data" \
+	"$web_application/data/logs" \
+	"$web_application/data/temp" \
+; do
+
+	sudo mkdir -p "$directory"
+	sudo chown "www-data:ubuntu" "$directory"
+	sudo chmod "0770" "$directory"
+	sudo touch "$directory/mount-flag"
+
+done
 
 # ex: noet ts=4 filetype=sh

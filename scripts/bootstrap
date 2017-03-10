@@ -134,7 +134,7 @@ EOF
 
 echo "Initialising resources" >&2
 
-scripts/create-resources "$deployment_name" "$hostname"
+scripts/create-resources "$deployment_name"
 
 echo "Configuring devbox" >&2
 
@@ -170,4 +170,4 @@ echo "Importing data to etcd" >&2
 
 echo "Bootstrap complete" >&2
 
-# ex: noet ts=4 filetype=yaml
+# ex: noet ts=4 filetype=sh

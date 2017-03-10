@@ -1,23 +1,30 @@
 ---
 
-- name: "create data dirs"
-  with_items:
+- set_fact:
 
-    - "/data/logs"
-    - "/data/assets"
-    - "/data/assets/image-cache"
-    - "/data/assets/sitemaps"
-    - "/data/assets/user-data"
-    - "/data/temp"
+    verify_mounts:
 
+      - "/data/logs"
+      - "/data/assets/image-cache"
+      - "/data/assets/sitemaps"
+      - "/data/assets/user-data"
+      - "/data/temp"
+
+- name: "stat mount flags"
+  with_items: "{{ verify_mounts }}"
+  register: "stat_mount_flags_result"
   become: "yes"
   action:
 
-    module: "file"
-    path: "{{ item }}"
-    state: "directory"
-    owner: "www-data"
-    group: "www-data"
+    module: "stat"
+    path: "{{ item }}/mount-flag"
+
+- name: "check mount flags"
+  with_indexed_items: "{{ verify_mounts }}"
+  when: "not stat_mount_flags_result.results [item.0].stat.exists"
+  fail:
+
+    msg: "{{ item.1 }}/mount-flag does not exist"
 
 - include: "site.yml"
   label: "control"
@@ -25,6 +32,7 @@
   suffix: "main"
   config: "apache{{ apache_version }}-control-vhost-main.j2"
   sites:
+
     - main_domain: "control.datingnode.com"
       enabled: true
       
@@ -34,6 +42,7 @@
   suffix: "main"
   config: "apache{{ apache_version }}-secure-vhost-main.j2"
   sites:
+
     - main_domain: "secure.datingnode.com"
       enabled: true
       
@@ -43,6 +52,7 @@
   suffix: "main"
   config: "apache{{ apache_version }}-cdn-vhost-main.j2"
   sites:
+
     - main_domain: "cdn.datingnode.com"
       enabled: true
       

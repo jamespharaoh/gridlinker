@@ -18,7 +18,7 @@ mkdir -p work
 cat >work/ansible.cfg <<-END
 	[defaults]
 	library = $PROJECT/third-party/ansible-modules-core:$PROJECT/third-party/ansible-modules-extras
-	roles_path = $PROJECT/playbooks/config
+	roles_path = $PROJECT/roles/config
 END
 
 cp /config/runtime-config config/runtime-config
