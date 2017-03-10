@@ -21,9 +21,8 @@ environment:
 etcd:
 
   default_servers:
-    - "rocket-hz-host-1.rocketware.co.uk"
-    - "rocket-hz-host-2.rocketware.co.uk"
     - "rocket-hz-host-3.rocketware.co.uk"
+    - "rocket-hz-host-4.rocketware.co.uk"
   default_secure: "yes"
   default_prefix: "/datingnode-master"
 
