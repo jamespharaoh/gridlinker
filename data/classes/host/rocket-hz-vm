@@ -26,114 +26,38 @@ ansible:
   ssh_host: "{{ public.address }}"
   ssh_user: "ubuntu"
 
-ssh:
+btrfs_dedupe:
 
-  hostnames:
+  install_version: "1.1.0-{{ ubuntu_release }}"
 
-    - "{{ identity.name }}"
-    - "{{ public.address }}"
-    - "{{ private.address }}"
+  tasks:
 
-ubuntu:
+    - name: "big"
+      user: "root"
+      schedule: "10 1 * * *"
+      database_path: "/var/cache/btrfs-dedupe/big.json.gz"
+      dedupe_paths:
 
-  system_packages:
+        - "/datingnode-live/live-web-application-{{ identity_index }}/big"
+        - "/datingnode-live/staging-web-application-{{ identity_index }}/big"
 
-    # remove
-  
-    - name: "python-dev"
-      state: "absent"
+    - name: "docker"
+      user: "root"
+      schedule: "10 2 * * *"
+      database_path: "/var/cache/btrfs-dedupe/docker.json.gz"
+      dedupe_paths:
 
-    - name: "python-pip"
-      state: "absent"
+        - "/var/lib/docker"
+        - "/var/lib/docker/btrfs/subvolumes/*"
 
-    - name: "resolvconf"
-      state: "absent"
+    - name: "lxc"
+      user: "root"
+      schedule: "10 3 * * *"
+      database_path: "/var/cache/btrfs-dedupe/docker.json.gz"
+      dedupe_paths:
 
-    # install
-  
-    - name: "aptitude"
-      state: "present"
-
-    - name: "bash-completion"
-      state: "present"
-
-    - name: "bridge-utils"
-      state: "present"
-
-    - name: "btrfs-tools"
-      state: "present"
-
-    - name: "colordiff"
-      state: "present"
-
-    - name: "command-not-found"
-      state: "present"
-
-    - name: "curl"
-      state: "present"
-
-    - name: "dnsutils"
-      state: "present"
-
-    - name: "git"
-      state: "present"
-
-    - name: "iotop"
-      state: "present"
-
-    - name: "libpq-dev"
-      state: "present"
-
-    - name: "man-db"
-      state: "present"
-
-    - name: "nano"
-      state: "present"
-
-    - name: "ngrep"
-      state: "present"
-
-    - name: "postgresql-client-9.5"
-      state: "present"
-
-    - name: "rsync"
-      state: "present"
-
-    - name: "super"
-      state: "present"
-
-    - name: "tcpdump"
-      state: "present"
-
-    - name: "telnet"
-      state: "present"
-
-    - name: "unzip"
-      state: "present"
-
-    - name: "wget"
-      state: "present"
-
-    - name: "whois"
-      state: "present"
-
-postfix:
-
-  helo_name: "{{ identity_name }}.rocketware.co.uk"
-
-private:
-
-  hostnames:
-
-    - "{{ identity_name }}"
-    - "{{ identity_name }}.vpn"
-    - "{{ identity_name }}.vpn.rocketware.co.uk"
-
-public:
-
-  hostnames:
-
-    - "{{ identity_name }}.rocketware.co.uk"
+        - "/var/lib/lxc"
+        - "/var/lib/lxc/*/rootfs"
 
 icinga_core:
 
@@ -266,37 +190,46 @@ icinga_host:
           type: "string"
           value: "/datingnode-staging/staging-web-application-{{ identity_index }}/big"
 
-btrfs_dedupe:
+postfix:
 
-  install_version: "1.1.0-{{ ubuntu_release }}"
+  helo_name: "{{ identity_name }}.rocketware.co.uk"
 
-  tasks:
+private:
 
-    - name: "big"
-      user: "root"
-      schedule: "10 1 * * *"
-      database_path: "/var/cache/btrfs-dedupe/big.json.gz"
-      dedupe_paths:
+  hostnames:
 
-        - "/datingnode-live/live-web-application-{{ identity_index }}/big"
-        - "/datingnode-live/staging-web-application-{{ identity_index }}/big"
+    - "{{ identity_name }}"
+    - "{{ identity_name }}.vpn"
+    - "{{ identity_name }}.vpn.rocketware.co.uk"
 
-    - name: "docker"
-      user: "root"
-      schedule: "10 2 * * *"
-      database_path: "/var/cache/btrfs-dedupe/docker.json.gz"
-      dedupe_paths:
+public:
 
-        - "/var/lib/docker"
-        - "/var/lib/docker/btrfs/subvolumes/*"
+  hostnames:
+
+    - "{{ identity_name }}.rocketware.co.uk"
+
+ssh:
+
+  hostnames:
+
+    - "{{ identity.name }}"
+    - "{{ public.address }}"
+    - "{{ private.address }}"
+
+ubuntu:
+
+  system_packages_class:
+
+    - name: "encfs"
+      state: "present"
+
+    - name: "libpq-dev"
+      state: "present"
 
     - name: "lxc"
-      user: "root"
-      schedule: "10 3 * * *"
-      database_path: "/var/cache/btrfs-dedupe/docker.json.gz"
-      dedupe_paths:
+      state: "present"
 
-        - "/var/lib/lxc"
-        - "/var/lib/lxc/*/rootfs"
+    - name: "postgresql-client-9.5"
+      state: "present"
 
 # ex: et ts=2 filetype=yaml

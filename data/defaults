@@ -1,5 +1,88 @@
 ---
 
-{}
+ubuntu:
+
+  system_packages: "{{ []
+    | union (ubuntu_system_packages_global)
+    | union (ubuntu_system_packages_namespace)
+    | union (ubuntu_system_packages_class)
+    | union (ubuntu_system_packages_host)
+  }}"
+
+  system_packages_global:
+
+    # remove
+
+    - name: "python-dev"
+      state: "absent"
+
+    - name: "python-pip"
+      state: "absent"
+
+    - name: "resolvconf"
+      state: "absent"
+
+    # install
+
+    - name: "aptitude"
+      state: "present"
+
+    - name: "bash-completion"
+      state: "present"
+
+    - name: "colordiff"
+      state: "present"
+
+    - name: "command-not-found"
+      state: "present"
+
+    - name: "curl"
+      state: "present"
+
+    - name: "dnsutils"
+      state: "present"
+
+    - name: "git"
+      state: "present"
+
+    - name: "iotop"
+      state: "present"
+
+    - name: "mailutils"
+      state: "present"
+
+    - name: "man-db"
+      state: "present"
+
+    - name: "nano"
+      state: "present"
+
+    - name: "ngrep"
+      state: "present"
+
+    - name: "rsync"
+      state: "present"
+
+    - name: "super"
+      state: "present"
+
+    - name: "tcpdump"
+      state: "present"
+
+    - name: "telnet"
+      state: "present"
+
+    - name: "unzip"
+      state: "present"
+
+    - name: "wget"
+      state: "present"
+
+    - name: "whois"
+      state: "present"
+
+  system_packages_namespace: []
+  system_pacakges_class: []
+  system_packages_host: []
 
 # ex: et ts=2 filetype=yaml

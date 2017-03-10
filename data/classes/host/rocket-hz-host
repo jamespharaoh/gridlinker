@@ -103,4 +103,23 @@ icinga_host:
           type: "string"
           value: "/boot"
 
+ubuntu:
+
+  system_packages_class:
+
+    - name: "bcache-tools"
+      state: "present"
+
+    - name: "bridge-utils"
+      state: "present"
+
+    - name: "ebtables"
+      state: "present"
+
+    - name: "qemu-kvm"
+      state: "present"
+
+    - name: "thin-provisioning-tools"
+      state: "present"
+
 # ex: et ts=2 filetype=yaml
