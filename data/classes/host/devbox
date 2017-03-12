@@ -9,6 +9,10 @@ class:
 
   namespace: "host"
 
+  groups:
+
+    - "icinga-core-agents"
+
 ansible:
 
   connection: "local"
@@ -34,6 +38,11 @@ etcd:
   version: "3.1.0"
   secured: "no"
   clustered: "no"
+
+icinga_core_agent:
+
+  name: "{{ identity_name }}"
+  host: "{{ identity_name }}"
 
 python:
 

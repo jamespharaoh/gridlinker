@@ -1,13 +1,17 @@
+{{ ansible_warning ['#'] }}
+
 # server
 
-tls-server
 proto udp
 port 1194
 keepalive 5 20
 mode server
-persist-key
 persist-tun
-status {{ identity.name }}.log
+
+# logging
+
+status /run/openvpn/{{ identity_name }}.status
+log-append /var/log/openvpn-{{ identity_name }}.log
 
 # protocol
 
@@ -28,8 +32,12 @@ push "route {{ private.network }} {{ private.netmask }} {{ openvpn.network }}.2"
 
 # security
 
+tls-server
 dh dh1024.pem
 client-to-client
 ca rocket-ca.cert
 cert {{ identity.name }}.cert
 key {{ identity.name }}.key
+persist-key
+
+# ex: noet ts=4 filetype=openvpn

@@ -11,6 +11,23 @@ class:
 
   groups:
 
-    - "icinga-groups"
+    - "icinga-core-groups"
+    - "icinga-web-core-groups"
+    - "icinga-web-core-roles"
+
+icinga_core_group:
+
+  name: "{{ identity_name }}"
+
+icinga_web_core_group:
+
+  name: "{{ identity_name }}"
+
+icinga_web_core_role:
+
+  name: "{{ identity_name }}"
+  groups: [ "{{ identity_name }}" ]
+  permissions: [ "*" ]
+  users: []
 
 # ex: et ts=2 filetype=yaml

@@ -28,6 +28,8 @@ http {
 	proxy_buffering {{ nginx_proxy_buffering }};
 	proxy_buffers {{ nginx_proxy_buffers_number }} {{ nginx_proxy_buffers_size }};
 
+	resolver {{ nginx_resolver }};
+
 	# fastcgi settings
 
 	fastcgi_buffers {{ [
@@ -92,7 +94,7 @@ if 'ports' in cluster %}
 {% if cluster_name == 'live' %}
 {% set ssl_domain = base_domain %}
 {% else %}
-{% set ssl_domain = base_domain + '.' + cluster.cluster.domain_suffix %}
+{% set ssl_domain = base_domain + '.' + cluster.domain_suffix %}
 {% endif %}
 
 	server {
@@ -108,7 +110,7 @@ if 'ports' in cluster %}
 
 		add_header Strict-Transport-Security "max-age={{ 60 * 60 * 24 * 365 }}";
 
-{% if cluster.cluster.whitelist_active %}
+{% if cluster.whitelist_active %}
 {% for whitelist_ip in whitelist_ips %}
 		allow {{ whitelist_ip }};
 {% endfor %}
@@ -127,7 +129,7 @@ if 'ports' in cluster %}
 		ssl_certificate /config/ssl/{{ ssl_domain }}.cert;
 		ssl_certificate_key /config/ssl/{{ ssl_domain }}.key;
 
-{% if cluster.cluster.whitelist_active == 'yes' %}
+{% if cluster.whitelist_active == 'yes' %}
 {% for whitelist_ip in whitelist_ips %}
 		allow {{ whitelist_ip }};
 {% endfor %}
@@ -153,9 +155,9 @@ if 'ports' in cluster %}
 	server {
 
 		listen 80;
-		server_name ~\.{{ cluster.cluster.domain_suffix | replace ('.', '\.') }}$;
+		server_name ~\.{{ cluster.domain_suffix | replace ('.', '\.') }}$;
 
-{% if cluster.cluster.whitelist_active == 'yes' %}
+{% if cluster.whitelist_active == 'yes' %}
 {% for whitelist_ip in whitelist_ips %}
 		allow {{ whitelist_ip }};
 {% endfor %}

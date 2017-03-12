@@ -11,6 +11,18 @@ cluster="$1"
 hostname="$(hostname --short)"
 ip_address="$(dig +short $hostname)"
 
+# create admin group and user
+
+./datingnode-local resource create \
+	--update-existing \
+	--class "admin-group" \
+	--name "admins"
+
+./datingnode-local resource create \
+	--update-existing \
+	--class "admin-user" \
+	--name "admin"
+
 # create devbox
 
 ./datingnode-local resource create \
@@ -93,6 +105,14 @@ ip_address="$(dig +short $hostname)"
 	--index "1" \
 	--set "identity.cluster" "$cluster" \
 	--set "memcache.enabled" "yes"
+
+# create icinga
+
+./datingnode-local resource create \
+	--update-existing \
+	--class "icinga" \
+	--name "${cluster}-icinga-1" \
+	--set-parent "${hostname}"
 
 # create directories and mount-flags
 

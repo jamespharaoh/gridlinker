@@ -65,7 +65,6 @@ heading "Copying datingnode-ansible into container"
 rsync \
 	--archive \
 	--times \
-	--verbose \
 	--delete-excluded \
 	--exclude ".git" \
 	--include "/config/build" \

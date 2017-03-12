@@ -9,9 +9,9 @@ icinga_core:
   install: "yes"
   install_version: "2.6.1-{{ ubuntu_release }}-0"
 
-icinga_core_agent:
+icinga_web_core:
 
-  masters: "{{ icinga_masters | values }}"
+  install_version: "2.4.1"
 
 ubuntu:
 

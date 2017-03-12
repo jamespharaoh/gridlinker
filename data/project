@@ -51,11 +51,53 @@ resource_data:
     key: "{{ identity_name }}"
     section: "cluster"
 
+  icinga_core_agents:
+
+    group: "icinga-core-agents"
+    key: "{{ icinga_core_agent_name }}"
+    section: "icinga_core_agent"
+
+  icinga_core_groups:
+
+    group: "icinga-core-groups"
+    key: "{{ icinga_core_group_name }}"
+    section: "icinga_core_group"
+
+  icinga_core_hosts:
+
+    group: "icinga-core-hosts"
+    key: "{{ icinga_core_host_name }}"
+    section: "icinga_core_host"
+
   icinga_core_masters:
 
     group: "icinga-core-masters"
     key: "{{ icinga_core_master_name }}"
     section: "icinga_core_master"
+
+  icinga_core_users:
+
+    group: "icinga-core-users"
+    key: "{{ icinga_core_user_name }}"
+    section: "icinga_core_user"
+
+  icinga_web_core_groups:
+
+    group: "icinga-web-core-groups"
+    key: "{{ icinga_web_core_group_name }}"
+    section: "icinga_web_core_group"
+
+  icinga_web_core_roles:
+
+    group: "icinga-web-core-roles"
+    key: "{{ icinga_web_core_role_name }}"
+    section: "icinga_web_core_role"
+
+  icinga_web_core_users:
+
+    group: "icinga-web-core-users"
+    key: "{{ icinga_web_core_user_name }}"
+    section: "icinga_web_core_user"
 
   super_clusters:
 
@@ -72,11 +114,15 @@ resource_section_names:
   - "devbox"
   - "etcd"
   - "icinga_core"
-  - "icinga_core_endpoint"
+  - "icinga_core_agent"
+  - "icinga_core_group"
   - "icinga_core_host"
   - "icinga_core_master"
   - "icinga_core_user"
-  - "icinga_web"
+  - "icinga_web_core"
+  - "icinga_web_core_group"
+  - "icinga_web_core_role"
+  - "icinga_web_core_user"
   - "nginx"
   - "openvpn"
   - "php"

@@ -38,8 +38,8 @@ start:
     - "443"
 
   ports:
-    - "{{ cluster.ports.vhost_proxy }}:80"
-    - "{{ cluster.ports.vhost_proxy_ssl }}:443"
+    - "{{ cluster.cluster_ports.vhost_proxy }}:80"
+    - "{{ cluster.cluster_ports.vhost_proxy_ssl }}:443"
 
   volumes:
     - "{{ container_directory }}/config:/config"

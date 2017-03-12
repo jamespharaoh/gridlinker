@@ -11,7 +11,8 @@ class:
 
   groups:
 
-    - "icinga-users"
+    - "icinga-core-users"
+    - "icinga-web-core-users"
 
 user:
 
@@ -19,9 +20,11 @@ user:
   email: ""
   mobile: ""
   pager: ""
+  password_hash_md5: ""
 
 icinga_core_user:
 
+  name: "{{ identity_name }}"
   display_name: "{{ user_full_name }}"
   email: "{{ user_email }}"
   pager: "{{ user_mobile }}"
@@ -29,5 +32,11 @@ icinga_core_user:
   period: "always"
   states: [ "OK", "Warning", "Critical", "Unknown" ]
   types: [ "Problem", "Recovery" ]
+
+icinga_web_core_user:
+
+  name: "{{ identity_name }}"
+  groups: [ "admins" ]
+  password_hash: "{{ user_password_hash_md5 }}"
 
 # ex: et ts=2 filetype=yaml

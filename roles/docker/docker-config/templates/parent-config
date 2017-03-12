@@ -25,7 +25,7 @@ vm_addresses:
 
 database_master_name: "dating"
 database_master_address: "{{ database_master_parent.private_address }}"
-database_master_port: "{{ cluster.ports.database }}"
+database_master_port: "{{ cluster.cluster_ports.database }}"
 database_master_user: "jimmy"
 database_master_password: "topsecret"
 
@@ -39,7 +39,7 @@ database_master_password: "topsecret"
 {% if database.database_enabled == 'yes' %}
   - name: "dating"
     address: "{{ database_parent.private_address }}"
-    port: "{{ cluster.ports_database }}"
+    port: "{{ cluster.cluster_ports.database }}"
     user: "jimmy"
     password: "topsecret"
 {% endif %}
@@ -64,7 +64,7 @@ memcache_nodes:
 {% if memcache.identity.cluster == identity.cluster %}
 {% if memcache.memcache_enabled == 'yes' %}
   - name: "{{ memcache_parent.private.address }}"
-    port: "{{ cluster.ports.memcache }}"
+    port: "{{ cluster.cluster_ports.memcache }}"
 {% endif %}
 {% endif %}
 {% endfor %}
@@ -126,6 +126,8 @@ nginx_proxy_read_timeout: "60s"
 nginx_proxy_buffering: "on"
 nginx_proxy_buffers_number: "128"
 nginx_proxy_buffers_size: "32k"
+
+nginx_resolver: "{{ parent.private_gateway }}"
 
 nginx_fastcgi_buffers_count: "128"
 nginx_fastcgi_buffers_size: "32k"

@@ -12,24 +12,12 @@ class:
   groups:
 
     - "rocket-hz"
-    - "icinga-agents"
+    - "icinga-core-agents"
 
 ansible:
 
   ssh_host: "{{ public.address }}"
   ssh_user: "root"
-
-ssh:
-
-  hostnames:
-
-    - "{{ identity.name }}"
-    - "{{ public.address }}"
-    - "{{ private.address }}"
-
-openvpn:
-
-  ca_certificate: "/authority/openvpn/certificate"
 
 etcd:
 
@@ -51,6 +39,18 @@ etcd:
     'rocket-hz-host-2=https://rocket-hz-host-2.rocketware.co.uk:2380',
   ] | join (',') }}"
 
+openvpn:
+
+  ca_certificate: "/authority/openvpn/certificate"
+
+ssh:
+
+  hostnames:
+
+    - "{{ identity.name }}"
+    - "{{ public.address }}"
+    - "{{ private.address }}"
+
 icinga_core:
 
   database_master: "{{ super_cluster.icinga_master }}"
@@ -63,10 +63,10 @@ icinga_core:
     - "{{ identity_name }}"
     - "{{ identity_name }}.vpn"
 
-icinga_core_endpoint:
+icinga_core_agent:
 
+  name: "{{ identity_name }}"
   host: "{{ identity_name }}.vpn"
-  external: "{{ identity_name }}.vpn"
 
 icinga_core_host:
 

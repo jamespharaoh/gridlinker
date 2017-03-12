@@ -13,7 +13,7 @@ class:
   groups:
 
     - "rocket-hz"
-    - "icinga-agents"
+    - "icinga-core-agents"
     - "{{ identity_cluster }}-vm"
 
   references:
@@ -70,12 +70,10 @@ icinga_core:
     - "{{ identity_name }}"
     - "{{ identity_name }}.vpn"
 
-icinga_core_endpoint:
+icinga_core_agent:
 
   name: "{{ identity_name }}"
   host: "{{ identity_name }}.vpn"
-  internal: "{{ identity_name }}.vpn"
-  external: "{{ identity_name }}.vpn"
 
 icinga_core_host:
 
@@ -195,6 +193,12 @@ postfix:
   helo_name: "{{ identity_name }}.rocketware.co.uk"
 
 private:
+
+  broadcast: "{{ parent.private_broadcast }}"
+  gateway: "{{ parent.private_address }}"
+  netmask: "{{ parent.private_netmask }}"
+  netmask_bits: "{{ parent.private_netmask_bits }}"
+  network: "{{ parent.private_network }}"
 
   hostnames:
 

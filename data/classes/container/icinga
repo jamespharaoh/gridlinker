@@ -12,6 +12,7 @@ class:
 
   groups:
 
+    - "icinga-core-hosts"
     - "icinga-core-masters"
     - "rocket-hz"
 
@@ -29,19 +30,19 @@ ansible:
 icinga_core:
 
   authority: "rocket-icinga"
-  ca_certificate: "/authority/{{ icinga_authority }}/certificate"
+  ca_certificate: "/authority/{{ icinga_core_authority }}/certificate"
 
   alt_dns:
 
     - "{{ identity_name }}"
     - "{{ identity_name }}.vpn"
 
-  database_type: "{{ super_cluster.icinga_database_type }}"
-  database_hostname: "{{ super_cluster.icinga_database_hostname }}"
-  database_master: "{{ super_cluster.icinga_database_master }}"
-  database_port: "{{ super_cluster.icinga_database_port }}"
-  database_username: "{{ super_cluster.icinga_database_username }}"
-  database_password: "{{ super_cluster.icinga_database_password }}"
+  database_type: "{{ super_cluster.icinga_core_database_type }}"
+  database_hostname: "{{ super_cluster.icinga_core_database_hostname }}"
+  database_master: "{{ super_cluster.icinga_core_database_master }}"
+  database_port: "{{ super_cluster.icinga_core_database_port }}"
+  database_username: "{{ super_cluster.icinga_core_database_username }}"
+  database_password: "{{ super_cluster.icinga_core_database_password }}"
 
   email_from: "icinga@rocketware.co.uk"
 
@@ -119,18 +120,20 @@ icinga_core:
 
 icinga_core_master:
 
+  host: "{{ identity_name }}.vpn"
   name: "{{ identity_name }}"
-  host: "{{ identity_name }}.vpn"
 
-icinga_core_endpoint:
-
-  host: "{{ identity_name }}.vpn"
-  internal: "{{ identity_name }}.vpn"
-  external: "{{ identity_name }}.vpn"
+  config_agents: "{{ icinga_core_agents | values }}"
+  config_groups: "{{ icinga_core_groups | values }}"
+  config_hosts: "{{ icinga_core_hosts | values }}"
+  config_masters: "{{ icinga_core_masters | values }}"
+  config_users: "{{ icinga_core_users | values }}"
 
 icinga_core_host:
 
   address: "{{ identity_name }}.vpn"
+  name: "{{ identity_name }}"
+  class: "{{ identity_class }}"
 
   vars:
 
@@ -145,18 +148,20 @@ icinga_core_host:
         - type: "string"
           value: "admins"
 
-icinga_web:
+icinga_web_core:
 
-  version: "{{ super_cluster.icinga_web_version }}"
+  install_version: "{{ super_cluster.icinga_web_core_install_version }}"
 
   hostname: "monitoring.datingnode.com"
-  security: "none"
+  security: "proxy"
 
-  database_type: "{{ super_cluster.icinga_web_database_type }}"
-  database_hostname: "{{ super_cluster.icinga_web_database_hostname }}"
-  database_port: "{{ super_cluster.icinga_web_database_port }}"
-  database_username: "{{ super_cluster.icinga_web_database_username }}"
-  database_password: "{{ super_cluster.icinga_web_database_password }}"
+  config_roles: "{{ icinga_web_core_roles | values }}"
+
+  database_type: "{{ super_cluster.icinga_web_core_database_type }}"
+  database_hostname: "{{ super_cluster.icinga_web_core_database_hostname }}"
+  database_port: "{{ super_cluster.icinga_web_core_database_port }}"
+  database_username: "{{ super_cluster.icinga_web_core_database_username }}"
+  database_password: "{{ super_cluster.icinga_web_core_database_password }}"
 
 nginx:
 
