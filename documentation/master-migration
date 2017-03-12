@@ -1,0 +1,36 @@
+## Database master migration
+
+TODO
+
+## Files master migration
+
+There are two filesystems which need to be accessed by all members of the
+cluster. These are replicated to each server in order to facilitate failover but
+all direct access by the application goes to the master, via NFS for the servers
+which aren't master.
+
+Changing the master involves a short period of downtime. The steps are:
+
+- Shut down all web applications
+- Unmount all relevant filesystems on all servers
+- Manually perform a synchronization from the previous to the new master
+- Update the master configuration and deploy
+- Mount all relevant filesystems on all servers
+- Start all web applications
+
+Let's set some environment variables so the following code snippets can be
+copied and pasted. Obviously you will need to fill in the values for these.
+
+```sh
+cluster=""
+```
+
+To shut down all web applications, we can use the ansible playbook:
+
+```sh
+./datingnode-master ansible playbook -- \
+    playbooks/stop.yml \
+    --limit ${cluster}-web-application
+````
+
+
