@@ -1,7 +1,7 @@
 ---
 
 - name: "issue icinga master certificate"
-  when: "not icinga_core_certificate"
+  when: "icinga_core_certificate == ''"
   register: "icinga_master_certificate_result"
   action:
 
@@ -16,8 +16,8 @@
   when: "icinga_master_certificate_result | changed"
   update_resource:
 
-    icinga.certificate: "{{ icinga_master_certificate_result.certificate }}"
-    icinga.private_key: "{{ icinga_master_certificate_result.private_key }}"
+    icinga_core.certificate: "{{ icinga_master_certificate_result.certificate }}"
+    icinga_core.private_key: "{{ icinga_master_certificate_result.private_key }}"
 
 - name: "create icinga master directories"
   with_items: "{{ icinga_core_master_directories }}"
@@ -33,7 +33,7 @@
 
 - name: "write icinga config"
   with_items: "{{ icinga_core_master_config_templates }}"
-  notify: "set icinga.needs_restart to 'yes'"
+  register: "icinga_core_master_config_result"
   become: "yes"
   action:
 
@@ -45,9 +45,15 @@
     group: "icinga"
     mode: "{{ item.mode }}"
 
+- name: "set icinga_core.needs_restart to 'yes'"
+  when: "icinga_core_master_config_result | changed"
+  update_resource:
+
+    icinga_core.needs_restart: "yes"
+
 - name: "write icinga security config"
   with_items: "{{ icinga_core_master_security_files }}"
-  notify: "set icinga.needs_restart to 'yes'"
+  register: "icinga_core_master_security_config_result"
   become: "yes"
   action:
 
@@ -56,6 +62,12 @@
     content: "{{ lookup ('etcd', item.source) }}"
     owner: "root"
     group: "icinga"
+
+- name: "set icinga_core.needs_restart to 'yes'"
+  when: "icinga_core_master_security_config_result | changed"
+  update_resource:
+
+    icinga_core.needs_restart: "yes"
 
 - name: "create icinga master links"
   with_items: "{{ icinga_core_master_links }}"
@@ -70,7 +82,7 @@
 
 - meta: "flush_handlers"
 
-- name: "set icinga_core..state to 'enabled'"
+- name: "set icinga_core.state to 'enabled'"
   when: "icinga_core_state == 'installed'"
   update_resource:
 

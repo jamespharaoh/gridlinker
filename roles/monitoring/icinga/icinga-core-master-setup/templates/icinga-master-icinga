@@ -14,9 +14,6 @@ library "db_ido_mysql"
 library "db_ido_pgsql"
 {% endif %}
 library "notification"
-{% if icinga_core_graphite_enabled == 'yes' %}
-library "perfdata"
-{% endif %}
 
 object ApiListener "api" {
 
@@ -60,31 +57,6 @@ object IdoPgsqlConnection "ido-pgsql" {
 
 object NotificationComponent "notification" {
 }
-
-{% if icinga_core_graphite_enabled == 'yes' %}
-object GraphiteWriter "graphite" {
-
-	host = "{{ icinga_core_graphite_host }}"
-	port = "{{ icinga_core_graphite_port }}"
-
-	host_name_template = "{{ [
-		'icinga',
-		'$host.name$',
-		'host',
-		'$host.check_command$',
-	] | join ('.') }}"
-
-	service_name_template = "{{ [
-		'icinga',
-		'$host.name$',
-		'services',
-		'$service.name$',
-		'$service.check_command$',
-		'perfdata',
-	] | join ('.') }}"
-
-}
-{% endif %}
 
 include "commands.conf"
 include "hosts.conf"
