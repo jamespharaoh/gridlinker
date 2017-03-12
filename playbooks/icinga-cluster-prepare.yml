@@ -3,7 +3,7 @@
 - hosts: "super-cluster"
   roles:
 
-    - "prepare-icinga-database"
-    - "prepare-icinga-web-database"
+    - "icinga-core-database-prepare"
+    - "icinga-web-core-database-prepare"
 
 # ex: et ts=2 filetype=yaml

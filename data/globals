@@ -122,13 +122,4 @@ extra_ssl_domains:
 
 ubuntu_mirror: "http:/"
 
-icinga_agent:
-
-  masters: "icinga"
-
-icinga_core:
-
-  install: "yes"
-  install_version: "2.6.1-{{ ubuntu_release }}-0"
-
 # ex: et ts=2 filetype=yaml

@@ -20,28 +20,13 @@ ansible:
   ssh_host: "{{ private.address }}"
   ssh_user: "ubuntu"
 
-ssh:
-
-  hostnames:
-
-    - "{{ identity.name }}"
-    - "{{ private.address }}"
-
-private:
-
-  hostnames:
-
-    - "{{ identity_name }}"
-    - "{{ identity_name }}.vpn"
-    - "{{ identity_name }}.vpn.rocketware.co.uk"
-
-aicinga:
+icinga_core:
 
   master: "{{ super_cluster.icinga_master }}"
   authority: "rocket-icinga"
   ca_certificate: "/authority/{{ icinga_authority }}/certificate"
 
-icinga_host:
+icinga_core_host:
 
   address: "{{ identity_name }}.vpn"
 
@@ -53,5 +38,20 @@ icinga_host:
 
         - type: "string"
           value: "admins"
+
+private:
+
+  hostnames:
+
+    - "{{ identity_name }}"
+    - "{{ identity_name }}.vpn"
+    - "{{ identity_name }}.vpn.rocketware.co.uk"
+
+ssh:
+
+  hostnames:
+
+    - "{{ identity.name }}"
+    - "{{ private.address }}"
 
 # ex: et ts=2 filetype=yaml

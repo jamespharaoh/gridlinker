@@ -12,7 +12,7 @@ class:
 
   groups:
 
-    - "icinga-masters"
+    - "icinga-core-masters"
     - "rocket-hz"
 
   references:
@@ -21,35 +21,12 @@ class:
       type: "resource"
       value: "cluster/master"
 
-private:
-
-  aliases:
-
-    - "graphite.vpn.rocketware.co.uk"
-
-  hostnames:
-
-    - "{{ identity_name }}"
-    - "{{ identity_name }}.vpn"
-    - "{{ identity_name }}.vpn.rocketware.co.uk"
-
 ansible:
 
   ssh_host: "{{ private.address }}"
   ssh_user: "ubuntu"
 
-ssh:
-
-  hostnames:
-
-    - "{{ identity.name }}"
-    - "{{ private.address }}"
-
-postfix:
-
-  helo_name: "{{ parent.postfix_helo_name }}"
-
-icinga:
+icinga_core:
 
   authority: "rocket-icinga"
   ca_certificate: "/authority/{{ icinga_authority }}/certificate"
@@ -59,15 +36,12 @@ icinga:
     - "{{ identity_name }}"
     - "{{ identity_name }}.vpn"
 
-  master: "{{ super_cluster.icinga_master }}"
-
   database_type: "{{ super_cluster.icinga_database_type }}"
   database_hostname: "{{ super_cluster.icinga_database_hostname }}"
+  database_master: "{{ super_cluster.icinga_database_master }}"
   database_port: "{{ super_cluster.icinga_database_port }}"
   database_username: "{{ super_cluster.icinga_database_username }}"
   database_password: "{{ super_cluster.icinga_database_password }}"
-
-  graphite_enabled: "yes"
 
   email_from: "icinga@rocketware.co.uk"
 
@@ -143,13 +117,18 @@ icinga:
           type: "raw"
           value: "50.0"
 
-icinga_endpoint:
+icinga_core_master:
+
+  name: "{{ identity_name }}"
+  host: "{{ identity_name }}.vpn"
+
+icinga_core_endpoint:
 
   host: "{{ identity_name }}.vpn"
   internal: "{{ identity_name }}.vpn"
   external: "{{ identity_name }}.vpn"
 
-icinga_host:
+icinga_core_host:
 
   address: "{{ identity_name }}.vpn"
 
@@ -179,37 +158,42 @@ icinga_web:
   database_username: "{{ super_cluster.icinga_web_database_username }}"
   database_password: "{{ super_cluster.icinga_web_database_password }}"
 
-icinga_web_graphite:
-
-  version: "{{ super_cluster.icinga_web_graphite_version }}"
-
-  base_url: "/graphite/render?"
-  upstream: "http://graphite.vpn.rocketware.co.uk"
-
-graphite_carbon:
-
-  version: "{{ super_cluster.graphite_carbon_version }}"
-
-graphite_web:
-
-  version: "{{ super_cluster.graphite_web_version }}"
-
-  hostname: "graphite.vpn.rocketware.co.uk"
-  security: "none"
-
-  secret_key: "{{ super_cluster.graphite_web_secret_key }}"
-
 nginx:
 
-  version: "1.9.4"
+  install_version: "1.11.9"
 
 php:
 
-  packages:
+  install_from: "distro"
+  install_version: "7.0"
 
-    - "php5-cli"
-    - "php5-fpm"
-    - "php5-pgsql"
+  install_packages_modules:
+
+    - "php7.0-pgsql"
+
+postfix:
+
+  helo_name: "{{ parent.postfix_helo_name }}"
+
+postgresql:
+
+  install: "yes"
+  install_from: "distro"
+  install_version: "9.5"
+
+private:
+
+  broadcast: "{{ parent.private_broadcast }}"
+  gateway: "{{ parent.private_gateway }}"
+  netmask: "{{ parent.private_netmask }}"
+  netmask_bits: "{{ parent.private_netmask_bits }}"
+  network: "{{ parent.private_network }}"
+
+  hostnames:
+
+    - "{{ identity_name }}"
+    - "{{ identity_name }}.vpn"
+    - "{{ identity_name }}.vpn.rocketware.co.uk"
 
 python:
 
@@ -238,5 +222,12 @@ python:
 
     - name: "whitenoise"
       version: "2.0.6"
+
+ssh:
+
+  hostnames:
+
+    - "{{ identity.name }}"
+    - "{{ private.address }}"
 
 # ex: et ts=2 filetype=yaml

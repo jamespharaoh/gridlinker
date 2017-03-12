@@ -1,0 +1,164 @@
+---
+
+- hosts: "localhost"
+  tasks:
+
+    - when: "migrate_cluster is not defined"
+      fail:
+
+        msg: "Please set migrate_cluster"
+
+    - when: "migrate_files_from is not defined"
+      fail:
+
+        msg: "Please set migrate_files_from"
+
+    - when: "migrate_files_to is not defined"
+      fail:
+
+        msg: "Please set migrate_files_to"
+
+    - when: "
+        deployment_clusters [migrate_cluster].cluster_vm_master
+          != 'rocket-hz-vm-' + migrate_files_to
+      "
+      fail:
+
+        msg: "{{ [
+          'Please set cluster/',
+          migrate_cluster,
+          '.cluster.vm_master to rocket-hz-vm-',
+          migrate_files_to,
+          ', current value is ',
+          deployment_clusters [migrate_cluster].cluster_vm_master,
+        ] | join }}"
+
+- hosts: "{{ migrate_cluster }}-web-application"
+  roles:
+
+    - "docker-stop"
+    - "docker-destroy"
+
+- hosts: "rocket-hz-vm"
+  tasks:
+
+    - name: "unmount cluster filesystems"
+      when: "False"
+      become: "yes"
+      args:
+
+        executable: "/bin/bash"
+
+      shell:
+
+        set -euf -o pipefail;
+
+        umount "{{ [
+          '/datingnode-' + migrate_cluster,
+          migrate_cluster + '-web-application-' + identity_index,
+          'data/temp',
+        ] | join ('/') }}";
+
+        umount "{{ [
+          '/datingnode-' + migrate_cluster,
+          migrate_cluster + '-web-application-' + identity_index,
+          'data/assets/user-data',
+        ] | join ('/') }}";
+
+        umount "{{ [
+          '/datingnode-' + migrate_cluster,
+          migrate_cluster + '-web-application-' + identity_index,
+          'big/user-data',
+        ] | join ('/') }}";
+
+        umount "{{ [
+          '/datingnode-' + migrate_cluster,
+          migrate_cluster + '-web-application-' + identity_index,
+          'big/user-data-master',
+        ] | join ('/') }}";
+
+- hosts: "rocket-hz-vm-{{ migrate_files_to }}"
+  tasks:
+
+    - name: "synchronize files"
+      become: "yes"
+      args:
+
+        executable: "/bin/bash"
+
+      shell:
+
+        set -euf -o pipefail;
+
+        rsync
+          --archive
+          --inplace
+          --rsh 'ssh -o Compression=no'
+          "{{ [
+            'rocket-hz-vm-',
+            migrate_files_from,
+            '.vpn:/datingnode-',
+            migrate_cluster,
+            '/live-web-application-',
+            migrate_files_from',
+            '/big/user-data-cipher-local/',
+          ] | join }}"
+          "{{ [
+            '/datingnode-',
+            migrate_cluster,
+            '/',
+            migrate_cluster,
+            '-web-application-',
+            identity_index,
+            '/big/user-data-cipher-local/',
+          ] | join }}"
+
+- hosts: "rocket-hz-vm"
+  roles:
+
+    - "setup-datingnode-vm"
+
+- hosts: "{{ migrate_cluster }}-vm"
+  tasks:
+
+    - name: "mount cluster filesystems"
+      become: "yes"
+      args:
+
+        executable: "/bin/bash"
+
+      shell:
+
+        set -euf -o pipefail;
+
+        mount "{{ [
+          '/datingnode-' + migrate_cluster,
+          migrate_cluster + '-web-application-' + identity_index,
+          'data/temp',
+        ] | join ('/') }}";
+
+        mount "{{ [
+          '/datingnode-' + migrate_cluster,
+          migrate_cluster + '-web-application-' + identity_index,
+          'big/user-data-master',
+        ] | join ('/') }}";
+
+        mount "{{ [
+          '/datingnode-' + migrate_cluster,
+          migrate_cluster + '-web-application-' + identity_index,
+          'big/user-data',
+        ] | join ('/') }}";
+
+        mount "{{ [
+          '/datingnode-' + migrate_cluster,
+          migrate_cluster + '-web-application-' + identity_index,
+          'data/assets/user-data',
+        ] | join ('/') }}";
+
+- hosts: "{{ migrate_cluster }}-web-application"
+  roles:
+
+    - "docker-config"
+    - "docker-start"
+
+# ex: et ts=2 filetype=yaml

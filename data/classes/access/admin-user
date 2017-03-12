@@ -20,7 +20,7 @@ user:
   mobile: ""
   pager: ""
 
-icinga_user:
+icinga_core_user:
 
   display_name: "{{ user_full_name }}"
   email: "{{ user_email }}"

@@ -53,7 +53,7 @@ etcd:
 
 icinga_core:
 
-  master: "{{ super_cluster.icinga_master }}"
+  database_master: "{{ super_cluster.icinga_master }}"
 
   authority: "rocket-icinga"
   ca_certificate: "/authority/{{ icinga_core_authority }}/certificate"
@@ -63,12 +63,12 @@ icinga_core:
     - "{{ identity_name }}"
     - "{{ identity_name }}.vpn"
 
-icinga_endpoint:
+icinga_core_endpoint:
 
   host: "{{ identity_name }}.vpn"
   external: "{{ identity_name }}.vpn"
 
-icinga_host:
+icinga_core_host:
 
   address: "{{ identity_name }}.vpn"
 

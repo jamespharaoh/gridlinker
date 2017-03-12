@@ -112,7 +112,7 @@ OPEN_PORTS_UDP=(
 	iptables \
 		--table "nat" \
 		--append "POSTROUTING" \
-		--source "{{ private.network }}/{{ private.netbits }}" \
+		--source "{{ private.network }}/{{ private.network_bits }}" \
 		--out-interface "brpub0" \
 		--jump MASQUERADE
 

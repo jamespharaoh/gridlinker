@@ -1,31 +1,34 @@
 ---
 
 - name: "create config dir"
+  become: "yes"
   action:
+
     module: "file"
     path: "/etc/rocket"
     state: "directory"
-  sudo: "yes"
 
 - name: "install kvm packages"
-  action:
-    module: "apt"
-    package: "{{ item }}"
-    state: "present"
-  sudo: "yes"
   with_items:
+
     - "libvirt-bin"
     - "qemu"
     - "virtinst"
-  tags: "kvm"
+
+  become: "yes"
+  action:
+
+    module: "apt"
+    package: "{{ item }}"
+    state: "present"
 
 - name: "create libvirt-network-public.xml"
+  become: "yes"
   action:
+
     module: "template"
-    src: "install-kvm-network-public"
     dest: "/etc/rocket/libvirt-network-public.xml"
-  sudo: "yes"
-  tags: "kvm"
+    src: "install-kvm-network-public"
 
 - name: "create libvirt-network-private.xml"
   action:

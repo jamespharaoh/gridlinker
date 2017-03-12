@@ -12,6 +12,8 @@
 
     set -euf -o pipefail;
 
+    export DEBIAN_FRONTEND="noninteractive";
+
     echo "--- preparing to create container ---" >&2;
 
     lxc-stop --name {{ identity_name }} || true;
@@ -24,7 +26,7 @@
       --name {{ identity_name }}
       --
       --dist ubuntu
-      --release trusty
+      --release {{ ubuntu_release }}
       --arch amd64;
 
     echo "--- configuring networking ---" >&2;
@@ -32,6 +34,7 @@
     chroot /var/lib/lxc/{{ identity_name }}/rootfs
     apt-get purge -y resolvconf;
 
+    rm -f /var/lib/lxc/{{ identity_name }}/rootfs/etc/resolv.conf;
     echo "nameserver {{ private_gateway }}"
       > /var/lib/lxc/{{ identity_name }}/rootfs/etc/resolv.conf;
 
@@ -65,6 +68,11 @@
 
     chroot /var/lib/lxc/{{ identity_name }}/rootfs
     apt-get install -y openssh-server;
+
+    echo "--- installing python ---" >&2;
+
+    chroot /var/lib/lxc/{{ identity_name }}/rootfs
+    apt-get install -y python;
 
     echo "--- configuring ssh acccess ---" >&2;
 

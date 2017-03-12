@@ -49,11 +49,48 @@ resource_data:
 
     group: "deployment-clusters"
     key: "{{ identity_name }}"
+    section: "cluster"
+
+  icinga_core_masters:
+
+    group: "icinga-core-masters"
+    key: "{{ icinga_core_master_name }}"
+    section: "icinga_core_master"
 
   super_clusters:
 
     group: "super-clusters"
     key: "{{ identity_name }}"
+    section: "super_cluster"
+
+resource_section_names:
+
+  - "ansible"
+  - "btrfs_dedupe"
+  - "container"
+  - "deployment_cluster"
+  - "devbox"
+  - "etcd"
+  - "icinga_core"
+  - "icinga_core_endpoint"
+  - "icinga_core_host"
+  - "icinga_core_master"
+  - "icinga_core_user"
+  - "icinga_web"
+  - "nginx"
+  - "openvpn"
+  - "php"
+  - "postfix"
+  - "postgresql"
+  - "private"
+  - "public"
+  - "python"
+  - "ssh"
+  - "start"
+  - "super_cluster"
+  - "system"
+  - "ubuntu"
+  - "user"
 
 developers:
 

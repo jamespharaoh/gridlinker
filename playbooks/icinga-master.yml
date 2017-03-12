@@ -5,8 +5,7 @@
 
     - "create-lxc-container"
 
-    - "wait-for-ssh"
-    - "scan-ssh-key"
+    - "ssh-server"
 
     - role: "setup-authorized-keys"
       authorized_keys_user: "root"
@@ -16,19 +15,16 @@
       authorized_keys_user: "ubuntu"
       authorized_keys_home: "/home/ubuntu"
 
-    - "install-system-packages"
+    - "system-packages-install"
     - "setup-hosts"
     - "install-postfix"
 
     - "python"
     - "php"
     - "postgresql"
-    - "nginx-from-source"
+    - "nginx"
 
-    - "icinga-master"
-    - "icinga-web"
-
-    - "graphite-carbon"
-    - "graphite-web"
+    - "icinga-core-master"
+    - "icinga-web-core"
 
 # ex: et ts=2 filetype=yaml

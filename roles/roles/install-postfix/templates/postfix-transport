@@ -1,8 +1,39 @@
-{% set master = hostvars ['cluster/master'] %}
-{% for entry in master.postfix_relay %}
-{% if entry.enable == 'yes' %}
-{% for domain in entry.domains %}
-{{ domain }} smtp:[{{ entry.hostname }}]:{{ entry.port }}
-{% endfor %}
-{% endif %}
-{% endfor %}
+{%- print ansible_warning ['#'], '\n\n' -%}
+
+{%- set master = hostvars ['cluster/master'] -%}
+
+{%- print [
+	'# ---------- discard',
+] | join, '\n\n' -%}
+
+{%- for domain in master.postfix_discard_domains -%}
+
+	{%- print [
+		domain,
+		' discard',
+	] | join, '\n' -%}
+
+{%- endfor -%}
+
+{%- for entry in master.postfix_relay -%}
+{%- if entry.enable == 'yes' -%}
+
+	{%- print [
+		'# ---------- ',
+		entry.hostname,
+	] | join, '\n\n' -%}
+
+	{%- for domain in entry.domains %}
+
+		{%- print [
+			domain,
+			' smtp:[',
+			entry.hostname,
+			']:',
+			entry.port,
+		] | join, '\n' -%}
+
+	{%- endfor -%}
+
+{%- endif -%}
+{%- endfor -%}

@@ -10,52 +10,78 @@ setuid postgres \
 
 postgresql_pid=$!
 
-if test \
-	! -f "{{ postgresql_data }}/recovery.conf" \
-	-a ! -f "/data/postgresql-user-flag"
-then
+if test ! -f "{{ postgresql_data }}/recovery.conf"; then
 
 	echo "-- sleeping"
 
 	sleep 5
 
-	echo "-- creating replication user"
+	echo "-- creating users"
 
 	setuid postgres \
-	psql \
-		-c "
+	psql -c "
+	DO \$\$
+	BEGIN
 
-			CREATE USER {{ postgresql_replication_user }}
-			REPLICATION LOGIN
+		-- replication user
+
+		IF NOT EXISTS (
+			SELECT *
+			FROM pg_catalog.pg_user
+			WHERE usename = '{{ postgresql_replication_user }}'
+		) THEN
+
+			CREATE ROLE {{ postgresql_replication_user }}
+			LOGIN
 			ENCRYPTED PASSWORD '{{ postgresql_replication_password }}';
 
-			ALTER USER postgres
-			ENCRYPTED PASSWORD '{{ postgresql_master_password }}';
+		ELSE
 
-		"
+			ALTER ROLE {{ postgresql_replication_user }}
+			ENCRYPTED PASSWORD '{{ postgresql_replication_password }}';
 
-	echo "-- creating app databases and users"
+		END IF;
 
-	setuid postgres \
-	psql \
-		-c "
+		-- postgres user
 
-			ALTER ROLE postgres
-			SET search_path
-			TO \"\$user\",public,gis;
+		ALTER ROLE postgres
+		ENCRYPTED PASSWORD '{{ postgresql_master_password }}';
 
-			CREATE USER jimmy
+		ALTER ROLE postgres
+		SET search_path
+		TO \"\$user\",public,gis;
+
+		-- jimmy user
+
+		IF NOT EXISTS (
+			SELECT *
+			FROM pg_catalog.pg_user
+			WHERE usename = 'jimmy'
+		) THEN
+
+			CREATE ROLE jimmy
+			LOGIN
 			ENCRYPTED PASSWORD '{{ postgresql_user_password }}'
 			SUPERUSER;
 
+		ELSE
+
 			ALTER ROLE jimmy
-			SET search_path
-			TO \"\$user\",public,gis;
+			ENCRYPTED PASSWORD '{{ postgresql_user_password }}';
+			SUPERUSER;
 
-		"
+		END IF;
 
-	touch "/data/postgresql-user-flag";
+		ALTER ROLE jimmy
+		SET search_path
+		TO \"\$user\",public,gis;
+
+	END
+	\$\$
+	"
 
 fi
 
 wait $postgresql_pid
+
+# ex: noet ts=4 filetype=bash

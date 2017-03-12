@@ -1,16 +1,16 @@
 ---
 
 - name: "issue icinga master certificate"
-  when: "not icinga_certificate"
+  when: "not icinga_core_certificate"
   register: "icinga_master_certificate_result"
   action:
 
     module: "certificate_authority_issue"
-    authority: "{{ icinga_authority }}"
-    common_name: "{{ icinga_common_name }}"
+    authority: "{{ icinga_core_authority }}"
+    common_name: "{{ icinga_core_common_name }}"
     usage: "mixed"
-    alt_dns: "{{ icinga_alt_dns }}"
-    alt_ip: "{{ icinga_alt_ips }}"
+    alt_dns: "{{ icinga_core_alt_dns }}"
+    alt_ip: "{{ icinga_core_alt_ips }}"
 
 - name: "store icinga master certificate"
   when: "icinga_master_certificate_result | changed"
@@ -20,7 +20,7 @@
     icinga.private_key: "{{ icinga_master_certificate_result.private_key }}"
 
 - name: "create icinga master directories"
-  with_items: "{{ icinga_master_directories }}"
+  with_items: "{{ icinga_core_master_directories }}"
   become: "yes"
   action:
 
@@ -32,7 +32,7 @@
     mode: "{{ item.mode }}"
 
 - name: "write icinga config"
-  with_items: "{{ icinga_master_config_templates }}"
+  with_items: "{{ icinga_core_master_config_templates }}"
   notify: "set icinga.needs_restart to 'yes'"
   become: "yes"
   action:
@@ -46,7 +46,7 @@
     mode: "{{ item.mode }}"
 
 - name: "write icinga security config"
-  with_items: "{{ icinga_master_security_files }}"
+  with_items: "{{ icinga_core_master_security_files }}"
   notify: "set icinga.needs_restart to 'yes'"
   become: "yes"
   action:
@@ -58,7 +58,7 @@
     group: "icinga"
 
 - name: "create icinga master links"
-  with_items: "{{ icinga_master_links }}"
+  with_items: "{{ icinga_core_master_links }}"
   become: "yes"
   action:
 
@@ -70,10 +70,10 @@
 
 - meta: "flush_handlers"
 
-- name: "set icinga.state to 'enabled'"
-  when: "icinga_state == 'installed'"
+- name: "set icinga_core..state to 'enabled'"
+  when: "icinga_core_state == 'installed'"
   update_resource:
 
-    icinga.state: "enabled"
+    icinga_core.state: "enabled"
 
 # ex: et ts=2 filetype=yaml

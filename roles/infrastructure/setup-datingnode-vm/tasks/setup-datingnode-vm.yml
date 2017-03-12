@@ -92,7 +92,6 @@
     mode: "0600"
 
 - name: "configure nfs exports"
-  notify: "reload nfs server"
   sudo: "yes"
   action:
 
@@ -111,6 +110,7 @@
 - meta: "flush_handlers"
 
 - name: "configure cron"
+  when: "False"
   tags: "vm-backup-cron"
   notify: "restart cron"
   sudo: "yes"

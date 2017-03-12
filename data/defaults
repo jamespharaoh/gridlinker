@@ -1,5 +1,18 @@
 ---
 
+default:
+
+  install: "yes"
+
+icinga_core:
+
+  install: "yes"
+  install_version: "2.6.1-{{ ubuntu_release }}-0"
+
+icinga_core_agent:
+
+  masters: "{{ icinga_masters | values }}"
+
 ubuntu:
 
   system_packages: "{{ []
@@ -82,7 +95,7 @@ ubuntu:
       state: "present"
 
   system_packages_namespace: []
-  system_pacakges_class: []
+  system_packages_class: []
   system_packages_host: []
 
 # ex: et ts=2 filetype=yaml
