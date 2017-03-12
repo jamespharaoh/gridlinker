@@ -11,14 +11,14 @@ We use the following network to include all private networks:
 
 This is then subdivided into the following subnets:
 
-| Name          | Network     | Netmask       | Bits |
-| ------------- | ----------- | ------------- | ---- |
-| Hetzner local | 10.69.128.0 | 255.255.252.0 | 22   |
-| (unused?)     | 10.69.132.0 | 255.255.252.0 | 22   |
-| (unused)      | 10.69.133.0 | 255.255.255.0 | 24   |
-| (unused)      | 10.69.134.0 | 255.255.255.0 | 24   |
-| Hetzner VPN 3 | 10.69.135.0 | 255.255.255.0 | 24   |
-| Hetzner VPN 4 | 10.69.136.0 | 255.255.255.0 | 24   |
+| Name            | Network     | Netmask       | Bits | Size |
+| --------------- | ----------- | ------------- | ---- | ---- |
+| Hetzner private | 10.69.128.0 | 255.255.252.0 | 22   | 1024 |
+| Dummy addresses | 10.69.132.0 | 255.255.255.0 | 24   | 256  |
+| (unused)        | 10.69.133.0 | 255.255.255.0 | 24   | 256  |
+| (unused)        | 10.69.134.0 | 255.255.255.0 | 24   | 256  |
+| Hetzner VPN 3   | 10.69.135.0 | 255.255.255.0 | 24   | 256  |
+| Hetzner VPN 4   | 10.69.136.0 | 255.255.255.0 | 24   | 256  |
 
 The following private addresses are allocated out of the Hetzner local network:
 
@@ -31,4 +31,10 @@ The following private addresses are allocated out of the Hetzner local network:
 | rocket-hz-icinga-3 | 10.69.128.13 |
 | rocket-hz-icinga-4 | 10.69.128.14 |
 | rocket-hz-sites    | 10.69.128.6  |
+
+The following dummy addresses are allocated:
+
+| Name       | Address     |
+| ---------- | ----------- |
+| SMTP relay | 10.69.132.1 |
 

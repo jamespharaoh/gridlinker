@@ -12,7 +12,9 @@ class:
   groups:
 
     - "rocket-hz"
+
     - "icinga-core-agents"
+    - "icinga-core-hosts"
 
 ansible:
 
@@ -71,6 +73,8 @@ icinga_core_agent:
 icinga_core_host:
 
   address: "{{ identity_name }}.vpn"
+  name: "{{ identity_name }}"
+  class: "{{ identity_class }}"
 
   vars:
 
@@ -102,6 +106,20 @@ icinga_core_host:
         - name: "disk_partition"
           type: "string"
           value: "/boot"
+
+private:
+
+  hostnames:
+
+    - "{{ identity_name }}"
+    - "{{ identity_name }}.vpn"
+    - "{{ identity_name }}.vpn.rocketware.co.uk"
+
+public:
+
+  hostnames:
+
+    - "{{ identity_name }}.rocketware.co.uk"
 
 ubuntu:
 

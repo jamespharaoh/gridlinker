@@ -13,8 +13,9 @@ class:
   groups:
 
     - "rocket-hz"
+
     - "icinga-core-agents"
-    - "{{ identity_cluster }}-vm"
+    - "icinga-core-hosts"
 
   references:
 
@@ -78,6 +79,8 @@ icinga_core_agent:
 icinga_core_host:
 
   address: "{{ identity_name }}.vpn"
+  name: "{{ identity_name }}"
+  class: "{{ identity_class }}"
 
   vars:
 
