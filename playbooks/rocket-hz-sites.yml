@@ -5,10 +5,17 @@
 
     - "create-lxc-container"
 
-    - "wait-for-ssh"
-    - "scan-ssh-key"
+    - "ssh-server"
 
-    - "install-system-packages"
+    - role: "setup-authorized-keys"
+      authorized_keys_user: "root"
+      authorized_keys_home: "/root"
+
+    - role: "setup-authorized-keys"
+      authorized_keys_user: "ubuntu"
+      authorized_keys_home: "/home/ubuntu"
+
+    - "system-packages-install"
     - "setup-hosts"
 
 # ex: et ts=2 filetype=yaml

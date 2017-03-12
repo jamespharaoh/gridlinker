@@ -41,6 +41,12 @@ icinga_core_host:
 
 private:
 
+  broadcast: "{{ parent.private_broadcast }}"
+  gateway: "{{ parent.private_gateway }}"
+  netmask: "{{ parent.private_netmask }}"
+  netmask_bits: "{{ parent.private_netmask_bits }}"
+  network: "{{ parent.private_network }}"
+
   hostnames:
 
     - "{{ identity_name }}"
