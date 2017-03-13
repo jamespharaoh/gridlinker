@@ -265,7 +265,10 @@ class DummyDHBackend(object):
     def generate_dh_private_key_and_parameters(self, generator, key_size):
         pass
 
-    def dh_parameters_supported(self, p, g):
+    def dh_parameters_supported(self, p, g, q=None):
+        pass
+
+    def dh_x942_serialization_supported(self):
         pass
 
 
@@ -622,6 +625,7 @@ class TestMultiBackend(object):
         backend.load_dh_public_numbers(object())
         backend.generate_dh_private_key_and_parameters(2, 512)
         backend.dh_parameters_supported(2, 3)
+        backend.dh_x942_serialization_supported()
 
         backend = MultiBackend([DummyBackend()])
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
@@ -638,6 +642,8 @@ class TestMultiBackend(object):
             backend.generate_dh_private_key_and_parameters(2, 512)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
             backend.dh_parameters_supported(2, 3)
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_DIFFIE_HELLMAN):
+            backend.dh_x942_serialization_supported()
 
     def test_scrypt(self):
         backend = MultiBackend([DummyScryptBackend()])

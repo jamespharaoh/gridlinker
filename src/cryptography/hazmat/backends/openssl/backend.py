@@ -23,7 +23,8 @@ from cryptography.hazmat.backends.interfaces import (
 from cryptography.hazmat.backends.openssl.ciphers import _CipherContext
 from cryptography.hazmat.backends.openssl.cmac import _CMACContext
 from cryptography.hazmat.backends.openssl.dh import (
-    _DHParameters, _DHPrivateKey, _DHPublicKey
+    _DHParameters, _DHPrivateKey, _DHPublicKey,
+    _dh_params_dup
 )
 from cryptography.hazmat.backends.openssl.dsa import (
     _DSAParameters, _DSAPrivateKey, _DSAPublicKey
@@ -45,7 +46,6 @@ from cryptography.hazmat.backends.openssl.x509 import (
     _Certificate, _CertificateRevocationList,
     _CertificateSigningRequest, _RevokedCertificate
 )
-from cryptography.hazmat.bindings._openssl import ffi as _ffi
 from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa, ec, rsa
@@ -62,50 +62,6 @@ from cryptography.hazmat.primitives.kdf import scrypt
 
 
 _MemoryBIO = collections.namedtuple("_MemoryBIO", ["bio", "char_ptr"])
-
-
-class _PasswordUserdata(object):
-    def __init__(self, password):
-        if password is not None and not isinstance(password, bytes):
-            raise TypeError("Password must be bytes")
-        self.password = password
-        self.called = 0
-        self.exception = None
-
-
-@binding.ffi_callback("int (char *, int, int, void *)",
-                      name="Cryptography_pem_password_cb")
-def _pem_password_cb(buf, size, writing, userdata_handle):
-    """
-    A pem_password_cb function pointer that copied the password to
-    OpenSSL as required and returns the number of bytes copied.
-
-    typedef int pem_password_cb(char *buf, int size,
-                                int rwflag, void *userdata);
-
-    Useful for decrypting PKCS8 files and so on.
-
-    The userdata pointer must point to a cffi handle of a
-    _PasswordUserdata instance.
-    """
-    ud = _ffi.from_handle(userdata_handle)
-    ud.called += 1
-
-    if not ud.password:
-        ud.exception = TypeError(
-            "Password was not given but private key is encrypted."
-        )
-        return -1
-    elif len(ud.password) < size:
-        pw_buf = _ffi.buffer(buf, size)
-        pw_buf[:len(ud.password)] = ud.password
-        return len(ud.password)
-    else:
-        ud.exception = ValueError(
-            "Passwords longer than {0} bytes are not supported "
-            "by this backend.".format(size - 1)
-        )
-        return 0
 
 
 @utils.register_interface(CipherBackend)
@@ -143,6 +99,9 @@ class Backend(object):
         self._cipher_registry = {}
         self._register_default_ciphers()
         self.activate_osrandom_engine()
+        self._dh_types = [self._lib.EVP_PKEY_DH]
+        if self._lib.Cryptography_HAS_EVP_PKEY_DHX:
+            self._dh_types.append(self._lib.EVP_PKEY_DHX)
 
     def openssl_assert(self, ok):
         return binding._openssl_assert(self._lib, ok)
@@ -524,7 +483,7 @@ class Backend(object):
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePrivateKey(self, ec_cdata, evp_pkey)
-        elif key_type == self._lib.EVP_PKEY_DH:
+        elif key_type in self._dh_types:
             dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -556,33 +515,13 @@ class Backend(object):
             self.openssl_assert(ec_cdata != self._ffi.NULL)
             ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
             return _EllipticCurvePublicKey(self, ec_cdata, evp_pkey)
-        elif key_type == self._lib.EVP_PKEY_DH:
+        elif key_type in self._dh_types:
             dh_cdata = self._lib.EVP_PKEY_get1_DH(evp_pkey)
             self.openssl_assert(dh_cdata != self._ffi.NULL)
             dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
             return _DHPublicKey(self, dh_cdata, evp_pkey)
         else:
             raise UnsupportedAlgorithm("Unsupported key type.")
-
-    def _pem_password_cb(self, password):
-        """
-        Generate a pem_password_cb function pointer that copied the password to
-        OpenSSL as required and returns the number of bytes copied.
-
-        typedef int pem_password_cb(char *buf, int size,
-                                    int rwflag, void *userdata);
-
-        Useful for decrypting PKCS8 files and so on.
-
-        Returns a tuple of (cdata function pointer, userdata).
-        """
-        # Forward compatibility for new static callbacks:
-        # _pem_password_cb is not a nested function because closures don't
-        # work well with static callbacks. Static callbacks are registered
-        # globally. The backend is passed in as userdata argument.
-
-        userdata = _PasswordUserdata(password=password)
-        return _pem_password_cb, userdata
 
     def _oaep_hash_supported(self, algorithm):
         if self._lib.Cryptography_HAS_RSA_OAEP_MD:
@@ -1185,21 +1124,38 @@ class Backend(object):
     def _load_key(self, openssl_read_func, convert_func, data, password):
         mem_bio = self._bytes_to_bio(data)
 
-        password_cb, userdata = self._pem_password_cb(password)
-        userdata_handle = self._ffi.new_handle(userdata)
+        if password is not None and not isinstance(password, bytes):
+            raise TypeError("Password must be bytes")
+
+        userdata = self._ffi.new("CRYPTOGRAPHY_PASSWORD_DATA *")
+        if password is not None:
+            password_buf = self._ffi.new("char []", password)
+            userdata.password = password_buf
+            userdata.length = len(password)
 
         evp_pkey = openssl_read_func(
             mem_bio.bio,
             self._ffi.NULL,
-            password_cb,
-            userdata_handle,
+            self._ffi.addressof(
+                self._lib._original_lib, "Cryptography_pem_password_cb"
+            ),
+            userdata,
         )
 
         if evp_pkey == self._ffi.NULL:
-            if userdata.exception is not None:
+            if userdata.error != 0:
                 errors = self._consume_errors()
                 self.openssl_assert(errors)
-                raise userdata.exception
+                if userdata.error == -1:
+                    raise TypeError(
+                        "Password was not given but private key is encrypted"
+                    )
+                else:
+                    assert userdata.error == -2
+                    raise ValueError(
+                        "Passwords longer than {0} bytes are not supported "
+                        "by this backend.".format(userdata.maxsize - 1)
+                    )
             else:
                 self._handle_key_loading_error()
 
@@ -1262,10 +1218,7 @@ class Backend(object):
             )
             for error in errors
         ):
-            raise UnsupportedAlgorithm(
-                "Unsupported public key algorithm.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-            )
+            raise ValueError("Unsupported public key algorithm.")
 
         else:
             assert errors[0][1] in (
@@ -1380,9 +1333,7 @@ class Backend(object):
         self.openssl_assert(ec_cdata != self._ffi.NULL)
         ec_cdata = self._ffi.gc(ec_cdata, self._lib.EC_KEY_free)
 
-        set_func, get_func, group = (
-            self._ec_key_determine_group_get_set_funcs(ec_cdata)
-        )
+        get_func, group = self._ec_key_determine_group_get_func(ec_cdata)
 
         point = self._lib.EC_POINT_new(group)
         self.openssl_assert(point != self._ffi.NULL)
@@ -1456,10 +1407,10 @@ class Backend(object):
         finally:
             self._lib.BN_CTX_end(bn_ctx)
 
-    def _ec_key_determine_group_get_set_funcs(self, ctx):
+    def _ec_key_determine_group_get_func(self, ctx):
         """
-        Given an EC_KEY determine the group and what methods are required to
-        get/set point coordinates.
+        Given an EC_KEY determine the group and what function is required to
+        get point coordinates.
         """
         self.openssl_assert(ctx != self._ffi.NULL)
 
@@ -1476,21 +1427,16 @@ class Backend(object):
         self.openssl_assert(nid != self._lib.NID_undef)
 
         if nid == nid_two_field and self._lib.Cryptography_HAS_EC2M:
-            set_func = self._lib.EC_POINT_set_affine_coordinates_GF2m
             get_func = self._lib.EC_POINT_get_affine_coordinates_GF2m
         else:
-            set_func = self._lib.EC_POINT_set_affine_coordinates_GFp
             get_func = self._lib.EC_POINT_get_affine_coordinates_GFp
 
-        assert set_func and get_func
+        assert get_func
 
-        return set_func, get_func, group
+        return get_func, group
 
     def _ec_key_set_public_key_affine_coordinates(self, ctx, x, y):
         """
-        This is a port of EC_KEY_set_public_key_affine_coordinates that was
-        added in 1.0.1.
-
         Sets the public key point in the EC_KEY context to the affine x and y
         values.
         """
@@ -1500,42 +1446,9 @@ class Backend(object):
                 "Invalid EC key. Both x and y must be non-negative."
             )
 
-        set_func, get_func, group = (
-            self._ec_key_determine_group_get_set_funcs(ctx)
+        res = self._lib.EC_KEY_set_public_key_affine_coordinates(
+            ctx, self._int_to_bn(x), self._int_to_bn(y)
         )
-
-        point = self._lib.EC_POINT_new(group)
-        self.openssl_assert(point != self._ffi.NULL)
-        point = self._ffi.gc(point, self._lib.EC_POINT_free)
-
-        bn_x = self._int_to_bn(x)
-        bn_y = self._int_to_bn(y)
-
-        with self._tmp_bn_ctx() as bn_ctx:
-            check_x = self._lib.BN_CTX_get(bn_ctx)
-            check_y = self._lib.BN_CTX_get(bn_ctx)
-
-            res = set_func(group, point, bn_x, bn_y, bn_ctx)
-            if res != 1:
-                self._consume_errors()
-                raise ValueError("EC point not on curve")
-
-            res = get_func(group, point, check_x, check_y, bn_ctx)
-            self.openssl_assert(res == 1)
-
-            res = self._lib.BN_cmp(bn_x, check_x)
-            if res != 0:
-                self._consume_errors()
-                raise ValueError("Invalid EC Key X point.")
-            res = self._lib.BN_cmp(bn_y, check_y)
-            if res != 0:
-                self._consume_errors()
-                raise ValueError("Invalid EC Key Y point.")
-
-        res = self._lib.EC_KEY_set_public_key(ctx, point)
-        self.openssl_assert(res == 1)
-
-        res = self._lib.EC_KEY_check_key(ctx)
         if res != 1:
             self._consume_errors()
             raise ValueError("Invalid EC key.")
@@ -1749,9 +1662,7 @@ class Backend(object):
         return evp_pkey
 
     def generate_dh_private_key(self, parameters):
-        dh_key_cdata = self._lib.DHparams_dup(parameters._dh_cdata)
-        self.openssl_assert(dh_key_cdata != self._ffi.NULL)
-        dh_key_cdata = self._ffi.gc(dh_key_cdata, self._lib.DH_free)
+        dh_key_cdata = _dh_params_dup(parameters._dh_cdata, self)
 
         res = self._lib.DH_generate_key(dh_key_cdata)
         self.openssl_assert(res == 1)
@@ -1773,10 +1684,16 @@ class Backend(object):
 
         p = self._int_to_bn(parameter_numbers.p)
         g = self._int_to_bn(parameter_numbers.g)
+
+        if parameter_numbers.q is not None:
+            q = self._int_to_bn(parameter_numbers.q)
+        else:
+            q = self._ffi.NULL
+
         pub_key = self._int_to_bn(numbers.public_numbers.y)
         priv_key = self._int_to_bn(numbers.x)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         res = self._lib.DH_set0_key(dh_cdata, pub_key, priv_key)
@@ -1802,9 +1719,15 @@ class Backend(object):
 
         p = self._int_to_bn(parameter_numbers.p)
         g = self._int_to_bn(parameter_numbers.g)
+
+        if parameter_numbers.q is not None:
+            q = self._int_to_bn(parameter_numbers.q)
+        else:
+            q = self._ffi.NULL
+
         pub_key = self._int_to_bn(numbers.y)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         res = self._lib.DH_set0_key(dh_cdata, pub_key, self._ffi.NULL)
@@ -1822,12 +1745,17 @@ class Backend(object):
         p = self._int_to_bn(numbers.p)
         g = self._int_to_bn(numbers.g)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        if numbers.q is not None:
+            q = self._int_to_bn(numbers.q)
+        else:
+            q = self._ffi.NULL
+
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         return _DHParameters(self, dh_cdata)
 
-    def dh_parameters_supported(self, p, g):
+    def dh_parameters_supported(self, p, g, q=None):
         dh_cdata = self._lib.DH_new()
         self.openssl_assert(dh_cdata != self._ffi.NULL)
         dh_cdata = self._ffi.gc(dh_cdata, self._lib.DH_free)
@@ -1835,7 +1763,12 @@ class Backend(object):
         p = self._int_to_bn(p)
         g = self._int_to_bn(g)
 
-        res = self._lib.DH_set0_pqg(dh_cdata, p, self._ffi.NULL, g)
+        if q is not None:
+            q = self._int_to_bn(q)
+        else:
+            q = self._ffi.NULL
+
+        res = self._lib.DH_set0_pqg(dh_cdata, p, q, g)
         self.openssl_assert(res == 1)
 
         codes = self._ffi.new("int[]", 1)
@@ -1843,6 +1776,9 @@ class Backend(object):
         self.openssl_assert(res == 1)
 
         return codes[0] == 0
+
+    def dh_x942_serialization_supported(self):
+        return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
     def x509_name_bytes(self, name):
         x509_name = _encode_name_gc(self, name)
