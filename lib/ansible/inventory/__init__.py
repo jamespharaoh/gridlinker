@@ -21,7 +21,6 @@ __metaclass__ = type
 
 import fnmatch
 import os
-import subprocess
 import sys
 import re
 import itertools
@@ -169,6 +168,23 @@ class Inventory(object):
         for host in self.get_hosts(ignore_limits=True, ignore_restrictions=True):
             host.vars = combine_vars(host.vars, self.get_host_variables(host.name))
             self.get_host_vars(host)
+
+            mygroups = host.get_groups()
+
+            # ensure hosts are always in 'all'
+            if all not in mygroups:
+                all.add_host(host)
+
+            if ungrouped in mygroups:
+                # clear ungrouped of any incorrectly stored by parser
+                if set(mygroups).difference(set([all, ungrouped])):
+                    host.remove_group(ungrouped)
+            else:
+                # add ungrouped hosts to ungrouped
+                length = len(mygroups)
+                if length == 0 or (length == 1 and all in mygroups):
+                    ungrouped.add_host(host)
+
 
     def _match(self, str, pattern_str):
         try:
