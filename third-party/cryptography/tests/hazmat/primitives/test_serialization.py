@@ -845,9 +845,7 @@ class TestPEMSerialization(object):
         ]
     )
     def test_load_bad_oid_key(self, key_file, password, backend):
-        with raises_unsupported_algorithm(
-            _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
-        ):
+        with pytest.raises(ValueError):
             load_vectors_from_file(
                 os.path.join(
                     "asymmetric", "PKCS8", key_file),

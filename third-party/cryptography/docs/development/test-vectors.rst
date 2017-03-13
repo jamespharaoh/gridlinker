@@ -110,6 +110,20 @@ Key exchange
   ``vectors/cryptography_vectors/asymmetric/DH/dhpub.der`` contains
   are the above parameters and keys in DER format.
 
+* ``vectors/cryptography_vectors/asymmetric/DH/dhp_rfc5114_2.pem``,
+  ``vectors/cryptography_vectors/asymmetric/DH/dhkey_rfc5114_2.pem`` and
+  ``vectors/cryptography_vectors/asymmetric/DH/dhpub_rfc5114_2.pem`` contains
+  Diffie-Hellman parameters and key respectively. The keys were
+  generated using OpenSSL following `DHKE`_ guide. When creating the
+  parameters we added the `-pkeyopt dh_rfc5114:2` option to use
+  RFC5114 2048 bit DH parameters with 224 bit subgroup.
+  ``vectors/cryptography_vectors/asymmetric/DH/dhkey_rfc5114_2.txt`` contains
+  all parameter in text.
+  ``vectors/cryptography_vectors/asymmetric/DH/dhp_rfc5114_2.der``,
+  ``vectors/cryptography_vectors/asymmetric/DH/dhkey_rfc5114_2.der`` and
+  ``vectors/cryptography_vectors/asymmetric/DH/dhpub_rfc5114_2.der`` contains
+  are the above parameters and keys in DER format.
+
 
 X.509
 ~~~~~
@@ -457,7 +471,7 @@ header format (substituting the correct information):
 .. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/
 .. _`CRYPTREC`: https://www.cryptrec.go.jp
 .. _`OpenSSL's test vectors`: https://github.com/openssl/openssl/blob/97cf1f6c2854a3a955fd7dd3a1f113deba00c9ef/crypto/evp/evptests.txt#L232
-.. _`RIPEMD website`: http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
+.. _`RIPEMD website`: https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 .. _`Whirlpool website`: http://www.larc.usp.br/~pbarreto/WhirlpoolPage.html
 .. _`draft RFC`: https://tools.ietf.org/html/draft-josefsson-scrypt-kdf-01
 .. _`Specification repository`: https://github.com/fernet/spec
@@ -472,8 +486,8 @@ header format (substituting the correct information):
 .. _`GnuTLS example keys`: https://gitlab.com/gnutls/gnutls/commit/ad2061deafdd7db78fd405f9d143b0a7c579da7b
 .. _`NESSIE IDEA vectors`: https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/idea/Idea-128-64.verified.test-vectors
 .. _`NESSIE`: https://en.wikipedia.org/wiki/NESSIE
-.. _`Ed25519 website`: http://ed25519.cr.yp.to/software.html
-.. _`NIST SP-800-38B`: http://csrc.nist.gov/publications/nistpubs/800-38B/Updated_CMAC_Examples.pdf
+.. _`Ed25519 website`: https://ed25519.cr.yp.to/software.html
+.. _`NIST SP-800-38B`: http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-38b.pdf
 .. _`NIST PKI Testing`: http://csrc.nist.gov/groups/ST/crypto_apps_infra/pki/pkitesting.html
 .. _`testx509.pem`: https://github.com/openssl/openssl/blob/master/test/testx509.pem
 .. _`DigiCert Global Root G3`: http://cacerts.digicert.com/DigiCertGlobalRootG3.crt

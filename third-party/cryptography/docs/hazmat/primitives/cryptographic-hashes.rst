@@ -79,21 +79,6 @@ Message digests
 
 .. _cryptographic-hash-algorithms:
 
-SHA-1
-~~~~~
-
-.. attention::
-
-    NIST has deprecated SHA-1 in favor of the SHA-2 variants. New applications
-    are strongly suggested to use SHA-2 over SHA-1.
-
-.. class:: SHA1()
-
-    SHA-1 is a cryptographic hash function standardized by NIST. It produces an
-    160-bit message digest. Cryptanalysis of SHA-1 has demonstrated that it is
-    vulnerable to practical collision attacks, though no actual collisions are
-    publicly known.
-
 SHA-2 family
 ~~~~~~~~~~~~
 
@@ -148,6 +133,22 @@ SHA-family of hashes.
         ``32`` is supported at this time.
 
     :raises ValueError: If the ``digest_size`` is invalid.
+
+SHA-1
+~~~~~
+
+.. warning::
+
+    SHA-1 is a deprecated hash algorithm that has practical known collision
+    attacks. You are strongly discouraged from using it. Existing applications
+    should strongly consider moving away.
+
+.. class:: SHA1()
+
+    SHA-1 is a cryptographic hash function standardized by NIST. It produces an
+    160-bit message digest. Cryptanalysis of SHA-1 has demonstrated that it is
+    vulnerable to practical collision attacks, and collisions have been
+    demonstrated.
 
 RIPEMD160
 ~~~~~~~~~
@@ -224,6 +225,6 @@ Interfaces
         :return: A :class:`HashContext` that is a copy of the current context.
 
 
-.. _`Lifetimes of cryptographic hash functions`: http://valerieaurora.org/hash.html
+.. _`Lifetimes of cryptographic hash functions`: https://valerieaurora.org/hash.html
 .. _`BLAKE2`: https://blake2.net
 .. _`length-extension attacks`: https://en.wikipedia.org/wiki/Length_extension_attack
