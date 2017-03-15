@@ -37,7 +37,7 @@ start:
     - "11211"
 
   ports:
-    - "{{ parent.private.address }}:{{ cluster.ports.memcache }}:11211"
+    - "{{ parent.private.address }}:{{ cluster.cluster_ports.memcache }}:11211"
 
   volumes:
     - "{{ container_directory }}/config:/config"
@@ -46,7 +46,7 @@ start:
   env: {}
 
   wait:
-    - "{{ cluster.ports.memcache }}"
+    - "{{ cluster.cluster_ports.memcache }}"
 
 # ex: et ts=2 filetype=yaml
 

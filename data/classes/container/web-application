@@ -37,7 +37,7 @@ start:
     - "80"
 
   ports:
-    - "{{ parent.private.address }}:{{ cluster.ports.web_application }}:80"
+    - "{{ parent.private.address }}:{{ cluster.cluster_ports.web_application }}:80"
 
   volumes_default:
     - "{{ container_directory }}/config:/config"
@@ -58,7 +58,7 @@ start:
   env: {}
 
   wait:
-    - "{{ cluster.ports.web_application }}"
+    - "{{ cluster.cluster_ports.web_application }}"
 
   reload_commands:
     - "/etc/my_init.d/ansible"
