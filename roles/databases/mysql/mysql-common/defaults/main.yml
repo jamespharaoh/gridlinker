@@ -16,6 +16,7 @@ mysql_install_version_default_by_release:
 
 mysql_default_state: "enabled"
 mysql_control: "yes"
+mysql_control_start_stop: "yes"
 
 # ---------- state
 
