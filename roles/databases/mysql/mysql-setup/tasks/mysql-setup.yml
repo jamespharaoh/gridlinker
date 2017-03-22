@@ -22,10 +22,10 @@
 
   register: "mysql_setup_config_result"
 
-- name: "set mysql.state to 'enabled'"
+- name: "set mysql.state to '{{ mysql_default_state }}'"
   when: "mysql_state == 'installed'"
   update_resource:
 
-    mysql.state: "enabled"
+    mysql.state: "{{ mysql_default_state }}"
 
 # ex: et ts=2 filetype=yaml
