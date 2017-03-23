@@ -115,6 +115,7 @@ resource_section_names:
   - "deployment_cluster"
   - "devbox"
   - "etcd"
+  - "icinga"
   - "icinga_core"
   - "icinga_core_agent"
   - "icinga_core_group"
