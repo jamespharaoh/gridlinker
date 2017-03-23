@@ -3,6 +3,8 @@
 [Unit]
 
 	Description = RZBackup daemon
+
+	Requires = {{ rzbackup_systemd_requires | join (' ') }}
 	After = network.target
 
 [Service]
@@ -12,9 +14,6 @@
 	ExecStart = /etc/rzbackup-start-script
 	ExecReload = /bin/kill -HUP $MAINPID
 	ExecStop = /bin/kill -TERM $MAINPID
-
-	Requires = {{ rzbackup_systemd_requires | join (' ') }}
-	After = {{ rzbackup_systemd_after | join (' ') }}
 
 	Restart = {{ rzbackup_systemd_restart }}
 	RestartSecs = {{ rzbackup_systemd_restart_secs }}
