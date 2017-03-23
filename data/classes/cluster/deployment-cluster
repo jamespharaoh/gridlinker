@@ -12,6 +12,8 @@ class:
   groups:
     - "deployment-clusters"
 
+app: {}
+
 deployment_cluster:
 
   external_communications_email_white_list: []

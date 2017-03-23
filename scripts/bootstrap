@@ -22,6 +22,18 @@ system_packages=(
 	"python-yaml"
 )
 
+# check for existing config
+
+if test -f "config/overrides.yml"; then
+
+	echo "Won't run bootstrap if config/overrides.yml exists" >&2
+
+	exit 1
+
+fi
+
+# build dependencies
+
 cd ~/datingnode-ansible
 
 scripts/setup-project build
@@ -31,16 +43,6 @@ scripts/setup-project build
 if test -f /etc/init/etcd.conf -o -f /etc/systemd/system/etcd.service; then
 
 	echo "Etcd already seems to be installed, aborting..." >&2
-
-	exit 1
-
-fi
-
-# check for existing config
-
-if test -f "config/overrides.yml"; then
-
-	echo "Won't run bootstrap if config/overrides.yml exists" >&2
 
 	exit 1
 
