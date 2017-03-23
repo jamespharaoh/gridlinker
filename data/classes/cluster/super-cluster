@@ -13,6 +13,8 @@ class:
 
     - "super-clusters"
 
+icinga: {}
+
 super_cluster:
 
   icinga_core_database_hostname: "{{ icinga_core_database_hostname }}"
