@@ -8,6 +8,11 @@ nginx_install_version: ""
 
 nginx_config: "/etc/nginx"
 
+nginx_control: "yes"
+nginx_control_start_stop: "yes"
+
+nginx_default_state: "enabled"
+
 # ---------- state
 
 nginx_installed_version: ""
