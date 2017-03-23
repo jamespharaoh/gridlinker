@@ -26,4 +26,6 @@ deployment_cluster:
   php_pm_start_servers: "16"
   php_pm_min_spare_servers: "16"
 
+php: {}
+
 # ex: et ts=2 filetype=yaml
