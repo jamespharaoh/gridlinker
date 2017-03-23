@@ -108,6 +108,7 @@ resource_data:
 resource_section_names:
 
   - "ansible"
+  - "app"
   - "btrfs_dedupe"
   - "container"
   - "deployment_cluster"
