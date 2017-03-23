@@ -44,6 +44,8 @@ icinga_core_agent:
   name: "{{ identity_name }}"
   host: "{{ identity_name }}"
 
+private: {}
+
 python:
 
   packages:
