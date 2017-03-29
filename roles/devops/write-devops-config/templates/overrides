@@ -6,8 +6,8 @@ deployment_name: "{{ deployment_name | default ('') }}"
 developer_name: "{{ developer_name | default ('') }}"
 developer_email: "{{ developer_email | default ('') }}"
 
-ubuntu_main_url: "{{ ubuntu_main_url }}"
-ubuntu_security_url: "{{ ubuntu_security_url }}"
+ubuntu_main_url: "{{ ubuntu_main_url | default ('http://archive.ubuntu.com/ubuntu') }}"
+ubuntu_security_url: "{{ ubuntu_security_url | default ('http://security.ubuntu.com/ubuntu') }}"
 docker_mirror_url: "{{ docker_mirror_url | default ('https://get.docker.com/ubuntu') }}"
 
 docker_quay_auth: "{{ docker_quay_auth | default ('') }}"

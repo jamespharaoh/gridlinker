@@ -148,4 +148,8 @@ ubuntu:
     - name: "whois"
       state: "present"
 
+python_apt: {}
+
+python_pip: {}
+
 # ex: et ts=2 filetype=yaml

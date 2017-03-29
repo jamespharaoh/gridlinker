@@ -27,6 +27,10 @@ container:
   type: "memcache"
   directory: "/datingnode-{{ identity_cluster }}/{{ identity_name }}"
 
+memcache:
+
+  enabled: ""
+
 start:
 
   name: "{{ identity_name }}"
