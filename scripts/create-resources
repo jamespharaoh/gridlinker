@@ -10,6 +10,8 @@ fi
 cluster="$1"
 hostname="$(hostname --short)"
 ip_address="$(dig +short $hostname)"
+dev_user="$USER"
+dev_group="$USER"
 
 # create admin group and user
 
@@ -137,7 +139,7 @@ for directory in \
 ; do
 
 	sudo mkdir -p "$directory"
-	sudo chown "www-data:ubuntu" "$directory"
+	sudo chown "www-data:$dev_group" "$directory"
 	sudo chmod "0770" "$directory"
 	sudo touch "$directory/mount-flag"
 
