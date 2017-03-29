@@ -4,11 +4,11 @@
 
 	ServerName {{ item.main_domain }}
 	ServerAlias {{ item.main_domain }}.datingnode.com
-	ServerAlias {{ item.main_domain }}.{{ cluster.cluster.domain_suffix }}
+	ServerAlias {{ item.main_domain }}.{{ cluster.domain_suffix }}
 
 {% for alias in item.main_alias %}
 	ServerAlias {{ alias }}
-	ServerAlias {{ alias }}.{{ cluster.cluster.domain_suffix }}
+	ServerAlias {{ alias }}.{{ cluster.domain_suffix }}
 {% endfor %}
 
 	ServerAdmin {{ server_admin_email }}

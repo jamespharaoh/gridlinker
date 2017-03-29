@@ -21,6 +21,7 @@ class:
     - name: "cluster"
       type: "resource"
       value: "cluster/{{ identity_cluster }}"
+      section: "cluster"
 
 container:
 
@@ -38,8 +39,8 @@ start:
     - "443"
 
   ports:
-    - "{{ cluster.cluster_ports.vhost_proxy }}:80"
-    - "{{ cluster.cluster_ports.vhost_proxy_ssl }}:443"
+    - "{{ cluster.ports.vhost_proxy }}:80"
+    - "{{ cluster.ports.vhost_proxy_ssl }}:443"
 
   volumes:
     - "{{ container_directory }}/config:/config"

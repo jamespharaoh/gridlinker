@@ -3,10 +3,10 @@
 <VirtualHost *:80>
 
 	ServerName {{ item.main_domain }}.beta.datingnode.com
-	ServerAlias {{ item.main_domain }}.beta.{{ cluster.cluster.domain_suffix }}
+	ServerAlias {{ item.main_domain }}.beta.{{ cluster.domain_suffix }}
 
 {% for alias in item.main_alias %}
-	ServerAlias {{ alias }}.beta.{{ cluster.cluster.domain_suffix }}
+	ServerAlias {{ alias }}.beta.{{ cluster.domain_suffix }}
 {% endfor %}
 
 	ServerAdmin {{ server_admin_email }}

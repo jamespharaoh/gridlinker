@@ -27,6 +27,8 @@ ansible:
   ssh_host: "{{ private.address }}"
   ssh_user: "ubuntu"
 
+container: {}
+
 icinga_core:
 
   authority: "rocket-icinga"
@@ -228,11 +230,18 @@ python:
     - name: "whitenoise"
       version: "2.0.6"
 
+python_apt: {}
+python_pip: {}
+
 ssh:
 
   hostnames:
 
     - "{{ identity.name }}"
     - "{{ private.address }}"
+
+system: {}
+
+ubuntu: {}
 
 # ex: et ts=2 filetype=yaml

@@ -20,6 +20,8 @@ ansible:
   ssh_host: "{{ private.address }}"
   ssh_user: "ubuntu"
 
+container: {}
+
 icinga_core:
 
   master: "{{ super_cluster.icinga_master }}"
@@ -59,5 +61,11 @@ ssh:
 
     - "{{ identity.name }}"
     - "{{ private.address }}"
+
+system: {}
+
+ubuntu: {}
+
+vhost: {}
 
 # ex: et ts=2 filetype=yaml

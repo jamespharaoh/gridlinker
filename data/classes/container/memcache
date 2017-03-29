@@ -21,6 +21,7 @@ class:
     - name: "cluster"
       type: "resource"
       value: "cluster/{{ identity_cluster }}"
+      section: "cluster"
 
 container:
 
@@ -41,7 +42,7 @@ start:
     - "11211"
 
   ports:
-    - "{{ parent.private.address }}:{{ cluster.cluster_ports.memcache }}:11211"
+    - "{{ parent.private.address }}:{{ cluster.ports.memcache }}:11211"
 
   volumes:
     - "{{ container_directory }}/config:/config"
@@ -50,7 +51,7 @@ start:
   env: {}
 
   wait:
-    - "{{ cluster.cluster_ports.memcache }}"
+    - "{{ cluster.ports.memcache }}"
 
 # ex: et ts=2 filetype=yaml
 

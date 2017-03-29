@@ -21,11 +21,16 @@ class:
     - name: "cluster"
       type: "resource"
       value: "cluster/{{ identity_cluster }}"
+      section: "cluster"
 
 container:
 
   type: "database"
   directory: "/datingnode-{{ identity_cluster }}/{{ identity_name }}"
+
+database:
+
+  enabled: ""
 
 start:
 
@@ -39,13 +44,13 @@ start:
     - "5432"
 
   ports:
-    - "{{ parent.private.address }}:{{ cluster.cluster_ports.database }}:5432"
+    - "{{ parent.private.address }}:{{ cluster.ports.database }}:5432"
 
   volumes:
     - "{{ container_directory }}/config:/config"
     - "{{ container_directory }}/data:/data"
 
   wait:
-    - "{{ cluster.cluster_ports.database }}"
+    - "{{ cluster.ports.database }}"
 
 # ex: et ts=2 filetype=yaml

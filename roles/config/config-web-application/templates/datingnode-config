@@ -2,7 +2,7 @@
 
 	"datingnode": {
 
-		"deployment" 	: "{{ cluster.identity.name }}",
+		"deployment" 	: "{{ cluster.name }}",
 		"build" 		: "{{ cluster.build.web_application }}",
 		"dir" 			: "{{ platform_super_dir }}",
 		
@@ -30,7 +30,7 @@
 			"api"			: false
 		},
 
-		"domain-postfix" : ".{{ cluster.cluster.domain_suffix }}",
+		"domain-postfix" : ".{{ cluster.domain_suffix }}",
 
 		"components": {
 		

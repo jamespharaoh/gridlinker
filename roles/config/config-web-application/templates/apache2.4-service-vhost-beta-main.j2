@@ -3,7 +3,7 @@
 <VirtualHost *:80>
 
 	ServerName {{ item.main_domain }}.beta.datingnode.com
-	ServerAlias {{ item.main_domain }}.beta.datingnode.com.{{ cluster.cluster.domain_suffix }}
+	ServerAlias {{ item.main_domain }}.beta.datingnode.com.{{ cluster.domain_suffix }}
 
 {% for alias in item.main_alias %}
 	ServerAlias {{ alias }}.beta.datingnode.com

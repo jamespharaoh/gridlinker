@@ -15,23 +15,6 @@ class:
 
 icinga: {}
 
-super_cluster:
-
-  icinga_core_database_hostname: "{{ icinga_core_database_hostname }}"
-  icinga_core_database_master: "{{ icinga_core_database_master }}"
-  icinga_core_database_password: "{{ icinga_core_database_password }}"
-  icinga_core_database_username: "{{ icinga_core_database_username }}"
-  icinga_core_install_version: "{{ icinga_core_install_version }}"
-  icinga_core_ticket_salt: "{{ icinga_core_ticket_salt }}"
-
-  icinga_web_core_admin_password: "{{ icinga_web_core_admin_password }}"
-  icinga_web_core_database_hostname: "{{ icinga_web_core_database_hostname }}"
-  icinga_web_core_database_password: "{{ icinga_web_core_database_password }}"
-  icinga_web_core_database_port: "{{ icinga_web_core_database_port }}"
-  icinga_web_core_database_type: "{{ icinga_web_core_database_type }}"
-  icinga_web_core_database_username: "{{ icinga_web_core_database_username }}"
-  icinga_web_core_install_version: "{{ icinga_web_core_install_version }}"
-
 icinga_core:
 
   database_type: "postgresql"
@@ -53,5 +36,26 @@ icinga_web_core:
   database_port: "5432"
 
   install_version: ""
+
+postfix: {}
+
+ssh_user: {}
+
+super_cluster:
+
+  icinga_core_database_hostname: "{{ icinga_core_database_hostname }}"
+  icinga_core_database_master: "{{ icinga_core_database_master }}"
+  icinga_core_database_password: "{{ icinga_core_database_password }}"
+  icinga_core_database_username: "{{ icinga_core_database_username }}"
+  icinga_core_install_version: "{{ icinga_core_install_version }}"
+  icinga_core_ticket_salt: "{{ icinga_core_ticket_salt }}"
+
+  icinga_web_core_admin_password: "{{ icinga_web_core_admin_password }}"
+  icinga_web_core_database_hostname: "{{ icinga_web_core_database_hostname }}"
+  icinga_web_core_database_password: "{{ icinga_web_core_database_password }}"
+  icinga_web_core_database_port: "{{ icinga_web_core_database_port }}"
+  icinga_web_core_database_type: "{{ icinga_web_core_database_type }}"
+  icinga_web_core_database_username: "{{ icinga_web_core_database_username }}"
+  icinga_web_core_install_version: "{{ icinga_web_core_install_version }}"
 
 # ex: et ts=2 filetype=yaml

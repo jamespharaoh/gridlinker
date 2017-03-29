@@ -61,6 +61,10 @@ btrfs_dedupe:
         - "/var/lib/lxc"
         - "/var/lib/lxc/*/rootfs"
 
+disk_ids: {}
+
+failover: {}
+
 icinga_core:
 
   authority: "rocket-icinga"
@@ -215,6 +219,10 @@ public:
 
     - "{{ identity_name }}.rocketware.co.uk"
 
+python: {}
+python_apt: {}
+python_pip: {}
+
 ssh:
 
   hostnames:
@@ -222,6 +230,8 @@ ssh:
     - "{{ identity.name }}"
     - "{{ public.address }}"
     - "{{ private.address }}"
+
+system: {}
 
 ubuntu:
 

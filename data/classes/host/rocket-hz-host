@@ -121,6 +121,12 @@ public:
 
     - "{{ identity_name }}.rocketware.co.uk"
 
+python: {}
+python_apt: {}
+python_pip: {}
+
+system: {}
+
 ubuntu:
 
   system_packages_class:

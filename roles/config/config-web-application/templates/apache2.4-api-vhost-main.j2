@@ -3,11 +3,11 @@
 <VirtualHost *:80>
 
 	ServerName api.datingnode.com
-	ServerAlias api.{{ cluster.cluster.domain_suffix }}
+	ServerAlias api.{{ cluster.domain_suffix }}
 
 {% for discreet_domain in discreet_api_domains %}
 	ServerAlias api.{{ discreet_domain }}
-	ServerAlias api.{{ discreet_domain }}.{{ cluster.cluster.domain_suffix }}
+	ServerAlias api.{{ discreet_domain }}.{{ cluster.domain_suffix }}
 {% endfor %}
 
 	ServerAdmin {{ server_admin_email }}

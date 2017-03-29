@@ -1,17 +1,23 @@
 ---
 
 clusters:
+
 {% for cluster_name, cluster_data in deployment_clusters.items () %}
   {{ cluster_name }}:
 {% for key, value in cluster_data.items () %}
     {{ key }}: {{ value | to_json }}
 {% endfor %}
+
+{# == TODO remove == #}
+
+    identity:
+      name: "{{ cluster_name }}"
+
     cluster:
-{#
 {% for key, value in cluster_data.items () %}
       {{ key }}: {{ value | to_json }}
 {% endfor %}
-#}
+
 {% endfor %}
 
 vhost_proxy_build: "{{ deployment_name }}"
