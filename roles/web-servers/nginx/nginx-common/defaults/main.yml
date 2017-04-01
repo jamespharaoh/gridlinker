@@ -48,6 +48,12 @@ nginx_default_site_enabled: "yes"
 nginx_resolver: ""
 nginx_resolver_timeout: "30s"
 
+nginx_proxy_connect_timeout: "60s"
+nginx_proxy_read_timeout: "60s"
+nginx_proxy_send_timeout: "60s"
+
+nginx_map_hash_bucket_size: "1024"
+
 # ---------- configuration
 
 nginx_config_directories:
