@@ -195,6 +195,7 @@ class GridlinkerModule (object):
 						self._module_name,
 						task_data ["name"]),
 					"tags": task_data ["tags"],
+					"when": task_data.get ("when", "True"),
 				},
 			])
 
