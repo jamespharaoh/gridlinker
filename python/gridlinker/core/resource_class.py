@@ -209,6 +209,10 @@ class ResourceClass (object):
 
 		return self._references
 
+	def resource_identity (self):
+
+		return self._resource_identity
+
 	def resources (self):
 
 		return self._resources
