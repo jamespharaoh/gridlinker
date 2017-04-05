@@ -12,12 +12,12 @@ __all__ = [
 ]
 
 def build_modules (
-		context,
+		home,
 		module_names = None):
 
 	all_modules = (
 		load_modules (
-			context.home))
+			home))
 
 	for module in all_modules.values ():
 
@@ -92,7 +92,7 @@ class GridlinkerModule (object):
 
 		main_directory_builder = (
 			directory_builder.subdirectory (
-				"main"))
+				self._module_name))
 
 		main_meta_directory_builder = (
 			main_directory_builder.subdirectory (
@@ -152,6 +152,12 @@ class GridlinkerModule (object):
 		task_directory_builder.create_link (
 			"templates",
 			"../../../modules/%s/%s/templates" % (
+				self._module_group_name,
+				self._module_name))
+
+		task_directory_builder.create_link (
+			"files",
+			"../../../modules/%s/%s/files" % (
 				self._module_group_name,
 				self._module_name))
 
