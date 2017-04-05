@@ -17,7 +17,7 @@ def build_modules (
 
 	all_modules = (
 		load_modules (
-			context))
+			context.home))
 
 	for module in all_modules.values ():
 
@@ -32,7 +32,7 @@ class GridlinkerModule (object):
 
 	__slots__ = [
 
-		"_context",
+		"_home",
 
 		"_module_group_name",
 		"_module_name",
@@ -43,13 +43,13 @@ class GridlinkerModule (object):
 
 	def __init__ (
 			self,
-			context,
+			home,
 			module_group_name,
 			module_name,
 			module_path,
 			module_data):
 
-		self._context = context
+		self._home = home
 
 		self._module_group_name = module_group_name
 		self._module_name = module_name
@@ -69,7 +69,7 @@ class GridlinkerModule (object):
 		directory_builder = (
 			DirectoryBuilder (
 				"%s/roles/%s" % (
-					self._context.home,
+					self._home,
 					self._module_name)))
 
 		self.build_main (
@@ -92,9 +92,13 @@ class GridlinkerModule (object):
 
 		main_directory_builder = (
 			directory_builder.subdirectory (
+				"main"))
+
+		main_meta_directory_builder = (
+			main_directory_builder.subdirectory (
 				"meta"))
 
-		main_directory_builder.create_yaml_file (
+		main_meta_directory_builder.create_yaml_file (
 			"main.yml",
 			{
 				"dependencies": [
@@ -396,16 +400,16 @@ class SubDirectoryBuilder (object):
 			content_lines)
 
 def load_modules (
-		context):
+		home):
 
 	modules = dict ()
 
 	for module_group_name \
-	in os.listdir ("%s/modules" % context.home):
+	in os.listdir ("%s/modules" % home):
 
 		module_group_path = (
 			"%s/modules/%s" % (
-				context.home,
+				home,
 				module_group_name))
 
 		for module_name \
@@ -428,7 +432,7 @@ def load_modules (
 
 			modules [module_name] = (
 				GridlinkerModule (
-					context,
+					home,
 					module_group_name,
 					module_name,
 					module_path,
