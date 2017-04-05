@@ -1,11 +1,10 @@
 ---
 
 - include: "wbs-monitoring-install.yml"
-  tags:
-
+  tags: 
     - "wbs-monitoring-install"
     - "wbs-monitoring"
-
     - "install"
+
 
 # ex: et ts=2 filetype=yaml

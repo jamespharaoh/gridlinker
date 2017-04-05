@@ -34,7 +34,7 @@
   action:
 
     module: "file"
-    path: "{{ wbs_monitoring_install_target }}"
+    path: "{{ wbs_monitoring_install_link }}"
     state: "link"
 
     src: "{{ wbs_monitoring_install_directory }}"
