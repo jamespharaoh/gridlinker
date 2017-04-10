@@ -5,7 +5,7 @@
     - "wbs-monitoring-install"
     - "wbs-monitoring"
     - "install"
-  when: "True"
+  when: "(True)"
 
 
 # ex: et ts=2 filetype=yaml

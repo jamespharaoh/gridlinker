@@ -26,6 +26,10 @@ def build_modules (
 
 			continue
 
+		print (
+			"===== Building %s =====" % (
+				module.module_name ()))
+
 		module.build ()
 
 class GridlinkerModule (object):
@@ -141,9 +145,11 @@ class GridlinkerModule (object):
 					self._module_name,
 					task_data ["name"])))
 
-		self.build_task_meta (
-			task_directory_builder,
-			task_data)
+		if task_data ["name"] != "common":
+
+			self.build_task_meta (
+				task_directory_builder,
+				task_data)
 
 		self.build_task_tasks (
 			task_directory_builder,
@@ -195,7 +201,14 @@ class GridlinkerModule (object):
 						self._module_name,
 						task_data ["name"]),
 					"tags": task_data ["tags"],
-					"when": task_data.get ("when", "True"),
+					"when": "".join ([
+						"(",
+						") and (".join (
+							task_data.get (
+								"when",
+								[ "True" ])),
+						")",
+					]),
 				},
 			])
 
