@@ -1,6 +1,19 @@
 ---
 
+- name: "wbs monitoring install check install version is set"
+  when: "wbs_monitoring_install_version == ''"
+  fail:
+
+    msg: "Must set wbs_monitoring.install_version"
+
+- name: "unset wbs_monitoring.installed_version"
+  when: "wbs_monitoring_installed_version != wbs_monitoring_install_version"
+  update_resource:
+
+    wbs_monitoring.installed_version: ""
+
 - name: "wbs monitoring install"
+  when: "wbs_monitoring_installed_version != wbs_monitoring_install_version"
   args:
 
     executable: "/bin/bash"
@@ -38,5 +51,10 @@
     state: "link"
 
     src: "{{ wbs_monitoring_install_directory }}"
+
+- name: "set wbs_monitoring.installed_version"
+  update_resource:
+
+    wbs_monitoring.installed_version: "{{ wbs_monitoring_install_version }}"
 
 # ex: et ts=2 filetype=yaml

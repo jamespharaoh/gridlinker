@@ -7,8 +7,16 @@ identity:
 
 common:
 
+  # ----- installation settings
+
   wbs_monitoring_install: "{{ default_install | default ('yes') }}"
   wbs_monitoring_install_version: ""
+
+  # ----- state
+
+  wbs_monitoring_installed_version: ""
+
+  # ----- installation
 
   wbs_monitoring_install_version_full: "{{ [
     wbs_monitoring_install_version,
