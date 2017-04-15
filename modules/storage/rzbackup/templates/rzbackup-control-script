@@ -13,6 +13,7 @@ chown "{{ rzbackup_user }}:adm" "{{ rzbackup_log }}"
 chmod 0640 "{{ rzbackup_log }}"
 
 echo "Creating {{ rzbackup_cache }}"
+rm -rf "{{ rzbackup_cache }}"
 mkdir -p "{{ rzbackup_cache }}"
 chown "{{ rzbackup_user }}:adm" "{{ rzbackup_cache }}"
 chmod 0750 "{{ rzbackup_cache }}"
