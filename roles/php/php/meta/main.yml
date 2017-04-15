@@ -1,10 +1,13 @@
 ---
 
-dependencies:
-
+dependencies: 
   - "php-common"
-  - "php-install"
+  - "php-install-source"
+  - "php-install-ppa"
+  - "php-install-distro"
   - "php-setup"
-  - "php-control"
+  - "php-control-systemd"
+  - "php-control-upstart"
+
 
 # ex: et ts=2 filetype=yaml

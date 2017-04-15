@@ -1,81 +1,7 @@
 ---
 
-# ---------- general
-
-php_install_version: ""
-php_install: "{{ default_install | default ('yes') }}"
-php_install_target: "/opt/php-{{ php_install_version }}"
-
-php_config_directory: "{{ php_config_directory_map [php_install_version] }}"
-php_config_directory_map:
-
-  "5": "/etc/php5"
-  "7.0": "/etc/php/7.0"
-
-php_control: "yes"
-php_control_start_stop: "yes"
-
-php_default_state: "enabled"
-
-# ---------- state
-
-php_fpm_socket: ""
-php_needs_restart: ""
-php_state: ""
-
-php_installed_version: ""
-php_installed_from: ""
-php_installed_service: ""
-php_installed_target: ""
-
-# ---------- runtime config
-
-php_memory_limit: "128M"
-
-php_max_execution_time: "30"
-php_max_input_time: "30"
-
-php_upload_max_filesize: "2M"
-php_post_max_size: "8M"
-php_max_input_vars: "1000"
-
-php_enabled_modules: []
-php_disabled_modules: []
-
-# ---------- install config
-
-php_install_ppa_keys:
-
-  - "E5267A6C"
-
-php_install_ppas:
-
-  - "deb http://ppa.launchpad.net/ondrej/php/ubuntu trusty main"
-  - "deb-src http://ppa.launchpad.net/ondrej/php/ubuntu trusty main"
-
-php_install_packages_core:
-
-  - "php{{ php_install_version }}-cli"
-  - "php{{ php_install_version }}-fpm"
-
-php_install_packages_modules: []
-
-php_install_packages: "{{ []
-  | union (php_install_packages_core)
-  | union (php_install_packages_modules)
-}}"
-
-# ---------- build config
-
-php_build_temp: "/tmp/php-build"
-php_build_mirror: "https://dist.wellbehavedsoftware.com/php"
-php_build_name: "php-{{ php_version }}"
-php_build_directory: "{{ php_build_name }}"
 php_build_archive: "{{ php_build_name }}.tar.bz2"
-php_build_url: "{{ php_build_mirror }}/{{ php_build_archive }}"
-
-php_build_dependencies:
-
+php_build_dependencies: 
   - "apache2-dev"
   - "aspell"
   - "aspell-en"
@@ -313,5 +239,49 @@ php_build_dependencies:
   - "xorg-sgml-doctools"
   - "xtrans-dev"
   - "zlib1g-dev"
+php_build_directory: "{{ php_build_name }}"
+php_build_mirror: "https://dist.wellbehavedsoftware.com/php"
+php_build_name: "php-{{ php_version }}"
+php_build_temp: "/tmp/php-build"
+php_build_url: "{{ php_build_mirror }}/{{ php_build_archive }}"
+php_config_directory: "{{ php_config_directory_map [php_install_version] }}"
+php_config_directory_map: 
+  
+  "5": "/etc/php5"
+  "7.0": "/etc/php/7.0"
+  "7.1": "/etc/php/7.1"
+
+php_control: "yes"
+php_control_start_stop: "yes"
+php_default_state: "enabled"
+php_disabled_modules: []
+php_enabled_modules: []
+php_fpm_socket: ""
+php_install: "{{ default_install | default ('yes') }}"
+php_install_packages: "{{ [] | union (php_install_packages_core) | union (php_install_packages_modules) }}"
+php_install_packages_core: 
+  - "php{{ php_install_version }}-cli"
+  - "php{{ php_install_version }}-fpm"
+php_install_packages_modules: []
+php_install_ppa_keys: 
+  - "E5267A6C"
+php_install_ppas: 
+  - "deb http://ppa.launchpad.net/ondrej/php/ubuntu trusty main"
+  - "deb-src http://ppa.launchpad.net/ondrej/php/ubuntu trusty main"
+php_install_target: "/opt/php-{{ php_install_version }}"
+php_install_version: ""
+php_installed_from: ""
+php_installed_service: ""
+php_installed_target: ""
+php_installed_version: ""
+php_max_execution_time: "30"
+php_max_input_time: "30"
+php_max_input_vars: "1000"
+php_memory_limit: "128M"
+php_needs_restart: ""
+php_post_max_size: "8M"
+php_state: ""
+php_upload_max_filesize: "2M"
+
 
 # ex: et ts=2 filetype=yaml
