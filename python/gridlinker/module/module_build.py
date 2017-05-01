@@ -72,8 +72,8 @@ class GridlinkerModule (object):
 
 		directory_builder = (
 			DirectoryBuilder (
-				"%s/roles/%s" % (
-					self._home,
+				self._home,
+				"roles/%s" % (
 					self._module_name)))
 
 		self.build_main (
@@ -225,23 +225,29 @@ class GridlinkerModule (object):
 class DirectoryBuilder (object):
 
 	__slots__ = [
-		"_path",
+		"_parent",
+		"_name",
 		"_files",
 	]
 
-	def __init__ (self, path):
+	def __init__ (self, parent, name):
 
-		self._path = path
+		self._parent = parent
+		self._name = name
 		self._files = set ()
 
-		if not os.path.isdir (self._path):
+		path = "%s/%s" % (
+			self._parent,
+			self._name)
+
+		if not os.path.isdir (path):
 
 			print (
 				"Creating directory %s" % (
-					self._path))
+					name))
 
 			os.mkdir (
-				self._path)
+				path)
 
 	def subdirectory (self, name):
 
@@ -261,15 +267,18 @@ class DirectoryBuilder (object):
 			name)
 
 		path = (
-			"%s/%s" % (
-				self._path,
+			"%s/%s/%s" % (
+				self._parent,
+				self._name,
 				name))
 
 		if not os.path.isdir (path):
 
 			print (
 				"Creating directory %s" % (
-					path))
+					"%s/%s" % (
+						self._name,
+						name)))
 
 			os.mkdir (
 				path)
@@ -293,15 +302,17 @@ class DirectoryBuilder (object):
 			name)
 
 		path = (
-			"%s/%s" % (
-				self._path,
+			"%s/%s/%s" % (
+				self._parent,
+				self._name,
 				name))
 
 		if not os.path.islink (path):
 
 			print (
-				"Creating link %s" % (
-					path))
+				"Creating link %s/%s" % (
+					self._name,
+					name))
 
 			os.symlink (
 				new_target,
@@ -316,8 +327,9 @@ class DirectoryBuilder (object):
 			if old_target != new_target:
 
 				print (
-					"Updating link %s" % (
-						path))
+					"Updating link %s/%s" % (
+						self._name,
+						name))
 
 				os.unlink (
 					path)
@@ -332,8 +344,9 @@ class DirectoryBuilder (object):
 			name)
 
 		path = (
-			"%s/%s" % (
-				self._path,
+			"%s/%s/%s" % (
+				self._parent,
+				self._name,
 				name))
 
 		new_content = (
@@ -342,8 +355,9 @@ class DirectoryBuilder (object):
 		if not os.path.isfile (path):
 
 			print (
-				"Creating file %s" % (
-					path))
+				"Creating file %s/%s" % (
+					self._name,
+					name))
 
 			with open (path, "w") as file_handle:
 
@@ -360,8 +374,9 @@ class DirectoryBuilder (object):
 			if new_content != old_content:
 
 				print (
-					"Updating file %s" % (
-						path))
+					"Updating file %s/%s" % (
+						self._name,
+						name))
 
 				with open (path, "w") as file_handle:
 
