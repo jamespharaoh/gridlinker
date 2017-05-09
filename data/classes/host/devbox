@@ -32,6 +32,8 @@ devbox:
       remote: "git@github.com:jimmyff/datingnode-super.git"
       branch: "unity"
 
+dnsmasq: {}
+
 etcd:
 
   name: "localhost"
