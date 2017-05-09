@@ -40,7 +40,7 @@ dev_group="$USER"
 	--class "super-cluster" \
 	--name "master" \
 	\
-	--set "icinga.master" ""
+	--set "icinga_core.database_master" "$cluster-icinga-1"
 
 # create deployment cluster
 

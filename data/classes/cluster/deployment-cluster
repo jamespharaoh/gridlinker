@@ -16,7 +16,10 @@ app: {}
 
 build: {}
 
-cluster: {}
+cluster:
+
+  ports: "{{ ports }}"
+  build: "{{ build }}"
 
 deployment_cluster:
 
@@ -27,6 +30,9 @@ deployment_cluster:
   php_pm_max_requests: "256"
   php_pm_start_servers: "16"
   php_pm_min_spare_servers: "16"
+
+  ports: "{{ ports }}"
+  build: "{{ build }}"
 
 php: {}
 
