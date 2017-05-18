@@ -7,6 +7,10 @@ identity:
 
 common:
 
+  # ---------- ubuntu
+
+  # configuration
+
   ubuntu_system_packages: []
 
   ubuntu_keys_extra: []
@@ -14,13 +18,10 @@ common:
   ubuntu_archive: "http://archive.ubuntu.com/ubuntu"
   ubuntu_security: "http://security.ubuntu.com/ubuntu"
 
-  ubuntu_apt_needs_update: "yes"
-  ubuntu_apt_needs_upgrade: "yes"
+  ubuntu_apt_upgrade: "yes"
   ubuntu_apt_proxy_url: ""
 
   ubuntu_apt_cacher_install: "no"
-  ubuntu_apt_cacher_installed: "no"
-  ubuntu_apt_cacher_needs_restart: "no"
   ubuntu_apt_cacher_user: "www-data"
   ubuntu_apt_cacher_group: "www-data"
   ubuntu_apt_cacher_allowed_hosts: "127.0.0.1"
@@ -46,6 +47,14 @@ common:
     - url: "{{ ubuntu_security }}"
       source: "{{ ubuntu_release }}-security"
       repositories: "{{ ubuntu_repositories }}"
+
+  # state
+
+  ubuntu_apt_cacher_installed: "no"
+  ubuntu_apt_cacher_needs_restart: "no"
+
+  ubuntu_apt_needs_update: "yes"
+  ubuntu_apt_needs_upgrade: "yes"
 
 tasks:
 
@@ -103,6 +112,10 @@ tasks:
       - "update"
 
   - name: "upgrade"
+    when:
+
+      - "ubuntu_apt_upgrade == 'yes'"
+
     tags:
 
       - "system-apt-upgrade"

@@ -9,6 +9,7 @@ ubuntu_apt_cacher_user: "www-data"
 ubuntu_apt_needs_update: "yes"
 ubuntu_apt_needs_upgrade: "yes"
 ubuntu_apt_proxy_url: ""
+ubuntu_apt_upgrade: "yes"
 ubuntu_archive: "http://archive.ubuntu.com/ubuntu"
 ubuntu_keys_extra: []
 ubuntu_release: ""
