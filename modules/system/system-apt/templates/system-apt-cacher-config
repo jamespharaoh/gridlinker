@@ -2,8 +2,8 @@
 
 # general settings
 
-user = {{ ubuntu_apt_cacher_user }}"
-group = "{{ ubuntu_apt_cacher_group }}"
+user = {{ ubuntu_apt_cacher_user }}
+group = {{ ubuntu_apt_cacher_group }}
 
 # access control
 
