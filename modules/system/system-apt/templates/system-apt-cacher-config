@@ -7,6 +7,6 @@ group = {{ ubuntu_apt_cacher_group }}
 
 # access control
 
-allowed_hosts = "{{ ubuntu_apt_cacher_allowed_hosts }}"
+allowed_hosts = {{ ubuntu_apt_cacher_allowed_hosts }}
 
 # ex: noet ts=4 filetype=apt-cacher
