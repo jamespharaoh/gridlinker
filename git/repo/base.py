@@ -186,7 +186,10 @@ class Repo(object):
         self.close()
 
     def __del__(self):
-        self.close()
+        try:
+            self.close()
+        except:
+            pass
 
     def close(self):
         if self.git:
@@ -882,7 +885,7 @@ class Repo(object):
         #        git clone --bare  /cygwin/d/foo.git  /cygwin/d/C:\\Work
         #
         clone_path = (Git.polish_url(path)
-                      if Git.is_cygwin() and 'bare'in kwargs
+                      if Git.is_cygwin() and 'bare' in kwargs
                       else path)
         sep_dir = kwargs.get('separate_git_dir')
         if sep_dir:
