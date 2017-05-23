@@ -144,7 +144,7 @@ class AnsibleContext(Context):
         '''
         if isinstance(val, dict):
             for key in val.keys():
-                if self._is_unsafe(key) or self._is_unsafe(val[key]):
+                if self._is_unsafe(val[key]):
                     return True
         elif isinstance(val, list):
             for item in val:
@@ -212,6 +212,9 @@ class Templar:
             finalize=self._finalize,
             loader=FileSystemLoader(self._basedir),
         )
+
+        # the current rendering context under which the templar class is working
+        self.cur_context = None
 
         self.SINGLE_VAR = re.compile(r"^%s\s*(\w*)\s*%s$" % (self.environment.variable_start_string, self.environment.variable_end_string))
 
@@ -382,12 +385,11 @@ class Templar:
                             overrides=overrides,
                             disable_lookups=disable_lookups,
                         )
-
-                        unsafe = hasattr(result, '__UNSAFE__')
                         if convert_data and not self._no_type_regex.match(variable):
                             # if this looks like a dictionary or list, convert it to such using the safe_eval method
                             if (result.startswith("{") and not result.startswith(self.environment.variable_start_string)) or \
                                     result.startswith("[") or result in ("True", "False"):
+                                unsafe = hasattr(result, '__UNSAFE__')
                                 eval_results = safe_eval(result, locals=self._available_variables, include_exceptions=True)
                                 if eval_results[1] is None:
                                     result = eval_results[0]
@@ -494,6 +496,7 @@ class Templar:
 
         if instance is not None:
             wantlist = kwargs.pop('wantlist', False)
+            allow_unsafe = kwargs.pop('allow_unsafe', C.DEFAULT_ALLOW_UNSAFE_LOOKUPS)
 
             from ansible.utils.listify import listify_lookup_plugin_terms
             loop_terms = listify_lookup_plugin_terms(terms=args, templar=self, loader=self._loader, fail_on_undefined=True, convert_bare=False)
@@ -507,7 +510,7 @@ class Templar:
                     raise AnsibleError("An unhandled exception occurred while running the lookup plugin '%s'. Error was a %s, original message: %s" % (name, type(e), e))
                 ran = None
 
-            if ran:
+            if ran and not allow_unsafe:
                 from ansible.vars.unsafe_proxy import UnsafeProxy, wrap_var
                 if wantlist:
                     ran = wrap_var(ran)
@@ -520,6 +523,8 @@ class Templar:
                         else:
                             ran = wrap_var(ran)
 
+                if self.cur_context:
+                    self.cur_context.unsafe = True
             return ran
         else:
             raise AnsibleError("lookup plugin (%s) not found" % name)
@@ -577,7 +582,7 @@ class Templar:
 
             jvars = AnsibleJ2Vars(self, t.globals)
 
-            new_context = t.new_context(jvars, shared=True)
+            self.cur_context = new_context = t.new_context(jvars, shared=True)
             rf = t.root_render_func(new_context)
 
             try:
