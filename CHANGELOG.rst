@@ -5,7 +5,33 @@ Versions are year-based with a strict backward-compatibility policy.
 The third digit is only for regressions.
 
 
-16.3.0 (UNRELEASED)
+17.1.0 (UNRELEASED)
+-------------------
+
+
+Backward-incompatible changes:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+*none*
+
+
+Deprecations:
+^^^^^^^^^^^^^
+
+*none*
+
+
+Changes:
+^^^^^^^^
+
+- Added ``OpenSSL.debug`` that allows to get an overview of used library versions (including linked OpenSSL) and other useful runtime information using ``python -m OpenSSL.debug``.
+  `#620 <https://github.com/pyca/pyopenssl/pull/620>`_
+
+
+----
+
+
+17.0.0 (2017-04-20)
 -------------------
 
 Backward-incompatible changes:
@@ -105,7 +131,7 @@ Changes:
 This is the first release under full stewardship of PyCA.
 We have made *many* changes to make local development more pleasing.
 The test suite now passes both on Linux and OS X with OpenSSL 0.9.8, 1.0.1, and 1.0.2.
-It has been moved to `pytest <https://pytest.org/>`_, all CI test runs are part of `tox <https://testrun.org/tox/>`_ and the source code has been made fully `flake8 <https://flake8.readthedocs.io/>`_ compliant.
+It has been moved to `pytest <https://docs.pytest.org/>`_, all CI test runs are part of `tox <https://tox.readthedocs.io/>`_ and the source code has been made fully `flake8 <https://flake8.readthedocs.io/>`_ compliant.
 
 We hope to have lowered the barrier for contributions significantly but are open to hear about any remaining frustrations.
 
