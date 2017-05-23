@@ -385,21 +385,13 @@ class GenericContext (object):
 			"/".join ([
 				self.gridlinker_home,
 				"roles",
-				roles_category_dir,
 				roles_group_dir,
 			])
-
-			for roles_category_dir
-				in os.listdir ("/".join ([
-					self.gridlinker_home,
-					"roles",
-				]))
 
 			for roles_group_dir
 				in os.listdir ("/".join ([
 					self.gridlinker_home,
 					"roles",
-					roles_category_dir,
 				]))
 
 		]
@@ -418,13 +410,13 @@ class GenericContext (object):
 
 			"defaults": {
 
+				"ansible_python_interpreter": "/usr/bin/env python",
 				"display_skipped_hosts": "False",
 				"force_color": "True",
+				"forks": "12",
 				"gathering": "explicit",
-				"ansible_python_interpreter": "/usr/bin/env python",
-				"sudo_flags": "--set-home",
-
 				"retry_files_save_path": "%s/work/retry" % self.home,
+				"sudo_flags": "--set-home",
 
 				"library": ":".join (self.ansible_library),
 				"roles_path": ":".join (self.ansible_roles_path),
