@@ -413,7 +413,7 @@ class GenericContext (object):
 				"ansible_python_interpreter": "/usr/bin/env python",
 				"display_skipped_hosts": "False",
 				"force_color": "True",
-				"forks": "12",
+				"forks": "24",
 				"gathering": "explicit",
 				"retry_files_save_path": "%s/work/retry" % self.home,
 				"sudo_flags": "--set-home",
