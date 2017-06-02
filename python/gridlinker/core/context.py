@@ -417,6 +417,7 @@ class GenericContext (object):
 				"gathering": "explicit",
 				"retry_files_save_path": "%s/work/retry" % self.home,
 				"sudo_flags": "--set-home",
+				"timeout": "60",
 
 				"library": ":".join (self.ansible_library),
 				"roles_path": ":".join (self.ansible_roles_path),
