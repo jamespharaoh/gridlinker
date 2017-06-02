@@ -529,7 +529,7 @@ class GenericContext (object):
 
 		return self.project_metadata.get ("ansible", {}).get ("ssh_args", [
 			"-o ControlMaster=auto",
-			"-o ControlPersist=60s",
+			"-o ControlPersist=600s",
 			"-o ForwardAgent=yes",
 			"-o StrictHostKeyChecking=yes",
 			"-o UserKnownHostsFile=%s/work/known-hosts" % self.home,
