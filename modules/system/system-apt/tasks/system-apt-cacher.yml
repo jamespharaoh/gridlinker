@@ -50,7 +50,7 @@
   become: "yes"
   action:
 
-    module: "system"
+    module: "service"
     name: "apt-cacher"
     state: "restarted"
 
