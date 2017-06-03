@@ -46,7 +46,7 @@
     ubuntu.apt_needs_update: "yes"
 
 - name: "system apt cacher restart"
-  when: "system_apt_cacher_needs_restart == 'yes'"
+  when: "ubuntu_apt_cacher_needs_restart == 'yes'"
   become: "yes"
   action:
 
