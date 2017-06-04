@@ -168,6 +168,14 @@ function main {
 
 		;;
 
+	(setup-devbox)
+
+		vm_start
+
+		setup-devbox
+
+		;;
+
 	(ssh)
 
 		vm_start

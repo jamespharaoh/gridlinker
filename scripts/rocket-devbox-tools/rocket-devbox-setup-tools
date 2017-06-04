@@ -44,4 +44,24 @@ function setup-bootstrap {
 
 }
 
+function setup-devbox {
+
+	heading "Perfom datingnode devbox setup"
+
+	subheading "Run devops playbook"
+
+	ssh $(
+		echo "cd \"\$HOME/datingnode-ansible\";"
+		echo "./datingnode-local ansible playbook -- playbooks/devops.yml"
+	)
+
+	subheading "Run devbox playbook"
+
+	ssh $(
+		echo "cd \"\$HOME/datingnode-ansible\";"
+		echo "./datingnode-local ansible playbook -- playbooks/devbox.yml"
+	)
+
+}
+
 # ex: noet ts=4 filetype=bash
