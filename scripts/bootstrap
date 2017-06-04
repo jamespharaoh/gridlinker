@@ -51,6 +51,7 @@ fi
 # runtime configuration
 
 hostname=$(hostname)
+ip=$(getent "hosts" "$hostname" | cut -d' ' -f1)
 
 echo "Using hostname: $hostname"
 
@@ -70,6 +71,8 @@ cat >config/overrides.yml <<-END
 	---
 
 	deployment_name: "${deployment_name}"
+
+	devbox_private: "${ip}"
 
 	# ex: et ts=2 filetype=yaml
 END
