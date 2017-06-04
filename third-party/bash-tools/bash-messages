@@ -178,6 +178,12 @@ function pipe-filter {
 
 		if test "$line"; then
 
+			if [[ "$line" == *$'\r' ]]; then
+				line="${line::-1}"
+			fi
+
+#			echo "$line" | hexdump -C >&2
+
 			message "$line"
 
 		else

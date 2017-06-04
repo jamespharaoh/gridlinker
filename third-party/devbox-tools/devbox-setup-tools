@@ -4,18 +4,18 @@ function setup_basic {
 
 	heading "Perfoming basic setup"
 
-	IP=$(getent hosts wistla-panda-dev.local | cut -d' ' -f1)
+	IP=$(getent hosts "$NAME.local" | cut -d' ' -f1)
 
 	subheading "Got IP address $IP"
 
 	subheading "Retrieving SSH keys"
 
-	ssh-keygen -R "$IP" &>/dev/null
-	ssh-keygen -R "$NAME.local" &>/dev/null
-	ssh-keygen -R "$NAME" &>/dev/null
+	pipe-stdout-stderr "ssh-keygen -R \"$IP\" &>/dev/null"
+	pipe-stdout-stderr "ssh-keygen -R \"$NAME.local\" &>/dev/null"
+	pipe-stdout-stderr "ssh-keygen -R \"$NAME\" &>/dev/null"
 
-	ssh-keyscan "$NAME.local" >> "$HOME/.ssh/known_hosts" 2>/dev/null
-	ssh-keyscan "$IP" >> "$HOME/.ssh/known_hosts" 2>/dev/null
+	pipe-stdout-stderr "ssh-keyscan \"$NAME.local\" >> \"$HOME/.ssh/known_hosts\" 2>/dev/null"
+	pipe-stdout-stderr "ssh-keyscan \"$IP\" >> \"$HOME/.ssh/known_hosts\" 2>/dev/null"
 
 	subheading "Updating package lists"
 

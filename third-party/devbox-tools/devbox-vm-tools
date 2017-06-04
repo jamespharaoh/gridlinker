@@ -146,11 +146,29 @@ function vm_start {
 
 	subheading "Wait for SSH to become active"
 
+	notice "Scanning for port 22"
+
 	for index in {0..300}; do
 		if netcat "$NAME.local" "22" </dev/null &>/dev/null; then
 			break
 		fi
 	done
+
+	blank-line-auto
+
+	message "Connection to port 22 established"
+
+	notice "Verifying SSH connection"
+
+	for index in {0..300}; do
+		if /usr/bin/ssh "ubuntu@$NAME.local" "true" </dev/null &>/dev/null; then
+			break
+		fi
+	done
+
+	blank-line-auto
+
+	message "SSH connection established"
 
 }
 
@@ -226,6 +244,8 @@ function vm_unpack {
 	fi
 
 	subheading "Restoring image"
+
+	notice "Restore $IMAGES/$NAME.img"
 
 	pv "Reading image file" "work/temp/$NAME.img" \
 	| sudo dd \

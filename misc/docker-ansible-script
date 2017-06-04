@@ -78,6 +78,7 @@ rsync \
 	--include "/playbooks" \
 	--include "/roles/build" \
 	--include "/roles/config" \
+	--include "/roles/system-apt" \
 	--exclude "/roles/*" \
 	--include "/roles" \
 	--include "/third-party" \
