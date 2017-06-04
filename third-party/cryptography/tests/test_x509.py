@@ -9,7 +9,6 @@ import datetime
 import ipaddress
 import os
 import sys
-import warnings
 
 from asn1crypto.x509 import Certificate
 
@@ -522,8 +521,7 @@ class TestRSACertificate(object):
             backend
         )
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("always", utils.PersistentlyDeprecated)
+        with pytest.deprecated_call():
             assert cert.serial == 2
             assert cert.serial_number == 2
 
@@ -534,10 +532,8 @@ class TestRSACertificate(object):
             backend
         )
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("always", utils.PersistentlyDeprecated)
-            with pytest.deprecated_call():
-                cert.serial
+        with pytest.deprecated_call():
+            cert.serial
 
     def test_load_der_cert(self, backend):
         cert = _load_cert(
@@ -1444,9 +1440,11 @@ class TestRSACertificateRequest(object):
             777
         ).issuer_name(x509.Name([
             x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.JURISDICTION_COUNTRY_NAME, u'US'),
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
         ])).subject_name(x509.Name([
             x509.NameAttribute(NameOID.COUNTRY_NAME, u'US'),
+            x509.NameAttribute(NameOID.JURISDICTION_COUNTRY_NAME, u'US'),
             x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u'Texas'),
         ])).public_key(
             subject_private_key.public_key()
@@ -1464,6 +1462,15 @@ class TestRSACertificateRequest(object):
         # Check that each value was encoded as an ASN.1 PRINTABLESTRING.
         assert parsed.subject.chosen[0][0]['value'].chosen.tag == 19
         assert parsed.issuer.chosen[0][0]['value'].chosen.tag == 19
+        if (
+            # This only works correctly in OpenSSL 1.1.0f+ and 1.0.2l+
+            backend._lib.CRYPTOGRAPHY_OPENSSL_110F_OR_GREATER or (
+                backend._lib.CRYPTOGRAPHY_OPENSSL_102L_OR_GREATER and
+                not backend._lib.CRYPTOGRAPHY_OPENSSL_110_OR_GREATER
+            )
+        ):
+            assert parsed.subject.chosen[1][0]['value'].chosen.tag == 19
+            assert parsed.issuer.chosen[1][0]['value'].chosen.tag == 19
 
 
 class TestCertificateBuilder(object):

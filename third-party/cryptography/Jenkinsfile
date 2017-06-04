@@ -55,13 +55,25 @@ def configs = [
     ],
     [
         label: 'docker',
+        imageName: 'pyca/cryptography-runner-jessie-libressl:2.5.4',
+        toxenvs: ['py27'],
+    ],
+    [
+        label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-xenial',
         toxenvs: ['py27', 'py35'],
     ],
     [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
-        toxenvs: ['py27', 'py35', 'docs', 'pep8', 'py3pep8', 'randomorder'],
+        toxenvs: ['py27', 'py35', 'pep8', 'py3pep8', 'randomorder'],
+    ],
+    [
+        label: 'docker',
+        imageName: 'pyca/cryptography-runner-ubuntu-rolling',
+        toxenvs: ['docs'],
+        artifacts: 'cryptography/docs/_build/html/**',
+        artifactExcludes: '**/*.doctree',
     ],
     [
         label: 'docker',
@@ -87,7 +99,7 @@ def downstreams = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
-            git clone --depth=1 https://github.com/pyca/pyopenssl.git pyopenssl
+            git clone --depth=1 https://github.com/pyca/pyopenssl
             cd pyopenssl
             virtualenv .venv
             source .venv/bin/activate
@@ -102,7 +114,7 @@ def downstreams = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
-            git clone --depth=1 https://github.com/twisted/twisted.git twisted
+            git clone --depth=1 https://github.com/twisted/twisted
             cd twisted
             virtualenv .venv
             source .venv/bin/activate
@@ -117,7 +129,7 @@ def downstreams = [
         label: 'docker',
         imageName: 'pyca/cryptography-runner-ubuntu-rolling',
         script: """#!/bin/bash -xe
-            git clone --depth=1 https://github.com/paramiko/paramiko.git paramiko
+            git clone --depth=1 https://github.com/paramiko/paramiko
             cd paramiko
             virtualenv .venv
             source .venv/bin/activate
@@ -130,33 +142,52 @@ def downstreams = [
 ]
 
 def checkout_git(label) {
-    def script = ""
-    if (env.BRANCH_NAME.startsWith('PR-')) {
-        script = """
-        git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
-        cd cryptography
-        git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
-        git checkout -qf FETCH_HEAD
-        git rev-parse HEAD
-        """
-    } else {
-        script = """
-        git clone --depth=1 https://github.com/pyca/cryptography.git cryptography
-        cd cryptography
-        git checkout ${env.BRANCH_NAME}
-        git rev-parse HEAD
-        """
+    retry(3) {
+        def script = ""
+        if (env.BRANCH_NAME.startsWith('PR-')) {
+            script = """
+            git clone --depth=1 https://github.com/pyca/cryptography
+            cd cryptography
+            git fetch origin +refs/pull/${env.CHANGE_ID}/merge:
+            git checkout -qf FETCH_HEAD
+            """
+            if (label.contains("windows")) {
+                bat script
+            } else {
+                sh """#!/bin/sh
+                    set -xe
+                    ${script}
+                """
+            }
+        } else {
+            checkout([
+                $class: 'GitSCM',
+                branches: [[name: "*/${env.BRANCH_NAME}"]],
+                doGenerateSubmoduleConfigurations: false,
+                extensions: [[
+                    $class: 'RelativeTargetDirectory',
+                    relativeTargetDir: 'cryptography'
+                ]],
+                submoduleCfg: [],
+                userRemoteConfigs: [[
+                    'url': 'https://github.com/pyca/cryptography'
+                ]]
+            ])
+        }
     }
     if (label.contains("windows")) {
-        bat script
+        bat """
+            cd cryptography
+            git rev-parse HEAD
+        """
     } else {
-        sh """#!/bin/sh
-        set -xe
-        ${script}
+        sh """
+            cd cryptography
+            git rev-parse HEAD
         """
     }
 }
-def build(toxenv, label, imageName) {
+def build(toxenv, label, imageName, artifacts, artifactExcludes) {
     try {
         timeout(time: 30, unit: 'MINUTES') {
 
@@ -199,7 +230,6 @@ def build(toxenv, label, imageName) {
                         bat """
                             cd cryptography
                             @set PATH="C:\\Python27";"C:\\Python27\\Scripts";%PATH%
-                            @set CRYPTOGRAPHY_WINDOWS_LINK_OPENSSL110=1
                             @set PYTHON="${pythonPath[toxenv]}"
 
                             @set INCLUDE="${opensslPaths[label]['include']}";%INCLUDE%
@@ -208,6 +238,7 @@ def build(toxenv, label, imageName) {
                             IF %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
                             virtualenv .codecov
                             call .codecov/Scripts/activate
+                            pip install coverage==4.3.4
                             pip install codecov
                             codecov -e JOB_BASE_NAME,LABEL
                         """
@@ -219,13 +250,13 @@ def build(toxenv, label, imageName) {
                                 export PATH="/usr/local/bin:\${PATH}"
                                 export PATH="/Users/jenkins/.pyenv/shims:\${PATH}"
                                 cd cryptography
-                                CRYPTOGRAPHY_OSX_NO_LINK_FLAGS=1 \
+                                CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1 \
                                     LDFLAGS="/usr/local/opt/openssl\\@1.1/lib/libcrypto.a /usr/local/opt/openssl\\@1.1/lib/libssl.a" \
-                                    CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument" \
+                                    CFLAGS="-I/usr/local/opt/openssl\\@1.1/include -Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types -Wno-error=unused-function -Wno-error=unused-command-line-argument -mmacosx-version-min=10.9" \
                                     tox -r --  --color=yes
                                 virtualenv .venv
                                 source .venv/bin/activate
-                                pip install coverage
+                                pip install coverage==4.3.4
                                 bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
                             """
                         }
@@ -244,9 +275,12 @@ def build(toxenv, label, imageName) {
                                 fi
                                 virtualenv .venv
                                 source .venv/bin/activate
-                                pip install coverage
+                                pip install coverage==4.3.4
                                 bash <(curl -s https://codecov.io/bash) -e JOB_BASE_NAME,LABEL
                             """
+                        }
+                        if (artifacts) {
+                            archiveArtifacts artifacts: artifacts, excludes: artifactExcludes
                         }
                     }
                 }
@@ -262,6 +296,8 @@ def builders = [:]
 for (config in configs) {
     def label = config["label"]
     def toxenvs = config["toxenvs"]
+    def artifacts = config["artifacts"]
+    def artifactExcludes = config["artifactExcludes"]
 
     for (_toxenv in toxenvs) {
         def toxenv = _toxenv
@@ -273,7 +309,7 @@ for (config in configs) {
                 node(label) {
                     stage(combinedName) {
                         docker.image(imageName).inside {
-                            build(toxenv, label, imageName)
+                            build(toxenv, label, imageName, artifacts, artifactExcludes)
                         }
                     }
                 }
@@ -283,7 +319,7 @@ for (config in configs) {
             builders[combinedName] = {
                 node(label) {
                     stage(combinedName) {
-                        build(toxenv, label, '')
+                        build(toxenv, label, '', null, null)
                     }
                 }
             }
