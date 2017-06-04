@@ -74,6 +74,10 @@ cat >config/overrides.yml <<-END
 
 	devbox_private: "${ip}"
 
+	devbox_trusted_hosts:
+
+	  - "$(ip route | grep '^default' | head -n1 | cut -d' ' -f3)"
+
 	# ex: et ts=2 filetype=yaml
 END
 
