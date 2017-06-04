@@ -1,5 +1,7 @@
 DEPLOYMENT="test"
-EMAIL="james@pharaoh.uk"
+
+DEVELOPER_NAME="James Pharaoh"
+DEVELOPER_EMAIL="james@pharaoh.uk"
 
 LVM_GROUP="one"
 LVM_THINPOOL="thinpool"
@@ -40,8 +42,7 @@ DOCKER_QUAY_AUTH=$(cat config/docker-quay-auth)
 declare -A CUSTOM_TEMPLATES
 
 CUSTOM_TEMPLATES=(
-#	[machine]="wistla-template"
-#	[overrides]="wistla-template"
+	[overrides]="rocket-template"
 )
 
 # ex: noet ts=4 filetype=sh

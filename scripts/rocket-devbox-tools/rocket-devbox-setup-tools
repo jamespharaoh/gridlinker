@@ -13,7 +13,30 @@ function setup-ansible {
 
 	subheading "Building third party components"
 
-	ssh "cd \"datingnode-ansible\"; scripts/setup-project bootstrap"
+	ssh "cd \"datingnode-ansible\"; scripts/setup-project build"
+
+	subheading "Create devops config (overrides)"
+
+	DEVBOX_IP=$(getent hosts "$NAME.local" | cut -d' ' -f1)
+
+	template "overrides" >"$TEMP/overrides.yml"
+
+	scp_send \
+		"$TEMP/overrides.yml" \
+		"datingnode-ansible/config/overrides-bootstrap.yml"
+
+}
+
+function setup-bootstrap {
+
+	heading "Perfom datingnode bootstrap setup"
+
+	subheading "Run bootstrap"
+
+	ssh $(
+		echo "cd \"\$HOME/datingnode-ansible\";"
+		echo "scripts/bootstrap \"$DEPLOYMENT\";"
+	)
 
 }
 
