@@ -1,0 +1,121 @@
+cat <<-EOF
+
+	# localisation
+
+	d-i	debian-installer/locale	select	C
+	d-i	debian-installer/language string en
+	d-i debian-installer/country string GB
+
+	# keyboard
+
+	d-i console-setup/ask_detect boolean false
+	d-i keyboard-configuration/layoutcode string gb
+
+	# network
+
+	d-i netcfg/choose_interface select eth0
+	d-i netcfg/get_hostname string $NAME
+	d-i netcfg/get_domain string wistla.com
+
+	# user account
+
+	d-i passwd/root-login boolean false
+	d-i passwd/make-user bolean true
+	d-i passwd/user-fullname string Ubuntu User
+	d-i passwd/username string ubuntu
+	d-i passwd/user-password password ubuntu
+	d-i passwd/user-password-again password ubuntu
+	d-i user-setup/allow-password-weak boolean true
+	d-i user-setup/encrypt-home boolean false
+
+	# timezone
+
+	d-i clock-setup/utc boolean true
+	d-i clock-setup/ntp boolean false
+	d-i time/zone string Etc/UTC
+
+	# partitioning
+
+	d-i partman-auto/disk string /dev/sda
+	d-i partman-auto/method string regular
+	d-i partman-auto/expert_recipe string \\
+	  boot-root :: \\
+		500 10000 1000000000 ext4 \\
+		\$primary{ } \\
+		\$bootable{ } \\
+		method{ format } \\
+		format{ } \\
+		use_filesystem{ } \\
+		filesystem{ ext4 } \\
+		mountpoint{ / } \\
+	  .
+	d-i partman-partitioning/confirm_write_new_label boolean true
+	d-i partman-basicfilesystems/default_label string mbr
+	d-i partman/choose_partition select finish
+	d-i partman-basicfilesystems/no_swap boolean false
+	d-i partman/confirm_nooverwrite boolean true
+	d-i partman/confirm boolean true
+
+	# base system
+
+	d-i base-installer/install-recommends boolean false
+	d-i base-installer/kernel/image string $KERNEL
+
+	# mirror
+
+	d-i mirror/http/proxy string
+
+	# packages
+
+	tasksel tasksel/first multiselect standard
+	d-i pkgsel/upgrade select full-upgrade
+	d-i pkgsel/language-packs multiselect en
+	d-i pkgsel/update-policy select none
+	popularity-contest popularity-contest/participate boolean false
+	d-i pkgsel/updatedb boolean true
+	d-i pkgsel/include string avahi-daemon openssh-server
+
+	# grub
+
+	d-i grub-installer/skip boolean false
+	d-i lilo-installer/skip boolean true
+	d-i grub-installer/only_debian boolean true
+	d-i grub-installer/with_other_os boolean true
+
+	# other
+
+	d-i preseed/late_command string \\
+	  clear; \\
+	  \\
+	  echo "Allow sudo without password" >&2; \\
+	  echo "%sudo ALL=(ALL) NOPASSWD: ALL" >>/target/etc/sudoers; \\
+	  \\
+	  echo "Add SSH public key to authorized hosts" >&2; \\
+	  mkdir -p /target/home/ubuntu/.ssh; \\
+	  echo "$(cat "$HOME/.ssh/id_rsa.pub")" \\
+		>> /target/home/ubuntu/.ssh/authorized_keys; \\
+	  chown 1000:1000 \\
+		/target/home/ubuntu/.ssh \\
+		/target/home/ubuntu/.ssh/authorized_keys; \\
+	  \\
+	  echo "Disable apt source package sources" >&2; \\
+	  sed -i '/^deb-src/s/^/#/' /etc/apt/sources.list; \\
+	  \\
+	  echo "Disable sshd reverse dns lookups" >&2; \\
+      echo "UseDNS no" >> /target/etc/ssh/sshd_config; \\
+	  \\
+	  echo "Synchronize all changes to disk" >&2; \\
+	  sync; \\
+	  \\
+	  echo "Custom preseed confguration complete" >&2; \\
+	  sleep 2;
+
+	# finish
+
+	d-i finish-install/reboot_in_progress note
+	d-i cdrom-detect/eject boolean false
+	d-i debian-installer/exit/poweroff boolean true
+
+EOF
+
+# ex: noet ts=4 filetype=sh

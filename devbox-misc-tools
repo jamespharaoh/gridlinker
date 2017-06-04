@@ -1,0 +1,73 @@
+#!/bin/bash
+
+function ssh {
+
+	local command="$*"
+
+	notice "$command"
+
+	pipe-stdout-stderr $(
+		echo "$SSH bash -euf -o pipefail -c"
+		printf '%q\n' $(printf '%q' "$command")
+		echo "</dev/null"
+	)
+
+}
+
+function ssh_sudo {
+
+	local command="$*"
+
+	notice "sudo $command"
+
+	pipe-stdout-stderr $(
+		echo "$SSH sudo bash -euf -o pipefail -c"
+		printf '%q\n' $(printf '%q' "$command")
+		echo "</dev/null"
+	)
+
+}
+
+function scp_send {
+
+	local source="$1"
+	local target="$2"
+
+	notice "Uploading $source to $target"
+
+	scp -q "$source" "ubuntu@$NAME.local:$target"
+
+}
+
+function mount_secrets {
+
+	subheading "Mounting secrets"
+
+	ssh $(
+		echo "echo -n \"$WISTLA_PRODUCTION_SECRET\""
+		echo "> \"/run/user/\$UID/wistla-production-secret\";"
+		echo "echo -n \"$WISTLA_DEV_SECRET\""
+		echo "> \"/run/user/\$UID/wistla-dev-secret\";"
+		echo "cd \"\$HOME/wistla-devops\";"
+		echo "misc/mount-secrets;"
+	)
+
+}
+
+function template {
+
+	if test -v "CUSTOM_TEMPLATES[$1]"; then
+
+		local template_function="${CUSTOM_TEMPLATES[$1]}"
+
+		$template_function "$1"
+
+	else
+
+		source "$DEVBOX_TOOLS/devbox-$1-template"
+
+	fi
+
+}
+
+# ex: noet ts=4 filetype=bash
