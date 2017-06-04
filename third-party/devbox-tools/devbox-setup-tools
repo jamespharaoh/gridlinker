@@ -1,0 +1,51 @@
+#!/bin/bash
+
+function setup_basic {
+
+	heading "Perfoming basic setup"
+
+	IP=$(getent hosts wistla-panda-dev.local | cut -d' ' -f1)
+
+	subheading "Got IP address $IP"
+
+	subheading "Retrieving SSH keys"
+
+	ssh-keygen -R "$IP" &>/dev/null
+	ssh-keygen -R "$NAME.local" &>/dev/null
+	ssh-keygen -R "$NAME" &>/dev/null
+
+	ssh-keyscan "$NAME.local" >> "$HOME/.ssh/known_hosts" 2>/dev/null
+	ssh-keyscan "$IP" >> "$HOME/.ssh/known_hosts" 2>/dev/null
+
+	subheading "Updating package lists"
+
+	ssh_sudo "apt-get update"
+
+	subheading "Ugrading existing packages"
+
+	ssh_sudo $(
+		echo "DEBIAN_FRONTEND=noninteractive"
+		echo "apt-get dist-upgrade -q -y"
+		echo "-o Dpkg::Options::=\"--force-confdef\""
+		echo "-o Dpkg::Options::=\"--force-confold\""
+	)
+
+	subheading "Installing new packages"
+
+	ssh_sudo $(
+		echo "DEBIAN_FRONTEND=noninteractive"
+		echo "apt-get install -q -y"
+		echo "-o Dpkg::Options::=\"--force-confdef\""
+		echo "-o Dpkg::Options::=\"--force-confold\""
+		echo "${APT_PACKAGES[@]}"
+	)
+
+	subheading "Installing python packages"
+
+	for python_package in "${PYTHON_PACKAGES[@]}"; do
+		ssh_sudo "pip install --upgrade \"$python_package\""
+	done
+
+}
+
+# ex: noet ts=4 filetype=bash

@@ -1,0 +1,77 @@
+cat <<-EOF
+
+	<domain type="kvm">
+
+	  <name>$NAME</name>
+
+	  <memory unit="GiB">$MEMORY</memory>
+	  <vcpu placement="static">$CPUS</vcpu>
+
+	  <os>
+		<type arch="x86_64" machine="q35">hvm</type>
+		<kernel>$TEMP/vmlinuz</kernel>
+		<initrd>$TEMP/initrd-custom.gz</initrd>
+		<cmdline>console=ttyS0 preseed/file=/preseed.cfg</cmdline>
+	  </os>
+
+	  <features>
+		<acpi/>
+		<apic/>
+		<pae/>
+	  </features>
+
+	  <clock offset="utc"/>
+
+	  <on_poweroff>destroy</on_poweroff>
+	  <on_reboot>destroy</on_reboot>
+	  <on_crash>destroy</on_crash>
+
+	  <devices>
+
+		<emulator>/usr/bin/kvm-spice</emulator>
+
+		<disk type="block" device="disk">
+		  <driver name="qemu" type="raw" cache="none" io="native"/>
+		  <source dev="$DEVICE-root"/>
+	      <target dev="sda" bus="scsi"/>
+		</disk>
+
+		<disk type="file" device="cdrom">
+		  <source file="$IMAGE_FILE"/>
+		  <target dev="sdd" bus="sata"/>
+		  <readonly/>
+		</disk>
+
+		<controller type="scsi" index="0" model="virtio-scsi"/>
+		<controller type="usb" index="0"/>
+
+		<interface type="network">
+		  <source network="$NETWORK"/>
+		  <model type="virtio"/>
+		</interface>
+
+		<input type="mouse" bus="ps2"/>
+
+		<graphics type="vnc" port="-1"/>
+
+		<video>
+		  <model type="cirrus"/>
+		</video>
+
+		<serial type="pty">
+		  <target port="0"/>
+		</serial>
+
+		<console type="pty">
+		  <target type="serial" port="0"/>
+		</console>
+
+		<memballoon model="virtio"/>
+
+	  </devices>
+
+	</domain>
+
+EOF
+
+# ex: noet ts=4 filetype=sh
