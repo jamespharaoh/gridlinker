@@ -11,6 +11,10 @@ function setup-ansible {
 	ssh "git clone \"$DATINGNODE_ANSIBLE\""
 	ssh "mkdir \"\$HOME/datingnode-ansible/config\""
 
+	subheading "Building third party components"
+
+	ssh "cd \"datingnode-ansible\"; scripts/setup-project bootstrap"
+
 }
 
 # ex: noet ts=4 filetype=bash

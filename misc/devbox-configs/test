@@ -35,6 +35,8 @@ GITHUB_ACCESS_TOKEN="$(cat config/github-access-token)"
 DEVICE_UUID_SWAP="5ac3f3e8-490f-11e7-b6ee-335572dfaa0d"
 DEVICE_UUID_DATA="60be97da-490f-11e7-a568-8bd5e8bbdef8"
 
+DOCKER_QUAY_AUTH=$(cat config/docker-quay-auth)
+
 declare -A CUSTOM_TEMPLATES
 
 CUSTOM_TEMPLATES=(

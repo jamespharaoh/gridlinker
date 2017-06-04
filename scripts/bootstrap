@@ -70,13 +70,25 @@ fi
 cat >config/overrides.yml <<-END
 	---
 
+	deployment_mode: "vagrant"
 	deployment_name: "${deployment_name}"
 
+	developer_name: "${DEVELOPER_NAME}"
+	developer_email: "${DEVELOPER_EMAIL}"
+
+	devbox_user: "ubuntu"
+	devbox_home: "/home/ubuntu"
 	devbox_private: "${ip}"
 
 	devbox_trusted_hosts:
 
 	  - "$(ip route | grep '^default' | head -n1 | cut -d' ' -f3)"
+
+	ubuntu_main_url: "http://archive.ubuntu.com/ubuntu"
+	ubuntu_security_url: "http://security.ubuntu.com/ubuntu"
+
+	docker_mirror_url: "https://get.docker.com/ubuntu"
+	docker_quay_auth: "${DOCKER_QUAY_AUTH}"
 
 	# ex: et ts=2 filetype=yaml
 END
