@@ -1,0 +1,16 @@
+#!/bin/bash
+
+function setup-ansible {
+
+	heading "Perfoming datingnode ansible setup"
+
+	subheading "Cloning datingnode-ansible"
+
+	ssh "echo \"$GITHUB_KEY\" >> \".ssh/known_hosts\""
+	ssh "rm -rf \"datingnode-ansible\""
+	ssh "git clone \"$DATINGNODE_ANSIBLE\""
+	ssh "mkdir \"\$HOME/datingnode-ansible/config\""
+
+}
+
+# ex: noet ts=4 filetype=bash

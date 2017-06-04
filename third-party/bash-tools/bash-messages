@@ -210,18 +210,26 @@ function pipe-stdout-stderr {
 
 	rm -f "$fifo_name"
 
-	local blank_line_needed="no"
+	local output="no"
 
 	while read -u 100 line; do
 
-		blank-line-auto
-
-		echo "$line"
-
 		if test "$line"; then
-			blank_line_needed="yes"
+
+			if test "$output" = "no"; then
+				blank-line-auto
+			fi
+
+			echo "$line"
+
+			blank-line-unset
+
+			output="yes"
+
 		else
-			blank_line_needed="no"
+
+			output="no"
+
 		fi
 
 	done
@@ -229,10 +237,6 @@ function pipe-stdout-stderr {
 	wait "$pid"
 
 	local command_status=$?
-
-	if test "$blank_line_needed" = "yes"; then
-		blank-line-force
-	fi
 
 	return "$command_status"
 

@@ -21,7 +21,7 @@ function ssh_sudo {
 	notice "sudo $command"
 
 	pipe-stdout-stderr $(
-		echo "$SSH sudo bash -euf -o pipefail -c"
+		echo "$SSH sudo -H bash -euf -o pipefail -c"
 		printf '%q\n' $(printf '%q' "$command")
 		echo "</dev/null"
 	)
