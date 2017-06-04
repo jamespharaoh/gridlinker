@@ -2,6 +2,18 @@
 
 # ---------- internal
 
+bash-tools:
+
+  url: "git@github.com:jamespharaoh/bash-tools.git"
+  branch: "master"
+  push: "simple"
+
+devbox-tools:
+
+  url: "git@github.com:jamespharaoh/devbox-tools.git"
+  branch: "master"
+  push: "simple"
+
 gridlinker:
 
   url: "git@gitlab.wellbehavedsoftware.com:well-behaved-software/gridlinker.git"
