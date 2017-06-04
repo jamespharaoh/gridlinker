@@ -197,6 +197,12 @@ echo "Importing data to etcd" >&2
 
 ./datingnode-local etcd import --source work/etcd-bootstrap
 
+# write misc cnofig
+
+echo "Creating build-counter" >&2
+
+echo "$RANDOM" >config/build-counter
+
 # done
 
 echo "Bootstrap complete" >&2

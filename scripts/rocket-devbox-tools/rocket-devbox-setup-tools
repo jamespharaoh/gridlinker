@@ -15,9 +15,17 @@ function setup-ansible {
 
 	ssh "cd \"datingnode-ansible\"; scripts/setup-project build"
 
+}
+
+function setup-bootstrap {
+
+	heading "Perfom datingnode bootstrap setup"
+
 	subheading "Create devops config (overrides)"
 
 	DEVBOX_IP=$(getent hosts "$NAME.local" | cut -d' ' -f1)
+
+	notice "Create $TEMP/overrides-bootstrap.yml"
 
 	template "overrides" >"$TEMP/overrides.yml"
 
@@ -25,13 +33,9 @@ function setup-ansible {
 		"$TEMP/overrides.yml" \
 		"datingnode-ansible/config/overrides-bootstrap.yml"
 
-}
-
-function setup-bootstrap {
-
-	heading "Perfom datingnode bootstrap setup"
-
 	subheading "Run bootstrap"
+
+	ssh "rm -f \"\$HOME/datingnode-ansible/config/overrides.yml\""
 
 	ssh $(
 		echo "cd \"\$HOME/datingnode-ansible\";"
