@@ -25,6 +25,7 @@ temp_buffers = {{ postgresql_temp_buffers }}
 work_mem = {{ postgresql_work_mem }}
 maintenance_work_mem = {{ postgresql_maintenance_work_mem }}
 wal_buffers = {{ postgresql_wal_buffers }}
+vacuum_defer_cleanup_age = {{ postgresql_vacuum_defer_cleanup_age }}
 
 # planner
 
