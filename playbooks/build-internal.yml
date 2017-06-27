@@ -3,31 +3,27 @@
 - hosts: "base-build"
   roles:
 
-    - "system-packages-update"
-    - "system-packages-install"
+    - "system-apt"
     - "build-common"
 
 - hosts: "database-build"
   roles:
 
-    - "system-packages-update"
-    - "system-packages-install"
+    - "system-apt"
     - "build-common"
     - "build-database"
 
 - hosts: "web-server-build"
   roles:
 
-    - "system-packages-update"
-    - "system-packages-install"
+    - "system-apt"
     - "build-common"
     - "build-web-server"
 
 - hosts: "web-application-build"
   roles:
 
-    - "system-packages-update"
-    - "system-packages-install"
+    - "system-apt"
     - "build-common"
     - "build-web-server"
     - "build-web-application"
@@ -35,24 +31,21 @@
 - hosts: "vhost-proxy-build"
   roles:
 
-    - "system-packages-update"
-    - "system-packages-install"
+    - "system-apt"
     - "build-common"
     - "build-vhost-proxy"
 
 - hosts: "storage-build"
   roles:
 
-    - "system-packages-update"
-    - "system-packages-install"
+    - "system-apt"
     - "build-common"
     - "build-storage"
 
 - hosts: "memcache-build"
   roles:
 
-    - "system-packages-update"
-    - "system-packages-install"
+    - "system-apt"
     - "build-common"
     - "build-memcache"
 
