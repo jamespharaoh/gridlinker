@@ -6,6 +6,7 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Support for Python 3.3 has been dropped.
 * Deprecated the use of ``signer`` on
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
@@ -18,6 +19,19 @@ Changelog
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
   in favor of ``verify``.
+* Added support for parsing
+  :class:`~cryptography.x509.certificate_transparency.SignedCertificateTimestamp`
+  objects from X.509 certificate extensions.
+* Added support for
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`.
+* Added support for :doc:`/hazmat/primitives/asymmetric/x25519`.
+* Added support for serializing and deserializing Diffie-Hellman parameters
+  with
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_parameters`,
+  :func:`~cryptography.hazmat.primitives.serialization.load_der_parameters`,
+  and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters.parameter_bytes`
+  .
 
 1.9 - 2017-05-29
 ~~~~~~~~~~~~~~~~
@@ -82,9 +96,9 @@ Changelog
   to
   :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKeyWithSerialization`.
 * Added
-  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization.public_bytes`
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey.public_bytes`
   to
-  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKeyWithSerialization`.
+  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
 * :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
   and
   :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`

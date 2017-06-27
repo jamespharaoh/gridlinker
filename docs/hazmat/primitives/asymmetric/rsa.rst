@@ -23,7 +23,8 @@ mathematical properties`_.
     provide more security, currently ``1024`` and below are considered
     breakable, and ``2048`` or ``4096`` are reasonable default key sizes for
     new keys. The ``public_exponent`` indicates what one mathematical property
-    of the key generation will be, ``65537`` should almost always be used.
+    of the key generation will be. Unless you have a specific reason to do
+    otherwise, you should always `use 65537`_.
 
     .. doctest::
 
@@ -529,7 +530,9 @@ Key interfaces
 
     .. versionadded:: 0.2
 
-    An `RSA`_ private key.
+    An `RSA`_ private key. An RSA private key that is not an
+    :term:`opaque key` also implements :class:`RSAPrivateKeyWithSerialization`
+    to provide serialization methods.
 
     .. method:: decrypt(ciphertext, padding)
 
@@ -583,7 +586,9 @@ Key interfaces
 
     .. versionadded:: 0.8
 
-    Extends :class:`RSAPrivateKey`.
+    This interface contains additional methods relating to serialization.
+    Any object with this interface also has all the methods from
+    :class:`RSAPrivateKey`.
 
     .. method:: private_numbers()
 

@@ -374,7 +374,7 @@ All named curves are instances of :class:`EllipticCurve`.
     SECG curve ``secp256r1``. Also called NIST P-256.
 
 
-.. class:: SECT224R1
+.. class:: SECP224R1
 
     .. versionadded:: 0.5
 
@@ -441,7 +441,10 @@ Key Interfaces
     .. versionadded:: 0.5
 
     An elliptic curve private key for use with an algorithm such as `ECDSA`_ or
-    `EdDSA`_.
+    `EdDSA`_. An elliptic curve private key that is not an
+    :term:`opaque key` also implements
+    :class:`EllipticCurvePrivateKeyWithSerialization` to provide serialization
+    methods.
 
     .. method:: exchange(algorithm, peer_public_key)
 
@@ -495,7 +498,9 @@ Key Interfaces
 
     .. versionadded:: 0.8
 
-    Extends :class:`EllipticCurvePrivateKey`.
+    This interface contains additional methods relating to serialization.
+    Any object with this interface also has all the methods from
+    :class:`EllipticCurvePrivateKey`.
 
     .. method:: private_numbers()
 
