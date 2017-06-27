@@ -10,6 +10,7 @@ from six import (
     text_type as _text_type,
     PY3 as _PY3)
 
+from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import dsa, rsa
 
 from OpenSSL._util import (
@@ -103,7 +104,7 @@ def _set_asn1_time(boundary, when):
     """
     The the time value of an ASN1 time object.
 
-    @param boundary: An ASN1_GENERALIZEDTIME pointer (or an object safely
+    @param boundary: An ASN1_TIME pointer (or an object safely
         castable to that type) which will have its value set.
     @param when: A string representation of the desired time value.
 
@@ -116,17 +117,9 @@ def _set_asn1_time(boundary, when):
     if not isinstance(when, bytes):
         raise TypeError("when must be a byte string")
 
-    set_result = _lib.ASN1_GENERALIZEDTIME_set_string(
-        _ffi.cast('ASN1_GENERALIZEDTIME*', boundary), when)
+    set_result = _lib.ASN1_TIME_set_string(boundary, when)
     if set_result == 0:
-        dummy = _ffi.gc(_lib.ASN1_STRING_new(), _lib.ASN1_STRING_free)
-        _lib.ASN1_STRING_set(dummy, when, len(when))
-        check_result = _lib.ASN1_GENERALIZEDTIME_check(
-            _ffi.cast('ASN1_GENERALIZEDTIME*', dummy))
-        if not check_result:
-            raise ValueError("Invalid string")
-        else:
-            _untested_error()
+        raise ValueError("Invalid string")
 
 
 def _get_asn1_time(timestamp):
@@ -1004,6 +997,37 @@ class X509(object):
         _openssl_assert(x509 != _ffi.NULL)
         self._x509 = _ffi.gc(x509, _lib.X509_free)
 
+    def to_cryptography(self):
+        """
+        Export as a ``cryptography`` certificate.
+
+        :rtype: ``cryptography.x509.Certificate``
+
+        .. versionadded:: 17.1.0
+        """
+        from cryptography.hazmat.backends.openssl.x509 import _Certificate
+        backend = _get_backend()
+        return _Certificate(backend, self._x509)
+
+    @classmethod
+    def from_cryptography(cls, crypto_cert):
+        """
+        Construct based on a ``cryptography`` *crypto_cert*.
+
+        :param crypto_key: A ``cryptography`` X.509 certificate.
+        :type crypto_key: ``cryptography.x509.Certificate``
+
+        :rtype: PKey
+
+        .. versionadded:: 17.1.0
+        """
+        if not isinstance(crypto_cert, x509.Certificate):
+            raise TypeError("Must be a certificate")
+
+        cert = cls()
+        cert._x509 = crypto_cert._x509
+        return cert
+
     def set_version(self, version):
         """
         Set the version number of the certificate.
@@ -1243,11 +1267,9 @@ class X509(object):
         """
         Get the timestamp at which the certificate starts being valid.
 
-        The timestamp is formatted as an ASN.1 GENERALIZEDTIME::
+        The timestamp is formatted as an ASN.1 TIME::
 
             YYYYMMDDhhmmssZ
-            YYYYMMDDhhmmss+hhmm
-            YYYYMMDDhhmmss-hhmm
 
         :return: A timestamp string, or ``None`` if there is none.
         :rtype: bytes or NoneType
@@ -1261,11 +1283,9 @@ class X509(object):
         """
         Set the timestamp at which the certificate starts being valid.
 
-        The timestamp is formatted as an ASN.1 GENERALIZEDTIME::
+        The timestamp is formatted as an ASN.1 TIME::
 
             YYYYMMDDhhmmssZ
-            YYYYMMDDhhmmss+hhmm
-            YYYYMMDDhhmmss-hhmm
 
         :param bytes when: A timestamp string.
         :return: ``None``
@@ -1276,11 +1296,9 @@ class X509(object):
         """
         Get the timestamp at which the certificate stops being valid.
 
-        The timestamp is formatted as an ASN.1 GENERALIZEDTIME::
+        The timestamp is formatted as an ASN.1 TIME::
 
             YYYYMMDDhhmmssZ
-            YYYYMMDDhhmmss+hhmm
-            YYYYMMDDhhmmss-hhmm
 
         :return: A timestamp string, or ``None`` if there is none.
         :rtype: bytes or NoneType
@@ -1291,11 +1309,9 @@ class X509(object):
         """
         Set the timestamp at which the certificate stops being valid.
 
-        The timestamp is formatted as an ASN.1 GENERALIZEDTIME::
+        The timestamp is formatted as an ASN.1 TIME::
 
             YYYYMMDDhhmmssZ
-            YYYYMMDDhhmmss+hhmm
-            YYYYMMDDhhmmss-hhmm
 
         :param bytes when: A timestamp string.
         :return: ``None``
@@ -1951,7 +1967,7 @@ class Revoked(object):
         Set the revocation timestamp.
 
         :param bytes when: The timestamp of the revocation,
-            as ASN.1 GENERALIZEDTIME.
+            as ASN.1 TIME.
         :return: ``None``
         """
         dt = _lib.X509_REVOKED_get0_revocationDate(self._revoked)
@@ -1961,7 +1977,7 @@ class Revoked(object):
         """
         Get the revocation timestamp.
 
-        :return: The timestamp of the revocation, as ASN.1 GENERALIZEDTIME.
+        :return: The timestamp of the revocation, as ASN.1 TIME.
         :rtype: bytes
         """
         dt = _lib.X509_REVOKED_get0_revocationDate(self._revoked)
@@ -2048,11 +2064,9 @@ class CRL(object):
         """
         Set when the CRL was last updated.
 
-        The timestamp is formatted as an ASN.1 GENERALIZEDTIME::
+        The timestamp is formatted as an ASN.1 TIME::
 
             YYYYMMDDhhmmssZ
-            YYYYMMDDhhmmss+hhmm
-            YYYYMMDDhhmmss-hhmm
 
         .. versionadded:: 16.1.0
 
@@ -2065,11 +2079,9 @@ class CRL(object):
         """
         Set when the CRL will next be udpated.
 
-        The timestamp is formatted as an ASN.1 GENERALIZEDTIME::
+        The timestamp is formatted as an ASN.1 TIME::
 
             YYYYMMDDhhmmssZ
-            YYYYMMDDhhmmss+hhmm
-            YYYYMMDDhhmmss-hhmm
 
         .. versionadded:: 16.1.0
 
