@@ -1,0 +1,206 @@
+#!/bin/bash
+
+set -euf -o pipefail
+
+SCRIPTS=$(readlink -f "$(dirname $0)")
+MISC=$(readlink -f "$(dirname $0)/../misc")
+BASH_TOOLS="$SCRIPTS/bash-tools"
+DEVBOX_TOOLS="$SCRIPTS/devbox-tools"
+ROCKET_DEVBOX_TOOLS="$SCRIPTS/rocket-devbox-tools"
+
+source "$BASH_TOOLS/bash-colours"
+source "$BASH_TOOLS/bash-messages"
+
+source "$DEVBOX_TOOLS/devbox-misc-tools"
+source "$DEVBOX_TOOLS/devbox-setup-tools"
+source "$DEVBOX_TOOLS/devbox-vm-tools"
+
+source "$ROCKET_DEVBOX_TOOLS/rocket-devbox-misc-tools"
+source "$ROCKET_DEVBOX_TOOLS/rocket-devbox-setup-tools"
+
+# main
+
+function main {
+
+	local config_name="$1"
+	local command="$2"
+
+	source "$MISC/devbox-configs/$config_name"
+
+	NAME="rocket-$DEPLOYMENT-dev"
+
+	TEMP="$(pwd)/work/temp/$NAME"
+	sudo rm -rf "$TEMP"
+	mkdir -p "$TEMP"
+
+	IMAGES="$(pwd)/work/devbox-images"
+	mkdir -p "$IMAGES"
+
+	IMAGE_FILE="$(pwd)/work/download/$IMAGE"
+
+	DATINGNODE_ANSIBLE="git@github.com:jimmyff/datingnode-ansible.git"
+
+	SSH="/usr/bin/ssh -A ubuntu@$NAME.local"
+
+	APT_PACKAGES=(
+		build-essential
+		git
+		lib{ffi,ssl}-dev
+		python-{dev,pip,setuptools}
+		unzip
+	)
+
+	PYTHON_PACKAGES=(
+		pip
+		pyyaml
+		setuptools
+	)
+
+	GITHUB_KEY=$(
+		echo -n "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUD"
+		echo -n "bO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfO"
+		echo -n "LX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4E"
+		echo -n "VVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf"
+		echo -n "9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvd"
+		echo -n "sjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8V"
+		echo -n "JiS5ap43JXiUFFAaQ=="
+	)
+
+	case "$command" in
+
+	(image-build-clean)
+
+		vm_install
+		vm_pack "clean"
+
+		;;
+
+	(image-build-basic)
+
+		vm_install
+		vm_start
+
+		setup_basic
+
+		vm_stop
+		vm_pack "basic"
+
+		;;
+
+	(image-build-ansible)
+
+		vm_install
+		vm_start
+
+		setup_basic
+		setup_devops
+		setup_ansible
+
+		vm_stop
+		vm_pack "devops"
+
+		;;
+
+	(image-store)
+
+		vm_stop
+		vm_pack "${3:-}"
+
+		;;
+
+	(image-restore)
+
+		vm_stop
+		vm_unpack "${3:-}"
+
+		;;
+
+	(stop)
+
+		vm_stop
+
+		;;
+
+	(start)
+
+		vm_start
+
+		;;
+
+	(restart)
+
+		vm_stop
+		vm_start
+
+		;;
+
+	(setup)
+
+		vm_start
+
+		setup_basic
+		setup_devops
+		setup_devbox
+
+		;;
+
+	(setup-basic)
+
+		vm_start
+
+		setup_basic
+
+		;;
+
+	(setup-ansible)
+
+		vm_start
+
+		setup-ansible
+
+		;;
+
+	(setup-bootstrap)
+
+		vm_start
+
+		setup-bootstrap
+
+		;;
+
+	(setup-devbox)
+
+		vm_start
+
+		setup-devbox
+
+		;;
+
+	(ssh)
+
+		vm_start
+		vm_ssh
+
+		;;
+
+	(*)
+
+		echo "Usage error" >&2
+
+		exit 1
+
+		;;
+
+	esac
+
+	subheading "Done"
+
+	blank-line-force
+
+}
+
+# run main
+
+main "$@"
+
+# ex: noet ts=4 filetype=bash

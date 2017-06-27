@@ -51,6 +51,8 @@ fi
 # runtime configuration
 
 hostname=$(hostname)
+ip=$(getent "hosts" "$hostname" | cut -d' ' -f1)
+host_ip=$(ip route | grep '^default' | head -n1 | cut -d' ' -f3)
 
 echo "Using hostname: $hostname"
 
@@ -66,13 +68,36 @@ else
 
 fi
 
-cat >config/overrides.yml <<-END
-	---
+if test -f "config/overrides-bootstrap.yml"; then
 
-	deployment_name: "${deployment_name}"
+	cp "config/overrides-bootstrap.yml" "config/overrides.yml"
 
-	# ex: et ts=2 filetype=yaml
-END
+else
+
+	cat >config/overrides.yml <<-END
+		---
+
+		deployment_mode: "vagrant"
+		deployment_name: "${deployment_name}"
+
+		devbox_user: "ubuntu"
+		devbox_home: "/home/ubuntu"
+		devbox_private: "${ip}"
+
+		devbox_trusted_hosts:
+
+		  - "${host_ip}"
+
+		ubuntu_main_url: "http://archive.ubuntu.com/ubuntu"
+		ubuntu_security_url: "http://security.ubuntu.com/ubuntu"
+
+		docker_mirror_url: "https://get.docker.com/ubuntu"
+		docker_quay_auth: ""
+
+		# ex: et ts=2 filetype=yaml
+	END
+
+fi
 
 # update all packages
 
@@ -171,6 +196,12 @@ EOF
 echo "Importing data to etcd" >&2
 
 ./datingnode-local etcd import --source work/etcd-bootstrap
+
+# write misc cnofig
+
+echo "Creating build-counter" >&2
+
+echo "$RANDOM" >config/build-counter
 
 # done
 

@@ -1,0 +1,277 @@
+#!/bin/bash
+
+function vm_install {
+
+	heading "Installing virtual machine"
+
+	subheading "Destroy and undefine existing VM"
+
+	pipe-stdout-stderr "sudo virsh destroy \"$NAME\" || true"
+
+	pipe-stdout-stderr "sudo virsh undefine \"$NAME\" || true"
+
+	if ! test -f "$IMAGE_FILE"; then
+
+		subheading "Downloading $IMAGE"
+
+		mkdir -p "work/download"
+
+		blank-line-auto
+
+		pipe-stdout-stderr $(
+			echo "curl --silent"
+			echo "\"$IMAGE_URL\""
+			echo ">\"$IMAGE_FILE.temp\""
+		)
+
+		blank-line-auto
+
+		mv "$IMAGE_FILE.temp" "$IMAGE_FILE"
+
+	fi
+
+	subheading "Modifying installation image"
+
+	pipe-stdout-stderr xorriso \
+		-indev "$IMAGE_FILE" \
+		-osirrox "on" \
+		-extract "/install/initrd.gz" "$TEMP/initrd.gz" \
+		-extract "/install/vmlinuz" "$TEMP/vmlinuz"
+
+	mkdir "$TEMP/initrd"
+
+	pushd "$TEMP/initrd" >/dev/null
+
+	pipe-stdout-stderr $(
+		echo "zcat \"$TEMP/initrd.gz\""
+		echo "| sudo cpio --extract"
+	)
+
+	sudo chown "$USER:$USER" "." --recursive
+
+	template "preseed" >"preseed.cfg"
+
+	pipe-stdout-stderr $(
+		echo "(zcat \"$TEMP/initrd.gz\" | cpio --list; echo \"preseed.cfg\")"
+		echo "| cpio --create --format \"newc\""
+		echo "| gzip > \"$TEMP/initrd-custom.gz\""
+	)
+
+	popd >/dev/null
+
+	vm-devices-initialise
+
+	pipe-stdout-stderr $(
+		echo "sudo mkswap"
+		echo "\"$DEVICE-swap\""
+		echo "--uuid \"$DEVICE_UUID_SWAP\""
+	)
+
+	pipe-stdout-stderr $(
+		echo "sudo mkfs.btrfs"
+		echo "\"$DEVICE-data\""
+		echo "--uuid \"$DEVICE_UUID_DATA\""
+	)
+
+	subheading "Define and start bootstrap VM"
+
+	template "machine-bootstrap" >"$TEMP/machine-bootstrap.xml"
+
+	pipe-stdout-stderr "sudo virsh define \"$TEMP/machine-bootstrap.xml\""
+
+	if test -v "DISPLAY"; then
+
+		xterm \
+			-title "Install $NAME" \
+			-fn "-*-fixed-*-*-*-*-20-*-*-*-*-*-*" \
+			-e sudo virsh start --console "$NAME"
+
+	else
+		screen sudo virsh start --console "$NAME"
+	fi
+
+	subheading "Undefine bootstrap VM"
+
+	pipe-stdout-stderr "sudo virsh undefine \"$NAME\""
+
+}
+
+function vm-devices-initialise {
+
+	subheading "Erase and initialize devices"
+
+	for device in root swap data; do
+
+		if test -e "$DEVICE-$device"; then
+
+			pipe-stdout-stderr $(
+				echo "sudo lvremove --force"
+				echo "\"$DEVICE-$device\""
+			)
+
+		fi
+
+	done
+
+	for device in root swap data; do
+
+		local device_size_var=$(echo "DEVICE_SIZE_$device" | tr "a-z" "A-Z")
+		local device_size="${!device_size_var}"
+
+		pipe-stdout-stderr $(
+			echo "sudo lvcreate"
+			echo "\"/dev/$LVM_GROUP\""
+			echo "--thinpool \"$LVM_THINPOOL\""
+			echo "--virtualsize \"${device_size}GiB\""
+			echo "--name \"$DEVICE-$device\""
+		)
+
+	done
+
+}
+
+function vm_start {
+
+	heading "Start virtual machine"
+
+	template "machine" >"$TEMP/machine.xml"
+
+	subheading "Define virtual machine"
+
+	pipe-stdout-stderr "sudo virsh define \"$TEMP/machine.xml\" || true"
+
+	subheading "Start virtual machine"
+
+	pipe-stdout-stderr "sudo virsh start \"$NAME\" || true"
+
+	subheading "Wait for SSH to become active"
+
+	notice "Scanning for port 22"
+
+	for index in {0..300}; do
+		if netcat "$NAME.local" "22" </dev/null &>/dev/null; then
+			break
+		fi
+	done
+
+	blank-line-auto
+
+	message "Connection to port 22 established"
+
+	notice "Verifying SSH connection"
+
+	for index in {0..300}; do
+		if /usr/bin/ssh "ubuntu@$NAME.local" "true" </dev/null &>/dev/null; then
+			break
+		fi
+	done
+
+	blank-line-auto
+
+	message "SSH connection established"
+
+}
+
+function vm_stop {
+
+	if ! virsh list --name | grep -x "$NAME"; then
+		return
+	fi
+
+	heading "Shutdown virtual machine"
+
+	subheading "Request shutdown"
+
+	pipe-stdout-stderr "sudo virsh shutdown \"$NAME\" || true"
+
+	subheading "Wait for shutdown"
+
+	until sudo virsh domstate "$NAME" | grep -q "shut off"; do true; done
+
+	subheading "Remove machine definition"
+
+	pipe-stdout-stderr "sudo virsh undefine \"$NAME\" || true"
+
+}
+
+function vm_pack {
+
+	heading "Packing virtual machine"
+
+	subheading "Removing existing image"
+
+	rm -f "work/temp/$NAME.img"
+
+	subheading "Create new image"
+
+	sudo chgrp disk $(readlink -f "$DEVICE-root")
+
+	pv "Writing image file" "$DEVICE-root" \
+	| dd \
+		of="work/temp/$NAME.img" \
+		bs="$((1024 * 1024 * 4))" \
+		iflag="fullblock" \
+		oflag="direct" \
+		conv="sparse" \
+		status="none"
+
+	if test $# = 1; then
+
+		local image_name="$1"
+
+		subheading "Store image label $image_name"
+
+		cp --reflink "work/temp/$NAME.img" "work/temp/$NAME-$image_name.img"
+
+	fi
+
+}
+
+function vm_unpack {
+
+	heading "Unpacking virtual machine"
+
+	vm-devices-initialise
+
+	if test "${1:-}"; then
+
+		local image_name="$1"
+
+		subheading "Restore image label $image_name"
+
+		cp --reflink "$IMAGES/$NAME-$image_name.img" "$IMAGES/$NAME.img"
+
+	fi
+
+	subheading "Restoring image"
+
+	notice "Restore $IMAGES/$NAME.img"
+
+	pv "Reading image file" "work/temp/$NAME.img" \
+	| sudo dd \
+		of="$DEVICE-root" \
+		bs="$((1024 * 1024 * 4))" \
+		iflag="fullblock" \
+		oflag="direct" \
+		conv="sparse" \
+		status="none"
+
+}
+
+function vm_ssh {
+
+	heading "Connect to devbox via SSH"
+
+	mount_secrets
+
+	subheading "Create shell"
+
+	blank-line-auto
+
+	$SSH -t bash -l
+
+	blank-line-force
+
+}
+
+# ex: noet ts=4 filetype=bash

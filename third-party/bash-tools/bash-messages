@@ -1,0 +1,283 @@
+#!/bin/bash
+
+HEADER_FOREGROUND="white"
+HEADER_BACKGROUND="dark-green"
+
+SECTION_FOREGROUND="yellow-4"
+SECTION_BACKGROUND="black"
+
+NOTICE_FOREGROUND="yellow-3"
+NOTICE_BACKGROUND="black"
+
+MESSAGE_FOREGROUND="honeydew-2"
+MESSAGE_BACKGROUND="black"
+
+BASH_MESSAGES_BLANK_LINE="no"
+
+function blank-line-set {
+	BASH_MESSAGES_BLANK_LINE="yes"
+}
+
+function blank-line-unset {
+	BASH_MESSAGES_BLANK_LINE="no"
+}
+
+function blank-line-auto {
+
+	if test "$BASH_MESSAGES_BLANK_LINE" = "no"; then
+
+		printf '\n'
+
+		blank-line-set
+
+	fi
+
+}
+
+function blank-line-force {
+
+	printf '\n'
+
+	blank-line-set
+
+}
+
+function heading {
+
+	local message="$1"
+
+	blank-line-auto >&2
+
+	xterm-set-colours "$HEADER_FOREGROUND" "$HEADER_BACKGROUND" >&2
+	vt100-set-bright >&2
+
+	printf ' %s' "$message" >&2
+
+	vt100-erase-end-of-line >&2
+	vt100-reset-all-attributes >&2
+
+	printf '\n\n' >&2
+
+}
+
+function subheading {
+
+	local message="$1"
+
+	blank-line-auto >&2
+
+	xterm-set-colours "$SECTION_FOREGROUND" "$SECTION_BACKGROUND" >&2
+	vt100-set-bright >&2
+
+	printf ' %s' "$message" >&2
+
+	vt100-erase-end-of-line >&2
+	vt100-reset-all-attributes >&2
+
+	printf '\n' >&2
+
+	blank-line-unset >&2
+
+}
+
+function notice {
+
+	local message="$1"
+
+	blank-line-auto >&2
+
+	xterm-set-colours "$NOTICE_FOREGROUND" "$NOTICE_BACKGROUND" >&2
+
+	printf '  %s' "$message" >&2
+
+	vt100-erase-end-of-line >&2
+	vt100-reset-all-attributes >&2
+
+	printf '\n' >&2
+
+	blank-line-unset
+
+}
+
+function message {
+
+	local message="$1"
+
+	xterm-set-colours "$MESSAGE_FOREGROUND" "$MESSAGE_BACKGROUND" >&2
+
+	printf '   %s' "$message" >&2
+
+	vt100-erase-end-of-line >&2
+	vt100-reset-all-attributes >&2
+
+	printf '\n' >&2
+
+	blank-line-unset
+
+}
+
+function status-begin {
+
+	local message="$*"
+
+	blank-line-auto >&2
+
+	xterm-set-colours "$MESSAGE_FOREGROUND" "$MESSAGE_BACKGROUND" >&2
+
+	printf '   %s 0%%' "$message" >&2
+
+	vt100-erase-end-of-line >&2
+	vt100-reset-all-attributes >&2
+
+	printf '\n' >&2
+
+}
+
+function status-update {
+
+	local message="$1"
+	local progress="$2"
+
+	vt100-cursor-up >&2
+
+	xterm-set-colours "$MESSAGE_FOREGROUND" "$MESSAGE_BACKGROUND" >&2
+
+	printf '   %s %s%%' "$message" "$progress" >&2
+
+	vt100-erase-end-of-line >&2
+	vt100-reset-all-attributes >&2
+
+	printf '\n' >&2
+
+}
+
+function status-complete {
+
+	local message="$1"
+
+	vt100-cursor-up >&2
+
+	xterm-set-colours "$MESSAGE_FOREGROUND" "$MESSAGE_BACKGROUND" >&2
+
+	printf '  %s ... done' "$message" >&2
+
+	vt100-erase-end-of-line >&2
+	vt100-reset-all-attributes >&2
+
+	printf '\n' >&2
+
+	blank-line-unset
+
+}
+
+function pipe-filter {
+
+	local line
+
+	while read line; do
+
+		if test "$line"; then
+
+			if [[ "$line" == *$'\r' ]]; then
+				line="${line::-1}"
+			fi
+
+			line=$(echo "$line" | sed 's/\r/\r   /g')
+
+#			echo "$line" | hexdump -C >&2
+
+			message "$line"
+
+		else
+
+			printf '\n' >&2
+
+		fi
+
+	done
+
+}
+
+function pipe-stdout-stderr {
+
+	local command="$*"
+
+	notice "$command"
+
+	local fifo_name=$(mktemp)
+
+	rm -f "$fifo_name"
+
+	mkfifo "$fifo_name"
+
+	bash -c "$command" &> >(pipe-filter &>$fifo_name) &
+
+	local pid=$!
+
+	exec 100<$fifo_name
+
+	rm -f "$fifo_name"
+
+	local output="no"
+
+	while read -u 100 line; do
+
+		if test "$line"; then
+
+			if test "$output" = "no"; then
+				blank-line-auto
+			fi
+
+			echo "$line"
+
+			blank-line-unset
+
+			output="yes"
+
+		else
+
+			output="no"
+
+		fi
+
+	done
+
+	wait "$pid"
+
+	local command_status=$?
+
+	return "$command_status"
+
+}
+
+function pv {
+
+	local message="$1"
+
+	shift
+
+	/usr/bin/pv --numeric "$@" 2> >(
+
+		status-begin "$message"
+
+		while read progress; do
+			status-update "$message" "$progress"
+		done
+
+		status-complete "$message"
+
+	)
+
+}
+
+function vt100-cursor-up { printf '\e[%sA' "${1:-1}"; }
+function vt100-cursor-down { printf '\e[%sB' "${1:-1}"; }
+
+function vt100-set-bright { printf '\e[1m'; }
+
+function vt100-reset-all-attributes { printf '\e[0m'; } 
+
+function vt100-erase-end-of-line { printf '\e[K'; }
+function vt100-erase-line { printf '\e[2K'; }
+
+# ex: noet ts=4 filetype=bash
