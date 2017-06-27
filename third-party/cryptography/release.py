@@ -25,7 +25,12 @@ JENKINS_URL = (
 
 def run(*args, **kwargs):
     kwargs.setdefault("stderr", subprocess.STDOUT)
-    subprocess.check_output(list(args), **kwargs)
+    try:
+        subprocess.check_output(list(args), **kwargs)
+    except subprocess.CalledProcessError as e:
+        # Reraise this with a different type so that str(e) is something with
+        # stdout in it.
+        raise Exception(e.cmd, e.returncode, e.output)
 
 
 def wait_for_build_completed(session):
@@ -121,6 +126,7 @@ def release(version):
         "{0}/build".format(JENKINS_URL),
         params={
             "token": token,
+            "BUILD_VERSION": version,
             "cause": "Building wheels for {0}".format(version)
         }
     )
