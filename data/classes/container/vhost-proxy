@@ -57,4 +57,12 @@ start:
     - "/etc/my_init.d/ansible"
     - "sv hup nginx"
 
+system:
+
+  init: "upstart"
+
+ubuntu:
+
+  release: "trusty"
+
 # ex: et ts=2 filetype=yaml# ex: et ts=2 filetype=yaml

@@ -66,4 +66,12 @@ start:
     - "sv hup php-fpm"
     - "sv hup apache"
 
+system:
+
+  init: "upstart"
+
+ubuntu:
+
+  release: "trusty"
+
 # ex: et ts=2 filetype=yaml

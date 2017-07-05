@@ -98,16 +98,41 @@ export PYTHONPATH="$ANSIBLE_HOME/lib"
 
 mkdir -p work
 
-ROLES_PATH="$PROJECT/roles/build"
+function path_add {
+
+	local var_name="$1"
+	local new_value="$2"
+
+	if test -v "${var_name}" && test -n "${!var_name}"; then
+		declare -g "$var_name"="${!var_name}:${new_value}"
+	else
+		declare -g "$var_name"="${new_value}"
+	fi
+
+}
+
+path_add "ANSIBLE_LIBRARY" "$PROJECT/third-party/gridlinker/misc/ansible-modules"
+path_add "ANSIBLE_LIBRARY" "$PROJECT/third-party/ansible-modules-core"
+path_add "ANSIBLE_LIBRARY" "$PROJECT/third-party/ansible-modules-extras"
+
+path_add "ANSIBLE_ROLES_PATH" "$PROJECT/roles/build"
 
 for gridlinker_role in system system-apt; do
-	ROLES_PATH="$ROLES_PATH:$PROJECT/third-party/gridlinker/roles/$gridlinker_role"
+	path_add "ANSIBLE_ROLES_PATH" \
+		"$PROJECT/third-party/gridlinker/roles/$gridlinker_role"
 done
+
+path_add "ANSIBLE_ACTION_PLUGINS" "$PROJECT/misc/ansible-action-plugins"
+
+echo "ANSIBLE_LIBRARY=$ANSIBLE_LIBRARY"
+echo "ANSIBLE_ROLES_PATH=$ANSIBLE_ROLES_PATH"
+echo "ANSIBLE_ACTION_PLUGINS=$ANSIBLE_ACTION_PLUGINS"
 
 cat >work/ansible.cfg <<-END
 	[defaults]
-	library = $PROJECT/third-party/ansible-modules-core:$PROJECT/third-party/ansible-modules-extras
-	roles_path = $ROLES_PATH
+	library = $ANSIBLE_LIBRARY
+	roles_path = $ANSIBLE_ROLES_PATH
+	actions_plugins = $ANSIBLE_ACTION_PLUGINS
 END
 
 heading "Applying ansible build $build_name"

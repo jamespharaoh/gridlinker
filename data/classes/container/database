@@ -53,4 +53,12 @@ start:
   wait:
     - "{{ cluster.ports.database }}"
 
+system:
+
+  init: "upstart"
+
+ubuntu:
+
+  release: "trusty"
+
 # ex: et ts=2 filetype=yaml

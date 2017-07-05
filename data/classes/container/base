@@ -1,0 +1,39 @@
+---
+
+identity:
+
+  name: "base"
+  type: "class"
+
+class:
+
+  namespace: "host"
+  parent_namespace: "host"
+
+  groups:
+
+    - "containers"
+    - "{{ identity_cluster }}-base"
+    - "{{ identity_cluster }}-{{ identity_index }}"
+
+  references:
+
+    - name: "cluster"
+      type: "resource"
+      value: "cluster/{{ identity_cluster }}"
+      section: "cluster"
+
+container:
+
+  type: "base"
+  directory: "/datingnode-{{ identity_cluster }}/{{ identity_name }}"
+
+system:
+
+  init: "upstart"
+
+ubuntu:
+
+  release: "trusty"
+
+# ex: et ts=2 filetype=yaml
