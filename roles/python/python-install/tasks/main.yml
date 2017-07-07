@@ -1,0 +1,13 @@
+---
+
+- include: "build-python.yml"
+  when: "python_install == 'yes'"
+  tags:
+
+    - "python-install"
+    - "python"
+
+    - "build"
+    - "install"
+
+# ex: et ts=2 filetype=yaml

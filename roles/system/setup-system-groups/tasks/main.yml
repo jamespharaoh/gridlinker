@@ -1,0 +1,10 @@
+---
+
+- include: "setup-system-groups.yml"
+  when: "system_groups_group_name in groups"
+  tags:
+
+    - "system"
+    - "setup-system-groups"
+
+# ex: et ts=2 filetype=yaml

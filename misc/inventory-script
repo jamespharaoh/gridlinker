@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
+import argparse
+import os
+import sys
+
+main_path = __file__
+
+while os.path.islink (main_path):
+	main_path = os.readlink (main_path)
+
+SCRIPT = os.path.basename (__file__)
+HOME = os.path.abspath (os.path.dirname (main_path) + "/../../..")
+
+import gridlinker
+
+METADATA = gridlinker.metadata.load (HOME)
+CONNECTION = os.environ [METADATA ["environment"] ["devops_connection_name"]]
+
+def main (args):
+
+	parser = argparse.ArgumentParser ()
+	sub_parsers = parser.add_subparsers ()
+
+	gridlinker.ansible.tools.args (sub_parsers)
+
+	args = parser.parse_args ([ "ansible", "inventory" ] + args)
+	context = gridlinker.GenericContext (HOME, CONNECTION, METADATA)
+
+	args.func (context, args)
+
+main (sys.argv [1:])
+
+# ex: noet ts=4 filetype=python

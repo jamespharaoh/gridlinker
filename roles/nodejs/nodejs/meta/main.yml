@@ -1,0 +1,10 @@
+---
+
+dependencies:
+
+  - "nodejs-common"
+  - "nodejs-install"
+  - "nodejs-packages-install"
+  - "nodejs-bin-links"
+
+# ex: et ts=2 filetype=yaml

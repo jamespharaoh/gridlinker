@@ -1,0 +1,13 @@
+---
+
+- include: "install-python-pip.yml"
+  when: "python_install == 'yes'"
+  tags:
+
+    - "python-pip-install"
+    - "python-pip"
+    - "python"
+
+    - "install"
+
+# ex: et ts=2 filetype=yaml

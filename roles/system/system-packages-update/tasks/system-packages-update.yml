@@ -1,0 +1,28 @@
+---
+
+- name: "update package database"
+  become: "yes"
+  command: "apt-get -y update"
+
+- name: "update packages"
+  become: "yes"
+  command: "apt-get -y dist-upgrade"
+
+- name: "remove automatically installed packages"
+  become: "yes"
+  command: "apt-get -y clean"
+
+- name: "purge removed packages"
+  become: "yes"
+  shell:
+
+    dpkg --list
+    | (grep "^rc" || test $? = 1)
+    | cut --delimiter " " --fields 3
+    | xargs --no-run-if-empty dpkg --purge
+
+- name: "clean downloaded packages"
+  become: "yes"
+  command: "apt-get clean"
+
+# ex: et ts=2 filetype=yaml

@@ -1,0 +1,6 @@
+---
+
+- include: "project-documentation.yml"
+  tags: [ "gridlinker", "project-documentation" ]
+
+# ex: et ts=2 filetype=yaml

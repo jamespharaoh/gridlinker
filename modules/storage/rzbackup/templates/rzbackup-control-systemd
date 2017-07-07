@@ -1,0 +1,25 @@
+{{ ansible_warning ['#'] }}
+
+[Unit]
+
+	Description = RZBackup daemon
+
+	Requires = {{ rzbackup_systemd_requires | join (' ') }}
+	After = network.target
+
+[Service]
+
+	Type = simple
+
+	ExecStart = /etc/rzbackup-start-script
+	ExecReload = /bin/kill -HUP $MAINPID
+	ExecStop = /bin/kill -TERM $MAINPID
+
+	Restart = {{ rzbackup_systemd_restart }}
+	RestartSecs = {{ rzbackup_systemd_restart_secs }}
+
+[Install]
+
+	WantedBy = multi-user.target
+
+# ex: noet ts=4

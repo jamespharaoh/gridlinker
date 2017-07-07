@@ -1,0 +1,91 @@
+---
+
+- name: "issue icinga master certificate"
+  when: "icinga_core_certificate == ''"
+  register: "icinga_master_certificate_result"
+  action:
+
+    module: "certificate_authority_issue"
+    authority: "{{ icinga_core_authority }}"
+    common_name: "{{ icinga_core_common_name }}"
+    usage: "mixed"
+    alt_dns: "{{ icinga_core_alt_dns }}"
+    alt_ip: "{{ icinga_core_alt_ips }}"
+
+- name: "store icinga master certificate"
+  when: "icinga_master_certificate_result | changed"
+  update_resource:
+
+    icinga_core.certificate: "{{ icinga_master_certificate_result.certificate }}"
+    icinga_core.private_key: "{{ icinga_master_certificate_result.private_key }}"
+
+- name: "create icinga master directories"
+  with_items: "{{ icinga_core_master_directories }}"
+  become: "yes"
+  action:
+
+    module: "file"
+    path: "{{ item.directory }}"
+    state: "directory"
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+
+- name: "write icinga config"
+  with_items: "{{ icinga_core_master_config_templates }}"
+  register: "icinga_core_master_config_result"
+  become: "yes"
+  action:
+
+    module: "template"
+    src: "{{ item.template }}"
+    dest: "/etc/icinga2/{{ item.target }}"
+
+    owner: "root"
+    group: "icinga"
+    mode: "{{ item.mode }}"
+
+- name: "set icinga_core.needs_restart to 'yes'"
+  when: "icinga_core_master_config_result | changed"
+  update_resource:
+
+    icinga_core.needs_restart: "yes"
+
+- name: "write icinga security config"
+  with_items: "{{ icinga_core_master_security_files }}"
+  register: "icinga_core_master_security_config_result"
+  become: "yes"
+  action:
+
+    module: "copy"
+    dest: "/etc/icinga2/{{ item.target }}"
+    content: "{{ lookup ('etcd', item.source) }}"
+    owner: "root"
+    group: "icinga"
+
+- name: "set icinga_core.needs_restart to 'yes'"
+  when: "icinga_core_master_security_config_result | changed"
+  update_resource:
+
+    icinga_core.needs_restart: "yes"
+
+- name: "create icinga master links"
+  with_items: "{{ icinga_core_master_links }}"
+  become: "yes"
+  action:
+
+    module: "file"
+    path: "{{ item.link }}"
+    state: "link"
+
+    src: "{{ item.target }}"
+
+- meta: "flush_handlers"
+
+- name: "set icinga_core.state to 'enabled'"
+  when: "icinga_core_state == 'installed'"
+  update_resource:
+
+    icinga_core.state: "enabled"
+
+# ex: et ts=2 filetype=yaml

@@ -1,0 +1,21 @@
+---
+
+system_setup_hosts: "yes"
+system_setup_system_params: "yes"
+
+system_ip_forwarding: "no"
+
+private_hostnames:
+
+  - "{{ identity_name }}"
+
+system_groups_group_name: "system-groups"
+system_users_group_name: "system-users"
+
+system_grub_enable: ""
+system_grub_timeout: "10"
+
+system_serial_console_unit: ""
+system_serial_console_user: ""
+
+# ex: et ts=2 filetype=yaml

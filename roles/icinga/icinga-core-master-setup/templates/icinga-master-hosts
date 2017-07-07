@@ -1,0 +1,35 @@
+{{ ansible_warning ['#'] }}
+
+{% import 'icinga-master-macros' as macros with context %}
+
+template Host "generic-host" {
+
+	max_check_attempts = 3
+	check_interval = 1m
+	retry_interval = 30s
+
+	check_command = "hostalive"
+
+}
+
+{% for host in icinga_core_master_config_hosts %}
+
+object Host "{{ host.name }}" {
+
+	import "generic-host"
+
+	address = "{{ host.address }}"
+
+	vars.class = "{{ host.class }}"
+
+{% if 'endpoint' in host %}
+	vars.endpoint = "{{ host.endpoint }}"
+{% endif %}
+
+{{ macros.do_vars (host.vars | default ([])) }}
+
+}
+
+{% endfor %}
+
+# ex: noet ts=4 filetype=icinga2

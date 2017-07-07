@@ -1,0 +1,17 @@
+---
+
+- name: "install nodejs packages"
+  with_items: "{{ nodejs_packages }}"
+  environment:
+
+    PATH: "{{ nodejs_target }}/bin:{{ lookup ('env', 'PATH') }}"
+
+  become: "yes"
+  action:
+
+    module: "npm"
+    name: "{{ item.name }}"
+    version: "{{ item.version }}"
+    global: "yes"
+
+# ex: et ts=2 filetype=yaml

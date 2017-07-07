@@ -1,0 +1,10 @@
+---
+
+- include: "python-bin-links.yml"
+  when: "python_install == 'yes'"
+  tags:
+
+    - "python-bin-links"
+    - "python"
+
+# ex: et ts=2 filetype=yaml

@@ -1,0 +1,8 @@
+---
+
+dependencies:
+
+  - "ssh-server"
+  - "ssh-client"
+
+# ex: et ts=2 filetype=yaml

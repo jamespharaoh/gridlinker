@@ -1,0 +1,11 @@
+---
+
+dependencies:
+
+  - "balancer-common"
+  - "nginx-install"
+  - "balancer-nginx-setup"
+  - "balancer-autoconfig-setup"
+  - "nginx-control"
+
+# ex: et ts=2 filetype=yaml

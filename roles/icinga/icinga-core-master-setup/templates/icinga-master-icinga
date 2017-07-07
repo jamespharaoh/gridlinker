@@ -1,0 +1,66 @@
+include "constants.conf"
+include "secrets.conf"
+include "zones.conf"
+
+include <itl>
+include <plugins>
+
+library "checker"
+library "compat"
+{% if icinga_core_database_type == 'mysql' %}
+library "db_ido_mysql"
+{% endif %}
+{% if icinga_core_database_type == 'postgresql' %}
+library "db_ido_pgsql"
+{% endif %}
+library "notification"
+
+object ApiListener "api" {
+
+	cert_path = SysconfDir + "/icinga2/pki/" + NodeName + ".cert"
+	key_path = SysconfDir + "/icinga2/pki/" + NodeName + ".key"
+	ca_path = SysconfDir + "/icinga2/pki/ca.cert"
+
+	accept_config = false
+	accept_commands = true
+
+}
+
+object CheckerComponent "checker" {
+}
+
+object ExternalCommandListener "command" {
+}
+
+object FileLogger "main-log" {
+	severity = "information"
+	path = LocalStateDir + "/log/icinga2/icinga2.log"
+}
+
+{% if icinga_core_database_type == 'mysql' %}
+object IdoMysqlConnection "ido-mysql" {
+	host = "{{ icinga_core_database_hostname }}"
+	database = "{{ icinga_core_database_name }}"
+	user = "{{ icinga_core_database_username }}"
+	password = IcingaIdoMysqlPassword
+}
+{% endif %}
+
+{% if icinga_core_database_type == 'postgresql' %}
+object IdoPgsqlConnection "ido-pgsql" {
+	host = "{{ icinga_core_database_hostname }}"
+	database = "{{ icinga_core_database_name }}"
+	user = "{{ icinga_core_database_username }}"
+	password = IcingaIdoPostgresqlPassword
+}
+{% endif %}
+
+object NotificationComponent "notification" {
+}
+
+include "commands.conf"
+include "hosts.conf"
+include "notifications.conf"
+include "services.conf"
+include "time-periods.conf"
+include "users.conf"

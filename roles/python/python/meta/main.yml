@@ -1,0 +1,17 @@
+---
+
+dependencies:
+
+  - "python-common"
+  - "python-install"
+
+  - "python-pip-install"
+  - "python-pip-setup"
+
+  - "python-packages-install"
+
+  - "python-apt-install"
+
+  - "python-bin-links"
+
+# ex: et ts=2 filetype=yaml

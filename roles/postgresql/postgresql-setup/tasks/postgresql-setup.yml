@@ -1,0 +1,29 @@
+---
+
+- name: "configure postgresql"
+  with_items: "{{ postgresql_config_templates }}"
+  register: "postgresql_setup_config_templates_result"
+  become: "yes"
+  action:
+
+    module: "template"
+    dest: "{{ item.target }}"
+    src: "{{ item.template }}"
+
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+
+- name: "set postgresql.needs_restart to 'yes'"
+  when: "postgresql_setup_config_templates_result | changed"
+  update_resource:
+
+    postgresql.needs_restart: "yes"
+
+- name: "set postgresql.state to 'enabled'"
+  when: "postgresql_state == 'installed'"
+  update_resource:
+
+    postgresql.state: "enabled"
+
+# ex: et ts=2 filetype=yaml
