@@ -662,6 +662,14 @@ class Backend(object):
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
 
+        if (
+            isinstance(algorithm, hashes.MD5) and not
+            isinstance(private_key, rsa.RSAPrivateKey)
+        ):
+            raise ValueError(
+                "MD5 is not a supported hash algorithm for EC/DSA CSRs"
+            )
+
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode('ascii')
@@ -730,6 +738,14 @@ class Backend(object):
             raise TypeError('Builder type mismatch.')
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
+
+        if (
+            isinstance(algorithm, hashes.MD5) and not
+            isinstance(private_key, rsa.RSAPrivateKey)
+        ):
+            raise ValueError(
+                "MD5 is not a supported hash algorithm for EC/DSA certificates"
+            )
 
         # Resolve the signature algorithm.
         evp_md = self._lib.EVP_get_digestbyname(
@@ -827,6 +843,14 @@ class Backend(object):
             raise TypeError('Builder type mismatch.')
         if not isinstance(algorithm, hashes.HashAlgorithm):
             raise TypeError('Algorithm must be a registered hash algorithm.')
+
+        if (
+            isinstance(algorithm, hashes.MD5) and not
+            isinstance(private_key, rsa.RSAPrivateKey)
+        ):
+            raise ValueError(
+                "MD5 is not a supported hash algorithm for EC/DSA CRLs"
+            )
 
         evp_md = self._lib.EVP_get_digestbyname(
             algorithm.name.encode('ascii')
@@ -1326,8 +1350,10 @@ class Backend(object):
         ec_cdata = self._ec_key_set_public_key_affine_coordinates(
             ec_cdata, public.x, public.y)
 
-        res = self._lib.EC_KEY_set_private_key(
-            ec_cdata, self._int_to_bn(numbers.private_value))
+        private_value = self._ffi.gc(
+            self._int_to_bn(numbers.private_value), self._lib.BN_free
+        )
+        res = self._lib.EC_KEY_set_private_key(ec_cdata, private_value)
         self.openssl_assert(res == 1)
         evp_pkey = self._ec_cdata_to_evp_pkey(ec_cdata)
 
@@ -1465,9 +1491,9 @@ class Backend(object):
                 "Invalid EC key. Both x and y must be non-negative."
             )
 
-        res = self._lib.EC_KEY_set_public_key_affine_coordinates(
-            ctx, self._int_to_bn(x), self._int_to_bn(y)
-        )
+        x = self._ffi.gc(self._int_to_bn(x), self._lib.BN_free)
+        y = self._ffi.gc(self._int_to_bn(y), self._lib.BN_free)
+        res = self._lib.EC_KEY_set_public_key_affine_coordinates(ctx, x, y)
         if res != 1:
             self._consume_errors()
             raise ValueError("Invalid EC key.")
