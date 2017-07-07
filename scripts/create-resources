@@ -49,29 +49,29 @@ dev_group="$USER"
 	--class "deployment-cluster" \
 	--name "$cluster" \
 	\
-	--set "cluster.database_master" "$cluster-database-1" \
-	--set "cluster.domain_suffix" "$cluster.datingnode.com" \
-	--set "cluster.slave_reads" "yes" \
-	--set "cluster.whitelist_active" "no" \
+	--set "deployment_cluster.database_master" "$cluster-database-1" \
+	--set "deployment_cluster.domain_suffix" "$cluster.datingnode.com" \
+	--set "deployment_cluster.slave_reads" "yes" \
+	--set "deployment_cluster.whitelist_active" "no" \
 	\
-	--set "ports.vhost_proxy" "80" \
-	--set "ports.vhost_proxy_ssl" "443" \
-	--set "ports.database" "5001" \
-	--set "ports.web_application" "5003" \
-	--set "ports.storage" "5004" \
-	--set "ports.memcache" "5005" \
+	--set-dict "deployment_cluster.ports" "vhost_proxy" "80" \
+	--set-dict "deployment_cluster.ports" "vhost_proxy_ssl" "443" \
+	--set-dict "deployment_cluster.ports" "database" "5001" \
+	--set-dict "deployment_cluster.ports" "web_application" "5003" \
+	--set-dict "deployment_cluster.ports" "storage" "5004" \
+	--set-dict "deployment_cluster.ports" "memcache" "5005" \
 	\
-	--set "app.debug_visible" "yes" \
-	--set "app.show_adverts" "no" \
-	--set "app.log_api" "yes" \
-	--set "app.send_external_communications" "no" \
-	--add "app.external_communication_email_white_list" "dummy" \
-	--remove "app.external_communication_email_white_list" "dummy" \
+	--set "deployment_cluster.app_debug_visible" "yes" \
+	--set "deployment_cluster.app_show_adverts" "no" \
+	--set "deployment_cluster.app_log_api" "yes" \
+	--set "deployment_cluster.app_send_external_communications" "no" \
+	--add "deployment_cluster.app_external_communication_email_white_list" "dummy" \
+	--remove "deployment_cluster.app_external_communication_email_white_list" "dummy" \
 	\
-	--set "php.pm_max_children" "100" \
-	--set "php.pm_max_spare_servers" "10" \
-	--set "php.pm_min_spare_servers" "5" \
-	--set "php.pm_start_servers" "10"
+	--set "deployment_cluster.php_pm_max_children" "100" \
+	--set "deployment_cluster.php_pm_max_spare_servers" "10" \
+	--set "deployment_cluster.php_pm_min_spare_servers" "5" \
+	--set "deployment_cluster.php_pm_start_servers" "10"
 
 # create containers
 

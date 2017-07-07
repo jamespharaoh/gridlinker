@@ -2,8 +2,6 @@
 
 # -------------------- general
 
-{% set cluster = hostvars ['cluster/' + identity_cluster] %}
-
 cluster_name: "{{ identity_cluster }}"
 cluster: "{{ '{{' }} clusters [cluster_name] {{ '}}' }}"
 
@@ -20,26 +18,26 @@ vm_addresses:
 
 # -------------------- database connection
 
-{% set database_master = hostvars ['host/' + cluster.cluster_database_master] %}
+{% set database_master = hostvars ['host/' + cluster.database_master] %}
 {% set database_master_parent = hostvars ['host/' + database_master.identity.parent] %}
 
 database_master_name: "dating"
 database_master_address: "{{ database_master_parent.private_address }}"
-database_master_port: "{{ cluster.cluster_ports.database }}"
+database_master_port: "{{ cluster.ports.database }}"
 database_master_user: "jimmy"
 database_master_password: "topsecret"
 
 {% set database_slaves_string %}
-{% if cluster.cluster_slave_reads == 'yes' %}
+{% if cluster.slave_reads == 'yes' %}
 {% for database_name in groups.database %}
 {% set database = hostvars [database_name] %}
 {% set database_parent = hostvars ['host/' + database.identity_parent] %}
 {% if database.identity_cluster == identity_cluster %}
-{% if database.identity_name != cluster.cluster_database_master %}
+{% if database.identity_name != cluster.database_master %}
 {% if database.database_enabled == 'yes' %}
   - name: "dating"
     address: "{{ database_parent.private_address }}"
-    port: "{{ cluster.cluster_ports.database }}"
+    port: "{{ cluster.ports.database }}"
     user: "jimmy"
     password: "topsecret"
 {% endif %}
@@ -64,7 +62,7 @@ memcache_nodes:
 {% if memcache.identity.cluster == identity.cluster %}
 {% if memcache.memcache_enabled == 'yes' %}
   - name: "{{ memcache_parent.private.address }}"
-    port: "{{ cluster.cluster_ports.memcache }}"
+    port: "{{ cluster.ports.memcache }}"
 {% endif %}
 {% endif %}
 {% endfor %}
@@ -72,7 +70,7 @@ memcache_nodes:
 {% if inventory_hostname in groups.database | default ([]) %}
 # ------------------- database specific
 
-{% if identity_name == cluster.cluster_database_master %}
+{% if identity_name == cluster.database_master %}
 database_mode: "master"
 {% else %}
 database_mode: "slave"

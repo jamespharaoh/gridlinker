@@ -18,9 +18,9 @@ class:
 
   references:
 
-    - name: "super_cluster"
-      type: "resource"
-      value: "cluster/master"
+    - name: "cluster"
+      type: "simple"
+      value: "{{ super_clusters ['master'] }}"
 
 ansible:
 
@@ -39,12 +39,12 @@ icinga_core:
     - "{{ identity_name }}"
     - "{{ identity_name }}.vpn"
 
-  database_type: "{{ super_cluster.icinga_core_database_type }}"
-  database_hostname: "{{ super_cluster.icinga_core_database_hostname }}"
-  database_master: "{{ super_cluster.icinga_core_database_master }}"
-  database_port: "{{ super_cluster.icinga_core_database_port }}"
-  database_username: "{{ super_cluster.icinga_core_database_username }}"
-  database_password: "{{ super_cluster.icinga_core_database_password }}"
+  database_type: "{{ cluster.icinga_core_database_type }}"
+  database_hostname: "{{ cluster.icinga_core_database_hostname }}"
+  database_master: "{{ cluster.icinga_core_database_master }}"
+  database_port: "{{ cluster.icinga_core_database_port }}"
+  database_username: "{{ cluster.icinga_core_database_username }}"
+  database_password: "{{ cluster.icinga_core_database_password }}"
 
   email_from: "icinga@rocketware.co.uk"
 
@@ -152,18 +152,18 @@ icinga_core_host:
 
 icinga_web_core:
 
-  install_version: "{{ super_cluster.icinga_web_core_install_version }}"
+  install_version: "{{ cluster.icinga_web_core_install_version }}"
 
   hostname: "monitoring.datingnode.com"
   security: "proxy"
 
   config_roles: "{{ icinga_web_core_roles | values }}"
 
-  database_type: "{{ super_cluster.icinga_web_core_database_type }}"
-  database_hostname: "{{ super_cluster.icinga_web_core_database_hostname }}"
-  database_port: "{{ super_cluster.icinga_web_core_database_port }}"
-  database_username: "{{ super_cluster.icinga_web_core_database_username }}"
-  database_password: "{{ super_cluster.icinga_web_core_database_password }}"
+  database_type: "{{ cluster.icinga_web_core_database_type }}"
+  database_hostname: "{{ cluster.icinga_web_core_database_hostname }}"
+  database_port: "{{ cluster.icinga_web_core_database_port }}"
+  database_username: "{{ cluster.icinga_web_core_database_username }}"
+  database_password: "{{ cluster.icinga_web_core_database_password }}"
 
 nginx:
 

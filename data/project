@@ -53,7 +53,7 @@ resource_data:
 
     group: "deployment-clusters"
     key: "{{ identity_name }}"
-    section: "cluster"
+    section: "deployment_cluster"
 
   icinga_core_agents:
 
@@ -115,7 +115,6 @@ resource_section_names:
   - "app"
   - "btrfs_dedupe"
   - "build"
-  - "cluster"
   - "container"
   - "database"
   - "deployment_cluster"

@@ -19,9 +19,8 @@ class:
   references:
 
     - name: "cluster"
-      type: "resource"
-      value: "cluster/{{ identity_cluster }}"
-      section: "cluster"
+      type: "simple"
+      value: "{{ deployment_clusters [identity_cluster] }}"
 
 container:
 

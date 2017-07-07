@@ -10,16 +10,10 @@ class:
   namespace: "cluster"
 
   groups:
+
     - "deployment-clusters"
 
 app: {}
-
-build: {}
-
-cluster:
-
-  ports: "{{ ports }}"
-  build: "{{ build }}"
 
 deployment_cluster:
 
@@ -31,11 +25,9 @@ deployment_cluster:
   php_pm_start_servers: "16"
   php_pm_min_spare_servers: "16"
 
-  ports: "{{ ports }}"
-  build: "{{ build }}"
+  ports: {}
+  build: {}
 
 php: {}
-
-ports: {}
 
 # ex: et ts=2 filetype=yaml

@@ -19,9 +19,9 @@ class:
 
   references:
 
-    - name: "super_cluster"
-      type: "resource"
-      value: "cluster/master"
+    - name: "cluster"
+      type: "simple"
+      value: "{{ super_clusters ['master'] }}"
 
 ansible:
 
