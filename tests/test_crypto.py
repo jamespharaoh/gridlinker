@@ -22,6 +22,8 @@ from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
+import flaky
+
 from OpenSSL.crypto import TYPE_RSA, TYPE_DSA, Error, PKey, PKeyType
 from OpenSSL.crypto import X509, X509Type, X509Name, X509NameType
 from OpenSSL.crypto import (
@@ -1420,6 +1422,24 @@ class TestX509Req(_PKeyInteractionTestsMixin):
         request.sign(pkey, GOOD_DIGEST)
         assert request.verify(pkey)
 
+    def test_convert_from_cryptography(self):
+        crypto_req = x509.load_pem_x509_csr(
+            cleartextCertificateRequestPEM, backend
+        )
+        req = X509Req.from_cryptography(crypto_req)
+        assert isinstance(req, X509Req)
+
+    def test_convert_from_cryptography_unsupported_type(self):
+        with pytest.raises(TypeError):
+            X509Req.from_cryptography(object())
+
+    def test_convert_to_cryptography_key(self):
+        req = load_certificate_request(
+            FILETYPE_PEM, cleartextCertificateRequestPEM
+        )
+        crypto_req = req.to_cryptography()
+        assert isinstance(crypto_req, x509.CertificateSigningRequest)
+
 
 class TestX509(_PKeyInteractionTestsMixin):
     """
@@ -1595,6 +1615,7 @@ WpOdIpB8KksUTCzV591Nr1wd
         with pytest.raises(TypeError):
             cert.gmtime_adj_notBefore(None)
 
+    @flaky.flaky
     def test_gmtime_adj_notBefore(self):
         """
         `X509.gmtime_adj_notBefore` changes the not-before timestamp to be the
@@ -2613,6 +2634,20 @@ class TestFunction(object):
         with pytest.raises(TypeError):
             dump_privatekey(FILETYPE_PEM, key, cipher=GOOD_CIPHER)
 
+    def test_dump_privatekey_not_rsa_key(self):
+        """
+        `dump_privatekey` raises `TypeError` if called with a key that is
+        not RSA.
+        """
+        key = PKey()
+        key.generate_key(TYPE_DSA, 512)
+        with pytest.raises(TypeError):
+            dump_privatekey(FILETYPE_TEXT, key)
+
+    def test_dump_privatekey_invalid_pkey(self):
+        with pytest.raises(TypeError):
+            dump_privatekey(FILETYPE_TEXT, object())
+
     def test_dump_privatekey_unknown_cipher(self):
         """
         `dump_privatekey` raises `ValueError` if called with an unrecognized
@@ -3149,7 +3184,9 @@ class TestCRL(object):
         """
         crl = self._get_crl()
         # PEM format
-        dumped_crl = crl.export(self.cert, self.pkey, days=20)
+        dumped_crl = crl.export(
+            self.cert, self.pkey, days=20, digest=b"sha256"
+        )
         text = _runopenssl(dumped_crl, b"crl", b"-noout", b"-text")
 
         # These magic values are based on the way the CRL above was constructed
@@ -3169,7 +3206,9 @@ class TestCRL(object):
         crl = self._get_crl()
 
         # DER format
-        dumped_crl = crl.export(self.cert, self.pkey, FILETYPE_ASN1)
+        dumped_crl = crl.export(
+            self.cert, self.pkey, FILETYPE_ASN1, digest=b"md5"
+        )
         text = _runopenssl(
             dumped_crl, b"crl", b"-noout", b"-text", b"-inform", b"DER"
         )
@@ -3179,6 +3218,9 @@ class TestCRL(object):
             b'Issuer: /C=US/ST=IL/L=Chicago/O=Testing/CN=Testing Root CA'
         )
 
+    # Flaky because we compare the output of running commands which sometimes
+    # varies by 1 second
+    @flaky.flaky
     def test_export_text(self):
         """
         If passed ``FILETYPE_TEXT`` for the format, ``CRL.export`` returns a
@@ -3187,13 +3229,17 @@ class TestCRL(object):
         """
         crl = self._get_crl()
 
-        dumped_crl = crl.export(self.cert, self.pkey, FILETYPE_ASN1)
+        dumped_crl = crl.export(
+            self.cert, self.pkey, FILETYPE_ASN1, digest=b"md5"
+        )
         text = _runopenssl(
             dumped_crl, b"crl", b"-noout", b"-text", b"-inform", b"DER"
         )
 
         # text format
-        dumped_text = crl.export(self.cert, self.pkey, type=FILETYPE_TEXT)
+        dumped_text = crl.export(
+            self.cert, self.pkey, type=FILETYPE_TEXT, digest=b"md5"
+        )
         assert text == dumped_text
 
     def test_export_custom_digest(self):
@@ -3221,20 +3267,12 @@ class TestCRL(object):
 
     def test_export_default_digest(self):
         """
-        If not passed the name of a digest function, ``CRL.export`` uses a
-        signature algorithm based on MD5 and emits a deprecation warning.
+        If not passed the name of a digest function, ``CRL.export`` raises a
+        ``TypeError``.
         """
         crl = self._get_crl()
-        with pytest.warns(None) as catcher:
-            simplefilter("always")
-            dumped_crl = crl.export(self.cert, self.pkey)
-        assert (
-            "The default message digest (md5) is deprecated.  "
-            "Pass the name of a message digest explicitly." ==
-            str(catcher[0].message)
-        )
-        text = _runopenssl(dumped_crl, b"crl", b"-noout", b"-text")
-        text.index(b'Signature Algorithm: md5')
+        with pytest.raises(TypeError):
+            crl.export(self.cert, self.pkey)
 
     def test_export_invalid(self):
         """
@@ -3243,7 +3281,7 @@ class TestCRL(object):
         """
         crl = CRL()
         with pytest.raises(Error):
-            crl.export(X509(), PKey())
+            crl.export(X509(), PKey(), digest=b"sha256")
 
     def test_add_revoked_keyword(self):
         """
@@ -3281,7 +3319,7 @@ class TestCRL(object):
         """
         crl = CRL()
         with pytest.raises(ValueError):
-            crl.export(self.cert, self.pkey, 100, 10)
+            crl.export(self.cert, self.pkey, 100, 10, digest=b"sha256")
 
     def test_export_unknown_digest(self):
         """
@@ -3436,6 +3474,20 @@ class TestCRL(object):
             store_ctx.verify_certificate()
         assert err.value.args[0][2] == 'unable to get certificate CRL'
         assert err.value.certificate.get_subject().CN == 'intermediate-service'
+
+    def test_convert_from_cryptography(self):
+        crypto_crl = x509.load_pem_x509_crl(crlData, backend)
+        crl = CRL.from_cryptography(crypto_crl)
+        assert isinstance(crl, CRL)
+
+    def test_convert_from_cryptography_unsupported_type(self):
+        with pytest.raises(TypeError):
+            CRL.from_cryptography(object())
+
+    def test_convert_to_cryptography_key(self):
+        crl = load_crl(FILETYPE_PEM, crlData)
+        crypto_crl = crl.to_cryptography()
+        assert isinstance(crypto_crl, x509.CertificateRevocationList)
 
 
 class TestX509StoreContext(object):
