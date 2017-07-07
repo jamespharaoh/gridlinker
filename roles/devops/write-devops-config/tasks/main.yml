@@ -1,6 +1,0 @@
----
-
-- include: "write-devops-config.yml"
-  tags: "write-devops-config"
-
-# ex: et ts=2 filetype=yaml

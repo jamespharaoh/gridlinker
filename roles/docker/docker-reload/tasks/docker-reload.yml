@@ -1,8 +1,0 @@
----
-
-- name: "reload container"
-  with_items: "{{ start_reload_commands | default ([]) }}"
-  delegate_to: "host/{{ identity.parent }}"
-  shell: "docker exec {{ identity_name }} sh -c '{{ item }}'"
-
-# ex: et ts=2 filetype=yaml

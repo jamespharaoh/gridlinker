@@ -1,8 +1,0 @@
----
-
-identity:
-
-  type: "namespace"
-  name: "admin-group"
-
-# ex: et ts=2 filetype=yaml

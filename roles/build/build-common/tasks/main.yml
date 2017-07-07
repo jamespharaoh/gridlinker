@@ -1,7 +1,0 @@
----
-
-- include: "common-ssh.yml"
-- include: "common-ansible.yml"
-- include: "common-nullmailer.yml"
-
-# ex: et ts=2 filetype=yaml

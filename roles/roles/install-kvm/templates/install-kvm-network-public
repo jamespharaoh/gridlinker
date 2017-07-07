@@ -1,5 +1,0 @@
-<network>
-	<name>public</name>
-	<forward mode="bridge"/>
-	<bridge name="brpub0"/>
-</network>

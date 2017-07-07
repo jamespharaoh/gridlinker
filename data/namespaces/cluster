@@ -1,8 +1,0 @@
----
-
-identity:
-
-  type: "namespace"
-  name: "cluster"
-
-# ex: et ts=2 filetype=yaml

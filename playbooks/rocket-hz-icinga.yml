@@ -1,7 +1,0 @@
----
-
-- include: "icinga-cluster-prepare.yml"
-- include: "icinga-master.yml"
-- include: "icinga-cluster-setup.yml"
-
-# ex: et ts=2 filetype=yaml

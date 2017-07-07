@@ -1,14 +1,1 @@
-/build
-/config
-/datingnode-config
-/deploy-config
-/runtime-config
-/secret-plain
-/.Trash-*
-/work
 *.pyc
-/data/temp
-/third-party/gitdb/gitdb2.egg-info
-/third-party/six/six.egg-info
-/third-party/*/build
-/third-party/*/dist

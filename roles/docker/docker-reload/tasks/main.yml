@@ -1,9 +1,0 @@
----
-
-- include: "docker-reload.yml"
-  tags:
-
-    - "docker"
-    - "docker-reload"
-
-# ex: et ts=2 filetype=yaml

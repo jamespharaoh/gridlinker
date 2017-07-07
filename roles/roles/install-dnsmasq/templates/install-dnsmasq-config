@@ -1,4 +1,0 @@
-interface=brprv0,lo
-bind-interfaces
-server=8.8.8.8
-server=8.8.4.4

@@ -1,2 +1,0 @@
-postmaster: root
-root: {{ super_clusters.master.operations_email | join (', ') }}

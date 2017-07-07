@@ -1,6 +1,0 @@
----
-
-- include: "config-database.yml"
-  tags: [ "config", "config-database" ]
-
-# ex: et ts=2 filetype=yaml

@@ -1,9 +1,0 @@
----
-
-- include: "setup-network.yml"
-  tags:
-
-    - "network"
-    - "setup-network"
-
-# ex: et ts=2 filetype=yaml

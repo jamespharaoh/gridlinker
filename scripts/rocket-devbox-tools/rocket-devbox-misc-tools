@@ -1,5 +1,0 @@
-function rocket-template {
-	source "$ROCKET_DEVBOX_TOOLS/rocket-devbox-$1-template"
-}
-
-# ex: noet ts=4 filetype=sh

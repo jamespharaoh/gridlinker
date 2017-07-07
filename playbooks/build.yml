@@ -1,6 +1,0 @@
----
-
-- include: "build-increment.yml"
-- include: "build-templates.yml"
-
-# ex: et ts=2 filetype=yaml

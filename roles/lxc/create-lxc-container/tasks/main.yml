@@ -1,6 +1,0 @@
----
-
-- include: "create-lxc-container.yml"
-  tags: [ "lxc", "create-lxc-container" ]
-
-# ex: et ts=2 filetype=yaml

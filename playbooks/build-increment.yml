@@ -1,8 +1,0 @@
----
-
-- hosts: "cluster"
-  roles:
-
-    - "increment-cluster-build-count"
-
-# ex: et ts=2 filetype=yaml
