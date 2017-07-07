@@ -836,4 +836,4 @@ class GeneratePasswordArgument:
 
 			record_data [section] [key] = generate_password ()
 
-# ex: noet ts=4 filetype=yaml
+# ex: noet ts=4 filetype=python
