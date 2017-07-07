@@ -21,6 +21,5 @@
 [Install]
 
 	WantedBy = mult-user.target
-	Alias = etcd.service
 
 # ex: et ts=4 filetype=systemd
