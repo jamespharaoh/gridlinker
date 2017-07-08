@@ -3,15 +3,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import with_statement
 
-#import collections
-#import itertools
-#import re
 import wbs
-
-#from wbs import ReportableError
-#from wbs import uprint
-
-#from gridlinker.ansible.misc import *;
 
 __all__ = [
 	"Resource",
