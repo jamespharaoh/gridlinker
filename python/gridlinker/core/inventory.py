@@ -1386,18 +1386,33 @@ class Inventory (object):
 					project_resource_data = (
 						self.context.project_metadata ["resource_data"] [value])
 
-					if project_resource_data ["group"] not in self.namespaces:
-
-						continue
-
 					if project_resource_data ["key"] != "{{ identity_name }}":
 
 						continue
 
+					if project_resource_data ["group"] not in self.namespaces \
+					and project_resource_data ["group"] not in self.classes:
+
+						continue
+
+					if project_resource_data ["group"] not in self.namespaces:
+
+						target_class = (
+							self.classes [
+								project_resource_data ["group"]])
+
+						target_namespace = (
+							target_class.namespace_name ())
+
+					else:
+
+						target_namespace = (
+							project_resource_data ["group"])
+
 					success, value_type, value = (
 						self.dereference_resource (
 						"%s/%s" % (
-							project_resource_data ["group"],
+							target_namespace,
 							resolved_value),
 						project_resource_data ["section"],
 						indent + "  "))
@@ -1483,6 +1498,10 @@ class Inventory (object):
 			resource_source,
 			indent):
 
+		resource = (
+			self.find_resource (
+				resource_source))
+
 		if self.trace:
 
 			uprint (
@@ -1490,16 +1509,12 @@ class Inventory (object):
 					indent,
 					"', '".join (tokens),
 					token_index,
-					resource_source))
+					resource.name ()))
 
 			indent = indent + "  "
 
 		token = (
 			tokens [token_index])
-
-		resource = (
-			self.find_resource (
-				resource_source))
 
 		if token [0] == "'":
 
